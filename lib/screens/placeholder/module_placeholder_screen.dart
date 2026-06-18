@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 
 class ModulePlaceholderScreen extends StatelessWidget {
   const ModulePlaceholderScreen({
@@ -15,22 +15,18 @@ class ModulePlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cream,
-      appBar: AppBar(
-        backgroundColor: AppColors.cream,
-        elevation: 0,
-        title: Text(title, style: AppTextStyles.heading),
+      appBar: ThemedAppBar(title: title,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(description, style: AppTextStyles.body),
+            Text(description, style: AppTextStyles.body(context)),
             const SizedBox(height: 12),
             Text(
               'This module will be built in a future release.',
-              style: AppTextStyles.subtitle,
+              style: AppTextStyles.subtitle(context),
             ),
           ],
         ),

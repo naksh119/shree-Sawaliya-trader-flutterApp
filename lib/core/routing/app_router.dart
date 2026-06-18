@@ -9,6 +9,16 @@ import 'package:sawaliyatrader/screens/auth/login_screen.dart';
 import 'package:sawaliyatrader/screens/dashboard/dashboard_screen.dart';
 import 'package:sawaliyatrader/screens/more/more_screen.dart';
 import 'package:sawaliyatrader/screens/notifications/notifications_screen.dart';
+import 'package:sawaliyatrader/screens/branches/branch_create_screen.dart';
+import 'package:sawaliyatrader/core/branches/branch_models.dart';
+import 'package:sawaliyatrader/screens/branches/branch_detail_screen.dart';
+import 'package:sawaliyatrader/screens/branches/branches_list_screen.dart';
+import 'package:sawaliyatrader/screens/customers/customer_detail_screen.dart';
+import 'package:sawaliyatrader/screens/customers/customer_wizard_screen.dart';
+import 'package:sawaliyatrader/screens/customers/customers_list_screen.dart';
+import 'package:sawaliyatrader/screens/employees/employee_create_screen.dart';
+import 'package:sawaliyatrader/screens/employees/employee_detail_screen.dart';
+import 'package:sawaliyatrader/screens/employees/employees_list_screen.dart';
 import 'package:sawaliyatrader/screens/placeholder/module_placeholder_screen.dart';
 import 'package:sawaliyatrader/screens/profile/profile_screen.dart';
 import 'package:sawaliyatrader/screens/splash/splash_screen.dart';
@@ -74,10 +84,7 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.customers,
-                builder: (context, state) => const ModulePlaceholderScreen(
-                  title: 'Customers',
-                  description: 'View and manage customer applications.',
-                ),
+                builder: (context, state) => const CustomersListScreen(),
               ),
             ],
           ),
@@ -89,6 +96,14 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
                   title: 'Centers',
                   description: 'Manage lending centers and members.',
                 ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.employees,
+                builder: (context, state) => const EmployeesListScreen(),
               ),
             ],
           ),
@@ -115,31 +130,63 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
       ),
       GoRoute(
         path: AppRoutes.branches,
-        builder: (context, state) => const ModulePlaceholderScreen(
-          title: 'Branches',
-          description: 'Manage branch locations and payment QR codes.',
-        ),
+        builder: (context, state) => const BranchesListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.branchNew,
+        builder: (context, state) => const BranchCreateScreen(),
+      ),
+      GoRoute(
+        path: '/branches/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) {
+            return const ModulePlaceholderScreen(
+              title: 'Branch',
+              description: 'Invalid branch id.',
+            );
+          }
+          final initialBranch =
+              state.extra is BranchDto ? state.extra! as BranchDto : null;
+          return BranchDetailScreen(
+            branchId: id,
+            initialBranch: initialBranch,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.customerNew,
-        builder: (context, state) => const ModulePlaceholderScreen(
-          title: 'New Customer',
-          description: 'Customer onboarding wizard.',
-        ),
+        builder: (context, state) => const CustomerWizardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.employeeNew,
+        builder: (context, state) => const EmployeeCreateScreen(),
+      ),
+      GoRoute(
+        path: '/employees/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) {
+            return const ModulePlaceholderScreen(
+              title: 'Employee',
+              description: 'Invalid employee id.',
+            );
+          }
+          return EmployeeDetailScreen(employeeId: id);
+        },
       ),
       GoRoute(
         path: '/customers/:id',
-        builder: (context, state) => ModulePlaceholderScreen(
-          title: 'Customer #${state.pathParameters['id']}',
-          description: 'Customer detail and status updates.',
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.employees,
-        builder: (context, state) => const ModulePlaceholderScreen(
-          title: 'Employees',
-          description: 'Employee profiles and permissions.',
-        ),
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) {
+            return const ModulePlaceholderScreen(
+              title: 'Customer',
+              description: 'Invalid customer id.',
+            );
+          }
+          return CustomerDetailScreen(customerId: id);
+        },
       ),
       GoRoute(
         path: AppRoutes.emis,

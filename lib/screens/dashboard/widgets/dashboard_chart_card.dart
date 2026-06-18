@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class DashboardChartCard extends StatelessWidget {
   const DashboardChartCard({
@@ -20,17 +20,17 @@ class DashboardChartCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.12)),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTextStyles.label.copyWith(fontSize: 17)),
+          Text(title, style: AppTextStyles.label(context).copyWith(fontSize: 17)),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
-            Text(subtitle!, style: AppTextStyles.subtitle.copyWith(fontSize: 13)),
+            Text(subtitle!, style: AppTextStyles.subtitle(context).copyWith(fontSize: 13)),
           ],
           const SizedBox(height: 16),
           child,

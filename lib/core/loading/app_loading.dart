@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 enum AppLoaderSize {
   small(36),
@@ -17,11 +17,30 @@ enum AppLoaderSize {
 /// Fixed size for full-page loaders (login, dashboard, shell, overlays).
 const AppLoaderSize kAppPageLoaderSize = AppLoaderSize.xlarge;
 
+/// Minimum time a full-page loader stays visible (avoids a quick flash).
+const Duration kAppPageLoaderMinDuration = Duration(milliseconds: 800);
+
+/// Slower rotation for the large page feather loader.
+const Duration kAppPageLoaderRotationDuration = Duration(milliseconds: 2200);
+
+/// Waits for [future] and at least [kAppPageLoaderMinDuration] before completing.
+Future<T> awaitWithMinPageLoaderDuration<T>(Future<T> future) {
+  return Future.wait([
+    future,
+    Future<void>.delayed(kAppPageLoaderMinDuration),
+  ]).then((results) => results[0] as T);
+}
+
 /// Standard app-wide feather spinner. Use this instead of [CircularProgressIndicator].
 class AppLoader extends StatefulWidget {
-  const AppLoader({super.key, this.size = AppLoaderSize.medium});
+  const AppLoader({
+    super.key,
+    this.size = AppLoaderSize.medium,
+    this.rotationDuration,
+  });
 
   final AppLoaderSize size;
+  final Duration? rotationDuration;
 
   @override
   State<AppLoader> createState() => _AppLoaderState();
@@ -36,7 +55,10 @@ class _AppLoaderState extends State<AppLoader>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: widget.rotationDuration ??
+          (widget.size == AppLoaderSize.xlarge
+              ? kAppPageLoaderRotationDuration
+              : const Duration(milliseconds: 1400)),
     )..repeat();
   }
 
@@ -87,7 +109,7 @@ class AppLoaderView extends StatelessWidget {
               message!,
               textAlign: TextAlign.center,
               style: GoogleFonts.cormorantGaramond(
-                color: AppColors.brown,
+                color: context.appColors.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
@@ -114,7 +136,7 @@ class AppLoadingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return AbsorbPointer(
       child: ColoredBox(
-        color: AppColors.cream.withValues(alpha: 0.72),
+        color: context.appColors.overlay,
         child: AppLoaderView(message: message, size: size),
       ),
     );

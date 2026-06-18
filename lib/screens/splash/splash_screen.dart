@@ -8,6 +8,7 @@ import 'package:sawaliyatrader/core/constants/app_assets.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/widgets/app_background.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -78,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final logoMaxHeight = (screenSize.height * 0.34).clamp(160.0, 280.0);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.appColors.card,
       body: AppBackground(
         child: Stack(
           children: [
@@ -216,7 +217,7 @@ class _GoldenShimmerTextState extends State<_GoldenShimmerText>
         widget.text,
         textAlign: TextAlign.center,
         style: widget.style.copyWith(
-          color: Colors.white,
+          color: context.appColors.card,
           shadows: const [
             Shadow(
               color: Color(0xFF3D2F0A),

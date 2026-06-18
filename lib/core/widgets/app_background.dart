@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 /// Full-screen background matching the splash screen aesthetic.
 class AppBackground extends StatelessWidget {
@@ -19,7 +19,7 @@ class AppBackground extends StatelessWidget {
           alignment: Alignment.topCenter,
           filterQuality: FilterQuality.high,
         ),
-        ColoredBox(color: AppColors.cream.withValues(alpha: 0.2)),
+        ColoredBox(color: context.appColors.overlay),
         child,
       ],
     );

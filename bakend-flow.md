@@ -163,12 +163,68 @@ Base: `/employees/api/`
 Operations:
 
 - Employee CRUD
+- **Employee registration** — `POST /employees/register/`
 - Roles
 - Permissions
 - Documents
 - Employment History
 - Change Email
 - Change Password
+
+#### Employee Registration
+
+**POST** `/employees/register/`
+
+Request body (key fields):
+
+```json
+{
+  "email": "user@example.com",
+  "password": "********",
+  "role": 8,
+  "branch": 11,
+  "first_name": "Arjun",
+  "last_name": "Chouhan",
+  "father_name": "Raghunath Chouhan",
+  "date_of_birth": "1996-06-24",
+  "place_of_birth": "Raisen",
+  "gender": "MALE",
+  "marital_status": "SINGLE",
+  "nationality": "Indian",
+  "languages_known": "Hindi English",
+  "aadhaar_card_no": "764209385127",
+  "pan_card_no": "ACHOU6381J",
+  "primary_mobile_number": "9000010100",
+  "secondary_mobile_number": "9000010101",
+  "present_address": "Ayodhya Bypass, Bhopal",
+  "permanent_address": "Raisen, Madhya Pradesh",
+  "height_cm": "169.00",
+  "weight_kg": "65.00",
+  "blood_group": "B+",
+  "date_of_appointment": "2023-05-05",
+  "date_of_joining": "2023-05-10",
+  "date_of_confirmation": "2023-11-10",
+  "payable_from_date": "2023-05-10",
+  "performance_appraisal": "Good",
+  "warning_notes": "",
+  "remarks": "Responsible for field visits",
+  "educational_qualifications": "Graduate",
+  "professional_qualifications": "BA",
+  "members_in_family": 4,
+  "emergency_contact_name": "Sanjay Chouhan",
+  "emergency_contact_relation": "Brother",
+  "emergency_contact_number": "9000010102"
+}
+```
+
+Notes:
+
+- `role` and `branch` are numeric IDs (not codes).
+- Decimal values (`height_cm`, `weight_kg`) are sent as strings.
+- `gender`: `MALE` | `FEMALE` | `OTHER`
+- `marital_status`: `SINGLE` | `MARRIED` | `DIVORCED` | `WIDOWED`
+
+Success response wraps the created user and nested `employee` profile with full `role` and `branch` objects.
 
 ### Customers
 

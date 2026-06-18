@@ -1,9 +1,9 @@
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/notifications/models/notification_dto.dart';
 import 'package:sawaliyatrader/core/notifications/models/notification_type.dart';
-import 'package:sawaliyatrader/core/permissions/app_permissions.dart';
-import 'package:sawaliyatrader/core/permissions/employee_roles.dart';
-import 'package:sawaliyatrader/core/permissions/permission_checker.dart';
+import 'package:sawaliyatrader/core/permissions/app_permission.dart';
+import 'package:sawaliyatrader/core/permissions/employee_role.dart';
+import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 
 /// Client-side rules for which notifications a signed-in employee may see.
 ///
@@ -11,14 +11,13 @@ import 'package:sawaliyatrader/core/permissions/permission_checker.dart';
 /// items and guards UI before APIs are live.
 abstract final class NotificationRolePolicy {
   static bool canAccessNotifications(LoginResponse session) {
-    final checker = PermissionChecker(session);
-    return checker.hasPermission(AppPermissions.notificationView);
+    return PermissionService(session).canViewNotifications;
   }
 
   static bool canView(LoginResponse session, NotificationDto notification) {
     if (!canAccessNotifications(session)) return false;
 
-    final checker = PermissionChecker(session);
+    final checker = PermissionService(session);
     if (checker.hasFullAccess) return true;
 
     if (!_matchesBranch(session, notification)) return false;
@@ -42,7 +41,7 @@ abstract final class NotificationRolePolicy {
 
   static bool _matchesExplicitAudience(
     LoginResponse session,
-    PermissionChecker checker,
+    PermissionService checker,
     NotificationDto notification,
   ) {
     final hasRoleFilter = notification.targetRoles.isNotEmpty;
@@ -62,36 +61,36 @@ abstract final class NotificationRolePolicy {
   /// Default visibility when the API omits explicit audience fields.
   static bool _matchesTypePolicy(
     LoginResponse session,
-    PermissionChecker checker,
+    PermissionService checker,
     String type,
   ) {
     switch (type) {
       case NotificationType.customerSourced:
-        return checker.hasPermission(AppPermissions.customerView);
+        return checker.canViewCustomers;
       case NotificationType.customerPendingApproval:
-        return checker.hasPermission(AppPermissions.customerApprove) ||
-            _hasAnyRole(session, [
-              EmployeeRoles.bm,
-              EmployeeRoles.abm,
-              EmployeeRoles.am,
-              EmployeeRoles.ao,
-              EmployeeRoles.admin,
+        return checker.canApproveCustomer ||
+            checker.hasAnyRole([
+              EmployeeRole.bm,
+              EmployeeRole.abm,
+              EmployeeRole.am,
+              EmployeeRole.ao,
+              EmployeeRole.admin,
             ]);
       case NotificationType.customerApproved:
       case NotificationType.customerRejected:
-        return checker.hasAnyPermission([
-          AppPermissions.customerView,
-          AppPermissions.customerCreate,
+        return checker.hasAny([
+          AppPermission.customerView,
+          AppPermission.customerCreate,
         ]);
       case NotificationType.centerCreated:
-        return checker.hasPermission(AppPermissions.centerView);
+        return checker.canViewCenters;
       case NotificationType.emiDue:
       case NotificationType.emiOverdue:
       case NotificationType.emiCollected:
-        return checker.hasPermission(AppPermissions.emiCollect);
+        return checker.canCollectEmi;
       case NotificationType.employeeAssigned:
-        return checker.hasPermission(AppPermissions.employeeView) ||
-            _hasAnyRole(session, [EmployeeRoles.hrm, EmployeeRoles.admin]);
+        return checker.canViewEmployees ||
+            checker.hasAnyRole([EmployeeRole.hrm, EmployeeRole.admin]);
       case NotificationType.branchAnnouncement:
         return true;
       case NotificationType.system:
@@ -99,10 +98,5 @@ abstract final class NotificationRolePolicy {
       default:
         return true;
     }
-  }
-
-  static bool _hasAnyRole(LoginResponse session, List<String> roles) {
-    final role = session.employee?.role;
-    return role != null && roles.contains(role);
   }
 }

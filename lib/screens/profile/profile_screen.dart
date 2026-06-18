@@ -3,11 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
+import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
-import 'package:sawaliyatrader/core/permissions/employee_roles.dart';
+import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,31 +20,37 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
+  late final Future<LoginResponse?> _sessionFuture;
   bool _isLoggingOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sessionFuture = awaitWithMinPageLoaderDuration(_authService.getSession());
+  }
 
   Future<void> _onLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cream,
         title: Text(
           'Log out?',
-          style: AppTextStyles.heading.copyWith(fontSize: 22),
+          style: AppTextStyles.heading(context).copyWith(fontSize: 22),
         ),
         content: Text(
           'You will need to sign in again to access your account.',
-          style: AppTextStyles.body,
+          style: AppTextStyles.body(context),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel', style: AppTextStyles.link),
+            child: Text('Cancel', style: AppTextStyles.link(context)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
               'Log out',
-              style: AppTextStyles.link.copyWith(color: Colors.red.shade700),
+              style: AppTextStyles.link(context).copyWith(color: Colors.red.shade700),
             ),
           ),
         ],
@@ -70,17 +78,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cream,
-      appBar: AppBar(
-        backgroundColor: AppColors.cream,
-        elevation: 0,
-        title: Text('Profile', style: AppTextStyles.heading),
+      appBar: ThemedAppBar(title: 'Profile',
       ),
       body: FutureBuilder<LoginResponse?>(
-        future: _authService.getSession(),
+        future: _sessionFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: AppLoader(size: kAppPageLoaderSize));
           }
 
           final session = snapshot.data;
@@ -89,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(24),
               child: Text(
                 'No session found. Please sign in again.',
-                style: AppTextStyles.body,
+                style: AppTextStyles.body(context),
               ),
             );
           }
@@ -131,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _ProfileInfoRow(
                         label: 'Role',
                         value:
-                            '${session.employee!.role} (${EmployeeRoles.displayName(session.employee!.role)})',
+                            '${session.employee!.role} (${EmployeeRole.displayNameFor(session.employee!.role)})',
                       ),
                       _ProfileInfoRow(
                         label: 'Branch',
@@ -158,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (session.permissions.isEmpty)
                       Text(
                         'No granular permissions assigned.',
-                        style: AppTextStyles.subtitle,
+                        style: AppTextStyles.subtitle(context),
                       )
                     else
                       Wrap(
@@ -200,7 +204,7 @@ class _ProfileHeader extends StatelessWidget {
     final title = employee?.employeeCode ??
         (session.isSuperuser ? 'Administrator' : 'User #${session.id}');
     final subtitle = employee != null
-        ? '${EmployeeRoles.displayName(employee.role)} · ${employee.branch}'
+        ? '${EmployeeRole.displayNameFor(employee.role)} · ${employee.branch}'
         : session.isSuperuser
             ? 'Superuser'
             : 'Signed in';
@@ -208,25 +212,25 @@ class _ProfileHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.12)),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.gold.withValues(alpha: 0.25),
-            child: Icon(Icons.person, color: AppColors.shinyGold, size: 32),
+            backgroundColor: context.appColors.gold.withValues(alpha: 0.25),
+            child: Icon(Icons.person, color: context.appColors.shinyGold, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.label.copyWith(fontSize: 18)),
+                Text(title, style: AppTextStyles.label(context).copyWith(fontSize: 18)),
                 const SizedBox(height: 4),
-                Text(subtitle, style: AppTextStyles.subtitle),
+                Text(subtitle, style: AppTextStyles.subtitle(context)),
               ],
             ),
           ),
@@ -248,14 +252,14 @@ class _ProfileSection extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.12)),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTextStyles.label),
+          Text(title, style: AppTextStyles.label(context)),
           const SizedBox(height: 12),
           ...children,
         ],
@@ -279,9 +283,9 @@ class _ProfileInfoRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 120,
-            child: Text(label, style: AppTextStyles.subtitle),
+            child: Text(label, style: AppTextStyles.subtitle(context)),
           ),
-          Expanded(child: Text(value, style: AppTextStyles.body)),
+          Expanded(child: Text(value, style: AppTextStyles.body(context))),
         ],
       ),
     );
@@ -298,11 +302,11 @@ class _PermissionChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.gold.withValues(alpha: 0.15),
+        color: context.appColors.gold.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.35)),
+        border: Border.all(color: context.appColors.gold.withValues(alpha: 0.35)),
       ),
-      child: Text(permission, style: AppTextStyles.subtitle.copyWith(fontSize: 14)),
+      child: Text(permission, style: AppTextStyles.subtitle(context).copyWith(fontSize: 14)),
     );
   }
 }
@@ -328,15 +332,8 @@ class _LogoutButton extends StatelessWidget {
           ),
         ),
         icon: isLoading
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Colors.red.shade700,
-                ),
-              )
-            : Icon(Icons.logout, color: AppColors.shinyGold),
+            ? const AppLoader(size: AppLoaderSize.small)
+            : Icon(Icons.logout, color: context.appColors.shinyGold),
         label: Text(
           'Log out',
           style: GoogleFonts.cormorantGaramond(

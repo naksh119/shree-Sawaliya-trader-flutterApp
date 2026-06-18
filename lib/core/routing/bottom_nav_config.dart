@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/permissions/app_permissions.dart';
-import 'package:sawaliyatrader/core/permissions/permission_checker.dart';
+import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 
 class BottomNavItem {
@@ -18,7 +17,7 @@ class BottomNavItem {
   final IconData icon;
   final IconData selectedIcon;
   final String tooltip;
-  final bool Function(PermissionChecker checker) isVisible;
+  final bool Function(PermissionService service) isVisible;
 
   static final List<BottomNavItem> all = [
     BottomNavItem(
@@ -35,7 +34,7 @@ class BottomNavItem {
       icon: Icons.people_outline,
       selectedIcon: Icons.people_rounded,
       tooltip: 'Customers',
-      isVisible: (c) => c.hasPermission(AppPermissions.customerView),
+      isVisible: (s) => s.canViewCustomers,
     ),
     BottomNavItem(
       branchIndex: 2,
@@ -43,18 +42,26 @@ class BottomNavItem {
       icon: Icons.hub_outlined,
       selectedIcon: Icons.hub_rounded,
       tooltip: 'Centers',
-      isVisible: (c) => c.hasPermission(AppPermissions.centerView),
+      isVisible: (s) => s.canViewCenters,
     ),
     BottomNavItem(
       branchIndex: 3,
+      route: AppRoutes.employees,
+      icon: Icons.badge_outlined,
+      selectedIcon: Icons.badge_rounded,
+      tooltip: 'Employees',
+      isVisible: (s) => s.canViewEmployees,
+    ),
+    BottomNavItem(
+      branchIndex: 4,
       route: AppRoutes.reports,
       icon: Icons.bar_chart_outlined,
       selectedIcon: Icons.bar_chart_rounded,
       tooltip: 'Reports',
-      isVisible: (c) => c.hasFullAccess,
+      isVisible: (s) => s.canViewReports,
     ),
     BottomNavItem(
-      branchIndex: 4,
+      branchIndex: 5,
       route: AppRoutes.more,
       icon: Icons.apps_rounded,
       selectedIcon: Icons.apps_rounded,
@@ -63,9 +70,9 @@ class BottomNavItem {
     ),
   ];
 
-  static bool _alwaysVisible(PermissionChecker checker) => true;
+  static bool _alwaysVisible(PermissionService service) => true;
 
-  static List<BottomNavItem> visibleFor(PermissionChecker checker) {
-    return all.where((item) => item.isVisible(checker)).toList();
+  static List<BottomNavItem> visibleFor(PermissionService service) {
+    return all.where((item) => item.isVisible(service)).toList();
   }
 }

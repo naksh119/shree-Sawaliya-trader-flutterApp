@@ -1,8 +1,9 @@
 import 'package:sawaliyatrader/core/api/api_client.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/constants/api_config.dart';
+import 'package:sawaliyatrader/core/customers/models/json_parse.dart';
 import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
-import 'package:sawaliyatrader/core/permissions/app_permissions.dart';
-import 'package:sawaliyatrader/core/permissions/permission_checker.dart';
+import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 
 class DashboardService {
@@ -49,8 +50,7 @@ class DashboardService {
   Future<DashboardStats> fetchStats({
     required LoginResponse session,
   }) async {
-    final checker = PermissionChecker(session);
-    _setAuthHeader(session.access);
+    final checker = PermissionService(session);
 
     final branch = session.employee?.branch;
     final baseQuery = <String, dynamic>{
@@ -62,13 +62,13 @@ class DashboardService {
     var customerTotal = 0;
     final customerByStatus = <ChartSegment>[];
 
-    if (checker.hasPermission(AppPermissions.customerView)) {
-      customerTotal = await _fetchTotal('/customers/api/customers/', baseQuery) ?? 0;
+    if (checker.canViewCustomers) {
+      customerTotal = await _fetchTotal(ApiConfig.customersPath, baseQuery) ?? 0;
 
       var colorIndex = 0;
       for (final (status, label) in _customerStatuses) {
         final count = await _fetchTotal(
-          '/customers/api/customers/',
+          ApiConfig.customersPath,
           {...baseQuery, 'status': status},
         );
         if (count != null && count > 0) {
@@ -85,19 +85,22 @@ class DashboardService {
     }
 
     var centerTotal = 0;
-    if (checker.hasPermission(AppPermissions.centerView)) {
+    if (checker.canViewCenters) {
       centerTotal = await _fetchTotal('/operations/api/centers/', baseQuery) ?? 0;
     }
 
     var employeeTotal = 0;
-    if (checker.hasPermission(AppPermissions.employeeView)) {
+    if (checker.canViewEmployees) {
       employeeTotal =
-          await _fetchTotal('/employees/api/employees/', baseQuery) ?? 0;
+          await _fetchTotal(ApiConfig.employeesPath, baseQuery) ?? 0;
     }
 
     var branchTotal = 0;
     if (checker.canManageBranches) {
-      branchTotal = await _fetchTotal('/branches/api/branches/', baseQuery) ?? 0;
+      branchTotal = await _fetchTotal(
+        ApiConfig.branchesPath,
+        const {'page': 1, 'page_size': 1},
+      ) ?? 0;
     }
 
     final emiByStatus = <ChartSegment>[];
@@ -105,7 +108,7 @@ class DashboardService {
     var totalCollected = 0.0;
     final collectionTrend = <TrendPoint>[];
 
-    if (checker.hasPermission(AppPermissions.emiCollect)) {
+    if (checker.canCollectEmi) {
       var colorIndex = 0;
       for (final (status, label) in _emiStatuses) {
         final count = await _fetchTotal(
@@ -136,7 +139,7 @@ class DashboardService {
       collectionTrend.addAll(_buildCollectionTrend(emiItems));
     }
 
-    if (collectionTrend.isEmpty && checker.hasPermission(AppPermissions.emiCollect)) {
+    if (collectionTrend.isEmpty && checker.canCollectEmi) {
       collectionTrend.addAll(_emptyTrend());
     }
 
@@ -160,8 +163,9 @@ class DashboardService {
     try {
       final body = await _apiClient.get(path, queryParameters: query);
       if (body['success'] != true) return null;
-      final data = body['data'] as Map<String, dynamic>? ?? body;
-      return data['total'] as int? ?? (data['results'] as List?)?.length;
+      final count = paginationInt(body, ['count', 'total']);
+      if (count != null) return count;
+      return listMapsFromBody(body).length;
     } catch (_) {
       return null;
     }
@@ -174,10 +178,7 @@ class DashboardService {
     try {
       final body = await _apiClient.get(path, queryParameters: query);
       if (body['success'] != true) return [];
-      final data = body['data'] as Map<String, dynamic>? ?? body;
-      return (data['results'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .toList();
+      return listMapsFromBody(body);
     } catch (_) {
       return [];
     }
@@ -262,10 +263,6 @@ class DashboardService {
       'Dec',
     ];
     return labels[month - 1];
-  }
-
-  void _setAuthHeader(String accessToken) {
-    _apiClient.dio.options.headers['Authorization'] = 'Bearer $accessToken';
   }
 
   static int get goldArgb => AppColors.gold.toARGB32();

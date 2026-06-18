@@ -3,9 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sawaliyatrader/core/api/api_error_parser.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/api/auth_interceptor.dart';
 import 'package:sawaliyatrader/core/constants/api_config.dart';
+import 'package:sawaliyatrader/core/customers/models/json_parse.dart';
 
 class ApiClient {
   ApiClient._({
@@ -22,11 +24,13 @@ class ApiClient {
 
   /// Shared client with cookie persistence and auth refresh. Call from [main].
   static Future<ApiClient> initialize({
+    Future<String?> Function()? getAccessToken,
     Future<String> Function()? onRefresh,
     Future<void> Function()? onRefreshFailed,
   }) async {
     if (_instance != null) return _instance!;
     _initializing ??= _create(
+      getAccessToken: getAccessToken,
       onRefresh: onRefresh,
       onRefreshFailed: onRefreshFailed,
     );
@@ -35,6 +39,7 @@ class ApiClient {
   }
 
   static Future<void> _create({
+    Future<String?> Function()? getAccessToken,
     Future<String> Function()? onRefresh,
     Future<void> Function()? onRefreshFailed,
   }) async {
@@ -50,10 +55,13 @@ class ApiClient {
     final cookieJar = await _createCookieJar();
     dio.interceptors.add(CookieManager(cookieJar));
 
-    if (onRefresh != null && onRefreshFailed != null) {
+    if (onRefresh != null &&
+        onRefreshFailed != null &&
+        getAccessToken != null) {
       dio.interceptors.add(
         AuthInterceptor(
           dio: dio,
+          getAccessToken: getAccessToken,
           onRefresh: onRefresh,
           onRefreshFailed: onRefreshFailed,
         ),
@@ -108,7 +116,10 @@ class ApiClient {
     Map<String, dynamic>? data,
   }) async {
     try {
-      final response = await _dio.post<Map<String, dynamic>>(path, data: data);
+      final response = await _dio.post<Map<String, dynamic>>(
+        path,
+        data: data,
+      );
       final body = response.data;
 
       debugPrint(
@@ -134,14 +145,69 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
+      final response = await _dio.get<dynamic>(
         path,
         queryParameters: queryParameters,
+      );
+      final body = asJsonMap(response.data);
+
+      // debugPrint(
+      //   'API GET $path → status: ${response.statusCode}, '
+      //   'success: ${body?['success']}, count: ${body?['count']}, '
+      //   'dataType: ${body?['data']?.runtimeType}',
+      // );
+
+      if (body == null) {
+        throw const ApiException('Empty response from server');
+      }
+
+      return body;
+    } on DioException catch (error) {
+      // debugPrint(
+      //   'API GET $path failed → status: ${error.response?.statusCode}, '
+      //   'body: ${error.response?.data}',
+      // );
+      throw _mapDioError(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> delete(String path) async {
+    try {
+      final response = await _dio.delete<Map<String, dynamic>>(path);
+      final body = response.data;
+
+      debugPrint(
+        'API DELETE $path → status: ${response.statusCode}, body: $body',
+      );
+
+      if (body == null) {
+        return {'success': true};
+      }
+
+      return body;
+    } on DioException catch (error) {
+      debugPrint(
+        'API DELETE $path failed → status: ${error.response?.statusCode}, '
+        'body: ${error.response?.data}',
+      );
+      throw _mapDioError(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required FormData data,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        path,
+        data: data,
+        options: Options(contentType: 'multipart/form-data'),
       );
       final body = response.data;
 
       debugPrint(
-        'API GET $path → status: ${response.statusCode}, body: $body',
+        'API POST (multipart) $path → status: ${response.statusCode}',
       );
 
       if (body == null) {
@@ -151,8 +217,7 @@ class ApiClient {
       return body;
     } on DioException catch (error) {
       debugPrint(
-        'API GET $path failed → status: ${error.response?.statusCode}, '
-        'body: ${error.response?.data}',
+        'API POST (multipart) $path failed → status: ${error.response?.statusCode}',
       );
       throw _mapDioError(error);
     }
@@ -186,12 +251,15 @@ class ApiClient {
 
   ApiException _mapDioError(DioException error) {
     final responseData = error.response?.data;
+    final statusCode = error.response?.statusCode;
 
-    if (responseData is Map<String, dynamic>) {
-      final message = responseData['error'] as String?;
-      if (message != null && message.isNotEmpty) {
-        return ApiException(message, statusCode: error.response?.statusCode);
-      }
+    final body = asJsonMap(responseData);
+    if (body != null) {
+      return apiExceptionFromError(
+        body['error'],
+        fallback: 'Something went wrong. Please try again.',
+        statusCode: statusCode,
+      );
     }
 
     switch (error.type) {

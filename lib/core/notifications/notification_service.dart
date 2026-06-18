@@ -20,8 +20,6 @@ class NotificationService {
     int pageSize = 20,
     bool unreadOnly = false,
   }) async {
-    _setAuthHeader(session.access);
-
     final body = await _apiClient.get(
       ApiConfig.notificationsPath,
       queryParameters: {
@@ -63,8 +61,6 @@ class NotificationService {
     required LoginResponse session,
     required int notificationId,
   }) async {
-    _setAuthHeader(session.access);
-
     final body = await _apiClient.patch(
       ApiConfig.notificationMarkReadPath(notificationId),
       data: {'is_read': true},
@@ -83,8 +79,6 @@ class NotificationService {
   }
 
   Future<void> markAllAsRead({required LoginResponse session}) async {
-    _setAuthHeader(session.access);
-
     final body = await _apiClient.patch(
       ApiConfig.notificationsMarkAllReadPath,
       data: {'is_read': true},
@@ -99,9 +93,5 @@ class NotificationService {
     for (var i = 0; i < _cachedItems.length; i++) {
       _cachedItems[i] = _cachedItems[i].copyWith(isRead: true);
     }
-  }
-
-  void _setAuthHeader(String accessToken) {
-    _apiClient.dio.options.headers['Authorization'] = 'Bearer $accessToken';
   }
 }

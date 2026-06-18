@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class DashboardKpiRow extends StatelessWidget {
   const DashboardKpiRow({
     required this.stats,
+    required this.permissions,
     super.key,
   });
 
   final DashboardStats stats;
+  final PermissionService permissions;
 
   static final _currency = NumberFormat.compactCurrency(
     locale: 'en_IN',
@@ -18,40 +21,61 @@ class DashboardKpiRow extends StatelessWidget {
     decimalDigits: 0,
   );
 
-  @override
-  Widget build(BuildContext context) {
-    final cards = [
-      _KpiData(
+  List<({String label, String value, IconData icon})> _visibleCards() {
+    final cards = <({String label, String value, IconData icon})>[];
+    if (permissions.canViewCustomers) {
+      cards.add((
         label: 'Customers',
         value: '${stats.customerTotal}',
         icon: Icons.people_outline,
-      ),
-      _KpiData(
+      ));
+    }
+    if (permissions.canViewCenters) {
+      cards.add((
         label: 'Centers',
         value: '${stats.centerTotal}',
         icon: Icons.hub_outlined,
-      ),
-      _KpiData(
+      ));
+    }
+    if (permissions.canCollectEmi) {
+      cards.add((
         label: 'Pending EMI',
         value: '${stats.pendingEmiCount}',
         icon: Icons.payments_outlined,
-      ),
-      _KpiData(
+      ));
+      cards.add((
         label: 'Collected',
         value: _currency.format(stats.totalCollected),
         icon: Icons.currency_rupee_rounded,
-      ),
-      _KpiData(
+      ));
+    }
+    if (permissions.canViewEmployees) {
+      cards.add((
         label: 'Employees',
         value: '${stats.employeeTotal}',
         icon: Icons.badge_outlined,
-      ),
-      _KpiData(
+      ));
+    }
+    if (permissions.canManageBranches) {
+      cards.add((
         label: 'Branches',
         value: '${stats.branchTotal}',
         icon: Icons.store_outlined,
-      ),
-    ];
+      ));
+    }
+    return cards;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = _visibleCards();
+
+    if (cards.isEmpty) {
+      return Text(
+        'No overview metrics available for your role.',
+        style: AppTextStyles.subtitle(context),
+      );
+    }
 
     return SizedBox(
       height: 108,
@@ -59,14 +83,21 @@ class DashboardKpiRow extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: cards.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) => _KpiCard(data: cards[index]),
+        itemBuilder: (context, index) {
+          final card = cards[index];
+          return _KpiCard(
+            label: card.label,
+            value: card.value,
+            icon: card.icon,
+          );
+        },
       ),
     );
   }
 }
 
-class _KpiData {
-  const _KpiData({
+class _KpiCard extends StatelessWidget {
+  const _KpiCard({
     required this.label,
     required this.value,
     required this.icon,
@@ -75,12 +106,6 @@ class _KpiData {
   final String label;
   final String value;
   final IconData icon;
-}
-
-class _KpiCard extends StatelessWidget {
-  const _KpiCard({required this.data});
-
-  final _KpiData data;
 
   @override
   Widget build(BuildContext context) {
@@ -88,25 +113,25 @@ class _KpiCard extends StatelessWidget {
       width: 148,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.12)),
+        border: Border.all(color: context.appColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(data.icon, color: AppColors.shinyGold, size: 22),
+          Icon(icon, color: context.appColors.shinyGold, size: 22),
           const Spacer(),
           Text(
-            data.value,
-            style: AppTextStyles.heading.copyWith(fontSize: 22),
+            value,
+            style: AppTextStyles.heading(context).copyWith(fontSize: 22),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
-            data.label,
-            style: AppTextStyles.subtitle.copyWith(fontSize: 13),
+            label,
+            style: AppTextStyles.subtitle(context).copyWith(fontSize: 13),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

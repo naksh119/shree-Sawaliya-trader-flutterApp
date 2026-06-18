@@ -3,11 +3,13 @@ abstract final class AppRoutes {
   static const login = '/login';
   static const dashboard = '/';
   static const branches = '/branches';
+  static const branchNew = '/branches/new';
   static const customers = '/customers';
   static const customerNew = '/customers/new';
   static const centers = '/centers';
   static const emis = '/emis';
   static const employees = '/employees';
+  static const employeeNew = '/employees/new';
   static const reports = '/reports';
   static const more = '/more';
   static const notifications = '/notifications';
@@ -15,4 +17,8 @@ abstract final class AppRoutes {
   static const accessDenied = '/access-denied';
 
   static String customerDetail(int id) => '/customers/$id';
+
+  static String employeeDetail(int id) => '/employees/$id';
+
+  static String branchDetail(int id) => '/branches/$id';
 }

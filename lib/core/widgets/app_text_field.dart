@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class AppTextField extends StatefulWidget {
   const AppTextField({
@@ -16,6 +16,7 @@ class AppTextField extends StatefulWidget {
     this.onFieldSubmitted,
     this.autocorrect = true,
     this.enableSuggestions = true,
+    this.externalError,
   });
 
   final TextEditingController controller;
@@ -29,6 +30,7 @@ class AppTextField extends StatefulWidget {
   final void Function(String)? onFieldSubmitted;
   final bool autocorrect;
   final bool enableSuggestions;
+  final String? externalError;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -49,29 +51,30 @@ class _AppTextFieldState extends State<AppTextField> {
     super.dispose();
   }
 
-  InputDecoration _buildDecoration() {
+  InputDecoration _buildDecoration(BuildContext context) {
+    final colors = context.appColors;
     return InputDecoration(
       hintText: widget.hint,
-      hintStyle: AppTextStyles.body.copyWith(
-        color: AppColors.brown.withValues(alpha: 0.4),
+      hintStyle: AppTextStyles.body(context).copyWith(
+        color: colors.textSecondary,
       ),
       filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.85),
+      fillColor: colors.inputFill,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 14,
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.progressTrack),
+        borderSide: BorderSide(color: colors.progressTrack),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.progressTrack),
+        borderSide: BorderSide(color: colors.progressTrack),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.gold, width: 1.5),
+        borderSide: BorderSide(color: colors.gold, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -90,12 +93,18 @@ class _AppTextFieldState extends State<AppTextField> {
     );
   }
 
+  String? _validate(String? value) {
+    final localError = widget.validator?.call(value);
+    if (localError != null) return localError;
+    return widget.externalError;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: AppTextStyles.label),
+        Text(widget.label, style: AppTextStyles.label(context)),
         const SizedBox(height: 8),
         TextFormField(
           key: ValueKey(widget.label),
@@ -103,15 +112,15 @@ class _AppTextFieldState extends State<AppTextField> {
           focusNode: _focusNode,
           keyboardType: widget.keyboardType,
           obscureText: widget.obscureText,
-          validator: widget.validator,
+          validator: _validate,
           textInputAction: widget.textInputAction,
           onFieldSubmitted: widget.onFieldSubmitted,
           autocorrect: widget.autocorrect,
           enableSuggestions: widget.enableSuggestions,
-          style: AppTextStyles.body,
-          cursorColor: AppColors.gold,
+          style: AppTextStyles.body(context),
+          cursorColor: context.appColors.gold,
           scrollPadding: const EdgeInsets.only(bottom: 120),
-          decoration: _buildDecoration(),
+          decoration: _buildDecoration(context),
         ),
       ],
     );

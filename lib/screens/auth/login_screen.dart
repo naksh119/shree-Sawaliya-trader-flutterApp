@@ -5,11 +5,12 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_background.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/theme_toggle_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -82,9 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(
             error.message,
-            style: AppTextStyles.body.copyWith(color: Colors.white),
+            style: AppTextStyles.body(context).copyWith(color: Colors.white),
           ),
-          backgroundColor: AppColors.brown,
+          backgroundColor: context.appColors.textPrimary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
@@ -97,9 +98,9 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(
             'Something went wrong. Please try again.',
-            style: AppTextStyles.body.copyWith(color: Colors.white),
+            style: AppTextStyles.body(context).copyWith(color: Colors.white),
           ),
-          backgroundColor: AppColors.brown,
+          backgroundColor: context.appColors.textPrimary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
@@ -115,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.appColors.surface,
       resizeToAvoidBottomInset: false,
       body: AppBackground(
         child: Stack(
@@ -140,11 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             fit: BoxFit.contain,
                           ),
                           const SizedBox(height: 20),
-                          Text('Welcome Back', style: AppTextStyles.heading),
+                          Text('Welcome Back', style: AppTextStyles.heading(context)),
                           const SizedBox(height: 6),
                           Text(
                             'Sign in to Shree Sawaliya Multitrade',
-                            style: AppTextStyles.subtitle,
+                            style: AppTextStyles.subtitle(context),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 28),
@@ -173,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _obscurePassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: AppColors.shinyGold.withValues(alpha: 0.75),
+                                color: context.appColors.shinyGold.withValues(alpha: 0.75),
                               ),
                               onPressed: _togglePasswordVisibility,
                             ),
@@ -183,11 +184,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           AppPrimaryButton(
                             label: 'Login',
                             onPressed: _isSubmitting ? null : _onLogin,
-                            textColor: AppColors.navy,
                           ),
                     ],
                   ),
                 ),
+              ),
+            ),
+            const SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: ThemeToggleButton(),
               ),
             ),
             if (_isSubmitting)

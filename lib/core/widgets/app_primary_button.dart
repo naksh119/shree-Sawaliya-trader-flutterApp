@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class AppPrimaryButton extends StatelessWidget {
   const AppPrimaryButton({
@@ -19,7 +20,8 @@ class AppPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = textColor ?? Colors.white;
+    final colors = context.appColors;
+    final labelColor = textColor ?? AppColors.navy;
 
     return SizedBox(
       width: double.infinity,
@@ -27,9 +29,9 @@ class AppPrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.gold,
+          backgroundColor: colors.gold,
           foregroundColor: labelColor,
-          disabledBackgroundColor: AppColors.gold.withValues(alpha: 0.6),
+          disabledBackgroundColor: colors.gold.withValues(alpha: 0.6),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

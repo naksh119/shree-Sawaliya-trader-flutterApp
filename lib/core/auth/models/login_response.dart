@@ -1,4 +1,5 @@
 import 'package:sawaliyatrader/core/auth/models/employee_profile.dart';
+import 'package:sawaliyatrader/core/customers/models/json_parse.dart';
 
 /// Parsed body of a successful **POST** `/employees/login/` response.
 ///
@@ -26,6 +27,9 @@ class LoginResponse {
     required this.isSuperuser,
     this.employee,
     required this.permissions,
+    this.firstName,
+    this.lastName,
+    this.fullName,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
@@ -40,6 +44,9 @@ class LoginResponse {
       permissions: (json['permissions'] as List<dynamic>? ?? [])
           .map((item) => item as String)
           .toList(),
+      firstName: readString(json, ['first_name', 'firstName']),
+      lastName: readString(json, ['last_name', 'lastName']),
+      fullName: readString(json, ['full_name', 'name', 'display_name']),
     );
   }
 
@@ -58,12 +65,19 @@ class LoginResponse {
   /// Permission strings (e.g. `customer.view`, `emi.collect`) for route and UI gating.
   final List<String> permissions;
 
+  final String? firstName;
+  final String? lastName;
+  final String? fullName;
+
   Map<String, dynamic> toJson() => {
         'access': access,
         'id': id,
         'is_superuser': isSuperuser,
         if (employee != null) 'employee': employee!.toJson(),
         'permissions': permissions,
+        if (firstName != null) 'first_name': firstName,
+        if (lastName != null) 'last_name': lastName,
+        if (fullName != null) 'full_name': fullName,
       };
 
   LoginResponse copyWith({String? access}) => LoginResponse(
@@ -72,5 +86,8 @@ class LoginResponse {
         isSuperuser: isSuperuser,
         employee: employee,
         permissions: permissions,
+        firstName: firstName,
+        lastName: lastName,
+        fullName: fullName,
       );
 }

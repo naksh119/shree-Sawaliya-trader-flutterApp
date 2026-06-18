@@ -36,8 +36,6 @@ class AuthService {
     final response = LoginResponse.fromJson(body);
     debugPrint('Login API parsed response: ${response.toJson()}');
     await _authStorage.saveSession(response);
-    _apiClient.dio.options.headers['Authorization'] =
-        'Bearer ${response.access}';
     appSessionNotifier?.refresh();
     appNotificationNotifier?.bindSession(response);
     return response;
@@ -59,7 +57,6 @@ class AuthService {
     }
 
     await _authStorage.updateAccessToken(access);
-    _apiClient.dio.options.headers['Authorization'] = 'Bearer $access';
     debugPrint('Session refreshed successfully');
     return access;
   }
@@ -67,7 +64,6 @@ class AuthService {
   /// Clears local session when refresh fails (e.g. expired refresh cookie).
   Future<void> handleRefreshFailed() async {
     debugPrint('Session refresh failed; clearing local session');
-    _apiClient.dio.options.headers.remove('Authorization');
     await _apiClient.clearCookies();
     await _authStorage.clearSession();
     appNotificationNotifier?.bindSession(null);
@@ -76,14 +72,22 @@ class AuthService {
 
   Future<bool> isLoggedIn() => _authStorage.hasSession();
 
-  Future<LoginResponse?> getSession() => _authStorage.getSession();
+  Future<LoginResponse?> getSession() async {
+    final session = await _authStorage.getSession();
+    if (session == null) return null;
+
+    final token = await _authStorage.getAccessToken();
+    if (token != null && token.isNotEmpty && token != session.access) {
+      return session.copyWith(access: token);
+    }
+    return session;
+  }
 
   Future<void> logout() async {
     final token = await _authStorage.getAccessToken();
 
     if (token != null && token.isNotEmpty) {
       try {
-        _apiClient.dio.options.headers['Authorization'] = 'Bearer $token';
         final body = await _apiClient.post(ApiConfig.logoutPath);
 
         if (body['success'] != true) {
@@ -94,7 +98,6 @@ class AuthService {
       }
     }
 
-    _apiClient.dio.options.headers.remove('Authorization');
     await _apiClient.clearCookies();
     await _authStorage.clearSession();
     appNotificationNotifier?.bindSession(null);

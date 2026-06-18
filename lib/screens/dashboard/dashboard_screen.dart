@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
+import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/dashboard/dashboard_service.dart';
 import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/notifications/notification_notifier.dart';
-import 'package:sawaliyatrader/core/permissions/employee_roles.dart';
-import 'package:sawaliyatrader/core/permissions/permission_checker.dart';
+import 'package:sawaliyatrader/core/permissions/app_permission.dart';
+import 'package:sawaliyatrader/core/permissions/employee_role.dart';
+import 'package:sawaliyatrader/core/permissions/permission_service.dart';
+import 'package:sawaliyatrader/core/permissions/permission_widgets.dart';
+import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_charts.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_kpi_row.dart';
+import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,35 +26,58 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
+class _DashboardViewModel {
+  const _DashboardViewModel({
+    required this.session,
+    required this.stats,
+    required this.employeeLine,
+    required this.roleLine,
+  });
+
+  final LoginResponse session;
+  final DashboardStats stats;
+  final String employeeLine;
+  final String roleLine;
+}
+
 class _DashboardScreenState extends State<DashboardScreen> {
   final _authService = AuthService();
-  final _stats = DashboardStats.sample();
+  final _dashboardService = DashboardService();
 
-  String _employeeLine = 'Home';
-  String _roleLine = '';
+  late final Future<_DashboardViewModel?> _dashboardFuture;
 
   @override
   void initState() {
     super.initState();
-    _loadSession();
+    _dashboardFuture = awaitWithMinPageLoaderDuration(_loadDashboard());
   }
 
-  Future<void> _loadSession() async {
+  Future<_DashboardViewModel?> _loadDashboard() async {
     final session = await _authService.getSession();
-    if (!mounted || session == null) return;
+    if (session == null) return null;
+
+    final stats = await _dashboardService.fetchStats(session: session);
+    appNotificationNotifier?.bindSession(session);
 
     final employee = session.employee;
-    setState(() {
-      if (employee != null) {
-        _employeeLine = '${employee.employeeCode} · ${employee.branch}';
-        _roleLine = EmployeeRoles.displayName(employee.role);
-      } else if (session.isSuperuser) {
-        _employeeLine = 'Administrator';
-        _roleLine = 'Superuser';
-      }
-    });
+    final role = EmployeeRole.fromCode(employee?.role);
 
-    appNotificationNotifier?.bindSession(session);
+    var employeeLine = 'Home';
+    var roleLine = '';
+    if (employee != null) {
+      employeeLine = '${employee.employeeCode} · ${employee.branch}';
+      roleLine = role?.displayName ?? employee.role;
+    } else if (session.isSuperuser) {
+      employeeLine = 'Administrator';
+      roleLine = 'Superuser';
+    }
+
+    return _DashboardViewModel(
+      session: session,
+      stats: stats,
+      employeeLine: employeeLine,
+      roleLine: roleLine,
+    );
   }
 
   Future<void> _onLogout() async {
@@ -58,71 +88,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _authService.getSession(),
+    return FutureBuilder<_DashboardViewModel?>(
+      future: _dashboardFuture,
       builder: (context, snapshot) {
-        final session = snapshot.data;
+        final viewModel = snapshot.data;
 
-        return Scaffold(
-          backgroundColor: AppColors.cream,
-          appBar: AppBar(
-            backgroundColor: AppColors.cream,
-            elevation: 0,
-            title: Text('Home', style: AppTextStyles.heading),
-            actions: [
-              if (session != null &&
-                  appNotificationNotifier != null &&
-                  PermissionChecker(session).canViewNotifications)
-                ListenableBuilder(
-                  listenable: appNotificationNotifier!,
-                  builder: (context, _) {
-                    final unread = appNotificationNotifier?.unreadCount ?? 0;
-                    return IconButton(
-                      tooltip: 'Notifications',
-                      onPressed: () => context.push(AppRoutes.notifications),
-                      icon: Badge(
-                        isLabelVisible: unread > 0,
-                        label: Text('$unread'),
-                        child: Icon(
-                          Icons.notifications_outlined,
-                          color: AppColors.shinyGold,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              IconButton(
-                tooltip: 'Logout',
-                onPressed: _onLogout,
-                icon: Icon(Icons.logout, color: AppColors.shinyGold),
-              ),
-            ],
-          ),
-          body: session == null
-              ? const Center(child: AppLoader(size: kAppPageLoaderSize))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Signed in as', style: AppTextStyles.subtitle),
-                      const SizedBox(height: 8),
-                      Text(_employeeLine, style: AppTextStyles.body),
-                      if (_roleLine.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text('Role: $_roleLine', style: AppTextStyles.subtitle),
-                      ],
-                      const SizedBox(height: 28),
-                      Text('Overview', style: AppTextStyles.label),
-                      const SizedBox(height: 12),
-                      DashboardKpiRow(stats: _stats),
-                      const SizedBox(height: 28),
-                      Text('Analytics', style: AppTextStyles.label),
-                      const SizedBox(height: 12),
-                      _AnalyticsSection(stats: _stats),
-                    ],
+        if (viewModel == null) {
+          return const Scaffold(
+            body: Center(child: AppLoader(size: kAppPageLoaderSize)),
+          );
+        }
+
+        final session = viewModel.session;
+        final permissions = PermissionService(session);
+
+        return SessionScope(
+          session: session,
+          child: Scaffold(
+            appBar: ThemedAppBar(title: context.l10n.home,
+              actions: [
+                if (appNotificationNotifier != null)
+                  PermissionWidget(
+                    permission: AppPermission.notificationView,
+                    service: permissions,
+                    child: ListenableBuilder(
+                      listenable: appNotificationNotifier!,
+                      builder: (context, _) {
+                        final unread = appNotificationNotifier?.unreadCount ?? 0;
+                        return IconButton(
+                          tooltip: context.l10n.notifications,
+                          onPressed: () =>
+                              context.push(AppRoutes.notifications),
+                          icon: Badge(
+                            isLabelVisible: unread > 0,
+                            label: Text('$unread'),
+                            child: Icon(
+                              Icons.notifications_outlined,
+                              color: context.appColors.shinyGold,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
+                IconButton(
+                  tooltip: context.l10n.logout,
+                  onPressed: _onLogout,
+                  icon: Icon(Icons.logout, color: context.appColors.shinyGold),
                 ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(context.l10n.signedInAs, style: AppTextStyles.subtitle(context)),
+                  const SizedBox(height: 8),
+                  Text(viewModel.employeeLine, style: AppTextStyles.body(context)),
+                  if (viewModel.roleLine.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${context.l10n.role}: ${viewModel.roleLine}',
+                      style: AppTextStyles.subtitle(context),
+                    ),
+                  ],
+                  const SizedBox(height: 28),
+                  Text(context.l10n.overview, style: AppTextStyles.label(context)),
+                  const SizedBox(height: 12),
+                  DashboardKpiRow(
+                    stats: viewModel.stats,
+                    permissions: permissions,
+                  ),
+                  const SizedBox(height: 28),
+                  Text(context.l10n.analytics, style: AppTextStyles.label(context)),
+                  const SizedBox(height: 12),
+                  _AnalyticsSection(
+                    stats: viewModel.stats,
+                    permissions: permissions,
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
@@ -130,28 +178,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 class _AnalyticsSection extends StatelessWidget {
-  const _AnalyticsSection({required this.stats});
+  const _AnalyticsSection({
+    required this.stats,
+    required this.permissions,
+  });
 
   final DashboardStats stats;
+  final PermissionService permissions;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
+    final children = <Widget>[];
+
+    if (_showModuleOverview(permissions)) {
+      children.add(
         ModuleOverviewChart(
           stats: stats,
-          showCustomers: true,
-          showCenters: true,
-          showEmployees: true,
-          showBranches: true,
+          showCustomers: permissions.canViewCustomers,
+          showCenters: permissions.canViewCenters,
+          showEmployees: permissions.canViewEmployees,
+          showBranches: permissions.canManageBranches,
         ),
-        const SizedBox(height: 16),
-        CustomerStatusPieChart(segments: stats.customerByStatus),
-        const SizedBox(height: 16),
-        EmiStatusBarChart(segments: stats.emiByStatus),
-        const SizedBox(height: 16),
-        CollectionTrendChart(points: stats.collectionTrend),
-      ],
-    );
+      );
+      children.add(const SizedBox(height: 16));
+    }
+
+    if (permissions.canViewCustomers) {
+      children.add(CustomerStatusPieChart(segments: stats.customerByStatus));
+      children.add(const SizedBox(height: 16));
+    }
+
+    if (permissions.canCollectEmi) {
+      children.add(EmiStatusBarChart(segments: stats.emiByStatus));
+      children.add(const SizedBox(height: 16));
+      children.add(CollectionTrendChart(points: stats.collectionTrend));
+    }
+
+    if (children.isEmpty) {
+      return Text(
+        context.l10n.analyticsUnavailable,
+        style: AppTextStyles.subtitle(context),
+      );
+    }
+
+    if (children.last is SizedBox) {
+      children.removeLast();
+    }
+
+    return Column(children: children);
   }
+
+  bool _showModuleOverview(PermissionService permissions) =>
+      permissions.canViewCustomers ||
+      permissions.canViewCenters ||
+      permissions.canViewEmployees ||
+      permissions.canManageBranches;
 }

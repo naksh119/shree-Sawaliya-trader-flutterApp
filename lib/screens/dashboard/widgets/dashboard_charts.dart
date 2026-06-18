@@ -4,6 +4,7 @@ import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_chart_card.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class CustomerStatusPieChart extends StatelessWidget {
   const CustomerStatusPieChart({
@@ -37,7 +38,7 @@ class CustomerStatusPieChart extends StatelessWidget {
                               title: '${((segment.value / total) * 100).round()}%',
                               color: Color(segment.colorArgb),
                               radius: 56,
-                              titleStyle: AppTextStyles.label.copyWith(
+                              titleStyle: AppTextStyles.label(context).copyWith(
                                 fontSize: 11,
                                 color: Colors.white,
                               ),
@@ -99,7 +100,7 @@ class EmiStatusBarChart extends StatelessWidget {
                         reservedSize: 28,
                         getTitlesWidget: (value, meta) => Text(
                           value.toInt().toString(),
-                          style: AppTextStyles.subtitle.copyWith(fontSize: 10),
+                          style: AppTextStyles.subtitle(context).copyWith(fontSize: 10),
                         ),
                       ),
                     ),
@@ -116,7 +117,7 @@ class EmiStatusBarChart extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               segments[index].label,
-                              style: AppTextStyles.subtitle.copyWith(fontSize: 10),
+                              style: AppTextStyles.subtitle(context).copyWith(fontSize: 10),
                               textAlign: TextAlign.center,
                             ),
                           );
@@ -197,7 +198,7 @@ class CollectionTrendChart extends StatelessWidget {
                           }
                           return Text(
                             points[index].label,
-                            style: AppTextStyles.subtitle.copyWith(fontSize: 10),
+                            style: AppTextStyles.subtitle(context).copyWith(fontSize: 10),
                           );
                         },
                       ),
@@ -213,20 +214,20 @@ class CollectionTrendChart extends StatelessWidget {
                         ),
                       ),
                       isCurved: true,
-                      color: AppColors.gold,
+                      color: context.appColors.gold,
                       barWidth: 3,
                       dotData: FlDotData(
                         getDotPainter: (spot, percent, bar, index) =>
                             FlDotCirclePainter(
                           radius: 4,
-                          color: AppColors.gold,
+                          color: context.appColors.gold,
                           strokeWidth: 2,
                           strokeColor: Colors.white,
                         ),
                       ),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.gold.withValues(alpha: 0.15),
+                        color: context.appColors.gold.withValues(alpha: 0.18),
                       ),
                     ),
                   ],
@@ -268,14 +269,14 @@ class ModuleOverviewChart extends StatelessWidget {
       segments.add(ChartSegment(
         label: 'Centers',
         value: stats.centerTotal.toDouble(),
-        colorArgb: AppColors.gold.toARGB32(),
+        colorArgb: context.appColors.gold.toARGB32(),
       ));
     }
     if (showEmployees) {
       segments.add(ChartSegment(
         label: 'Employees',
         value: stats.employeeTotal.toDouble(),
-        colorArgb: AppColors.brown.toARGB32(),
+        colorArgb: context.appColors.textPrimary.toARGB32(),
       ));
     }
     if (showBranches) {
@@ -322,7 +323,7 @@ class ModuleOverviewChart extends StatelessWidget {
                             getTitlesWidget: (value, meta) => Text(
                               value.toInt().toString(),
                               style:
-                                  AppTextStyles.subtitle.copyWith(fontSize: 10),
+                                  AppTextStyles.subtitle(context).copyWith(fontSize: 10),
                             ),
                           ),
                         ),
@@ -339,7 +340,7 @@ class ModuleOverviewChart extends StatelessWidget {
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Text(
                                   segments[index].label,
-                                  style: AppTextStyles.subtitle
+                                  style: AppTextStyles.subtitle(context)
                                       .copyWith(fontSize: 10),
                                 ),
                               );
@@ -398,7 +399,7 @@ class _ChartLegend extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   '${segment.label} (${segment.value.toInt()})',
-                  style: AppTextStyles.subtitle.copyWith(fontSize: 12),
+                  style: AppTextStyles.subtitle(context).copyWith(fontSize: 12),
                 ),
               ],
             ),
@@ -424,10 +425,10 @@ class _ChartEmptyState extends StatelessWidget {
             Icon(
               Icons.insert_chart_outlined,
               size: 36,
-              color: AppColors.shinyGold.withValues(alpha: 0.45),
+              color: context.appColors.shinyGold.withValues(alpha: 0.45),
             ),
             const SizedBox(height: 8),
-            Text(message, style: AppTextStyles.subtitle),
+            Text(message, style: AppTextStyles.subtitle(context)),
           ],
         ),
       ),
