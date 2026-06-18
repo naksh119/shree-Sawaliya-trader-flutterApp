@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/dashboard/dashboard_service.dart';
 import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
@@ -17,6 +18,7 @@ import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_charts.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_kpi_row.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -80,12 +82,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Future<void> _onLogout() async {
-    await _authService.logout();
-    if (!mounted) return;
-    context.go(AppRoutes.login);
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<_DashboardViewModel?>(
@@ -101,11 +97,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         final session = viewModel.session;
         final permissions = PermissionService(session);
+        final userDisplay = UserDisplay.fromSession(session);
 
         return SessionScope(
           session: session,
           child: Scaffold(
-            appBar: ThemedAppBar(title: context.l10n.home,
+            appBar: ThemedAppBar(
+              title: context.l10n.home,
+              showLanguageDropdown: true,
+              showThemeToggle: true,
               actions: [
                 if (appNotificationNotifier != null)
                   PermissionWidget(
@@ -131,10 +131,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                   ),
-                IconButton(
-                  tooltip: context.l10n.logout,
-                  onPressed: _onLogout,
-                  icon: Icon(Icons.logout, color: context.appColors.shinyGold),
+                UserHeaderBadge(
+                  initials: userDisplay.initials,
+                  onTap: () => context.push(AppRoutes.profile),
                 ),
               ],
             ),

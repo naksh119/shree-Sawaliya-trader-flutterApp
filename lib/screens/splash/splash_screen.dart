@@ -17,17 +17,36 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   static const _titleText = 'SHREE SAWALIYA MULTITRADE';
   static const _typingDelay = Duration(milliseconds: 70);
   static const _typingStartDelay = Duration(milliseconds: 350);
+  static const _logoAnimationDuration = Duration(milliseconds: 700);
 
   Timer? _typingTimer;
   String _visibleTitle = '';
+  late final AnimationController _logoController;
+  late final Animation<double> _logoScale;
+  late final Animation<double> _logoOpacity;
 
   @override
   void initState() {
     super.initState();
+    _logoController = AnimationController(
+      vsync: this,
+      duration: _logoAnimationDuration,
+    );
+    _logoScale = Tween<double>(begin: 0.88, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.easeOutCubic),
+    );
+    _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _logoController,
+        curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
+      ),
+    );
+    _logoController.forward();
     _startTypewriterAnimation();
     _navigateNext();
   }
@@ -35,7 +54,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void dispose() {
     _typingTimer?.cancel();
+    _logoController.dispose();
     super.dispose();
+  }
+
+  double _titleBlockHeight(TextStyle style, double maxWidth) {
+    final painter = TextPainter(
+      text: TextSpan(text: _titleText, style: style),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      maxLines: 3,
+    )..layout(maxWidth: maxWidth);
+    return painter.height;
   }
 
   void _startTypewriterAnimation() {
@@ -74,8 +104,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.sizeOf(context);
-
     return Scaffold(
       backgroundColor: context.appColors.card,
       body: AppBackground(
@@ -84,62 +112,76 @@ class _SplashScreenState extends State<SplashScreen> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final compact = constraints.maxHeight < 680;
-              final logoWidth = (screenSize.width * 0.88).clamp(0.0, 360.0);
-              final logoMaxHeight =
-                  (constraints.maxHeight * (compact ? 0.30 : 0.34)).clamp(
-                compact ? 72.0 : 120.0,
-                compact ? 160.0 : 260.0,
+              final contentWidth = constraints.maxWidth - 48;
+              final logoWidth = (contentWidth * 0.68).clamp(140.0, 240.0);
+              final titleStyle = GoogleFonts.cormorantGaramond(
+                fontSize: compact ? 17 : 22,
+                letterSpacing: compact ? 0.8 : 1.2,
+                fontWeight: FontWeight.w700,
               );
-              final contentGap = compact ? 10.0 : 20.0;
-              final loaderGap = compact ? 20.0 : 36.0;
-
-              final content = Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: logoWidth,
-                      maxHeight: logoMaxHeight,
-                    ),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 28,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: Image.asset(
-                        AppAssets.logo,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: contentGap),
-                  _GoldenShimmerText(
-                    text: _visibleTitle,
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: compact ? 18 : 22,
-                      letterSpacing: compact ? 0.8 : 1.2,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: loaderGap),
-                  AppLoader(
-                    size: compact ? AppLoaderSize.medium : AppLoaderSize.large,
-                  ),
-                ],
-              );
+              final titleHeight = _titleBlockHeight(titleStyle, contentWidth);
+              final contentGap = compact ? 16.0 : 24.0;
+              final loaderGap = compact ? 24.0 : 36.0;
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.center,
-                    child: content,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FadeTransition(
+                        opacity: _logoOpacity,
+                        child: ScaleTransition(
+                          scale: _logoScale,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.06),
+                                  blurRadius: 28,
+                                  offset: const Offset(0, 12),
+                                ),
+                              ],
+                            ),
+                            child: Image.asset(
+                              AppAssets.logo,
+                              width: logoWidth,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: contentGap),
+                      SizedBox(
+                        height: titleHeight,
+                        width: contentWidth,
+                        child: Center(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Opacity(
+                                opacity: 0,
+                                child: Text(
+                                  _titleText,
+                                  textAlign: TextAlign.center,
+                                  style: titleStyle,
+                                ),
+                              ),
+                              _GoldenShimmerText(
+                                text: _visibleTitle,
+                                style: titleStyle,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: loaderGap),
+                      AppLoader(
+                        size: compact
+                            ? AppLoaderSize.medium
+                            : AppLoaderSize.large,
+                      ),
+                    ],
                   ),
                 ),
               );

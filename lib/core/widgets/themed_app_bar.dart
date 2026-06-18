@@ -10,6 +10,8 @@ class ThemedAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.leading,
     this.actions = const [],
     this.automaticallyImplyLeading,
+    this.showLanguageDropdown = false,
+    this.showThemeToggle = false,
     super.key,
   }) : assert(title != null || titleWidget != null);
 
@@ -18,6 +20,8 @@ class ThemedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? leading;
   final List<Widget> actions;
   final bool? automaticallyImplyLeading;
+  final bool showLanguageDropdown;
+  final bool showThemeToggle;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -29,8 +33,8 @@ class ThemedAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: leading,
       title: titleWidget ?? Text(title!, style: AppTextStyles.heading(context)),
       actions: [
-        const LanguageDropdown(),
-        const ThemeToggleButton(),
+        if (showLanguageDropdown) const LanguageDropdown(),
+        if (showThemeToggle) const ThemeToggleButton(),
         ...actions,
       ],
     );
