@@ -9,7 +9,6 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/notifications/notification_notifier.dart';
 import 'package:sawaliyatrader/core/permissions/app_permission.dart';
-import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/permission_widgets.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -17,6 +16,7 @@ import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_charts.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_kpi_row.dart';
+import 'package:sawaliyatrader/core/widgets/language_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -32,14 +32,10 @@ class _DashboardViewModel {
   const _DashboardViewModel({
     required this.session,
     required this.stats,
-    required this.employeeLine,
-    required this.roleLine,
   });
 
   final LoginResponse session;
   final DashboardStats stats;
-  final String employeeLine;
-  final String roleLine;
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
@@ -61,24 +57,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final stats = await _dashboardService.fetchStats(session: session);
     appNotificationNotifier?.bindSession(session);
 
-    final employee = session.employee;
-    final role = EmployeeRole.fromCode(employee?.role);
-
-    var employeeLine = 'Home';
-    var roleLine = '';
-    if (employee != null) {
-      employeeLine = '${employee.employeeCode} · ${employee.branch}';
-      roleLine = role?.displayName ?? employee.role;
-    } else if (session.isSuperuser) {
-      employeeLine = 'Administrator';
-      roleLine = 'Superuser';
-    }
-
     return _DashboardViewModel(
       session: session,
       stats: stats,
-      employeeLine: employeeLine,
-      roleLine: roleLine,
     );
   }
 
@@ -104,7 +85,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Scaffold(
             appBar: ThemedAppBar(
               title: context.l10n.home,
-              showLanguageDropdown: true,
               showThemeToggle: true,
               actions: [
                 if (appNotificationNotifier != null)
@@ -137,37 +117,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(context.l10n.signedInAs, style: AppTextStyles.subtitle(context)),
-                  const SizedBox(height: 8),
-                  Text(viewModel.employeeLine, style: AppTextStyles.body(context)),
-                  if (viewModel.roleLine.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '${context.l10n.role}: ${viewModel.roleLine}',
-                      style: AppTextStyles.subtitle(context),
-                    ),
-                  ],
-                  const SizedBox(height: 28),
-                  Text(context.l10n.overview, style: AppTextStyles.label(context)),
-                  const SizedBox(height: 12),
-                  DashboardKpiRow(
-                    stats: viewModel.stats,
-                    permissions: permissions,
+            body: Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 72),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.l10n.overview, style: AppTextStyles.label(context)),
+                      const SizedBox(height: 12),
+                      DashboardKpiRow(
+                        stats: viewModel.stats,
+                        permissions: permissions,
+                      ),
+                      const SizedBox(height: 28),
+                      Text(context.l10n.analytics, style: AppTextStyles.label(context)),
+                      const SizedBox(height: 12),
+                      _AnalyticsSection(
+                        stats: viewModel.stats,
+                        permissions: permissions,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 28),
-                  Text(context.l10n.analytics, style: AppTextStyles.label(context)),
-                  const SizedBox(height: 12),
-                  _AnalyticsSection(
-                    stats: viewModel.stats,
-                    permissions: permissions,
-                  ),
-                ],
-              ),
+                ),
+                const Positioned(
+                  right: 16,
+                  bottom: 16,
+                  child: LanguageGlobeButton(),
+                ),
+              ],
             ),
           ),
         );

@@ -7,6 +7,7 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
+import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -319,28 +320,32 @@ class _LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: OutlinedButton.icon(
+      child: ElevatedButton.icon(
         onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.red.shade700,
-          side: BorderSide(color: Colors.red.shade300),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colors.gold,
+          foregroundColor: AppColors.navy,
+          disabledBackgroundColor: colors.gold.withValues(alpha: 0.6),
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         icon: isLoading
             ? const AppLoader(size: AppLoaderSize.small)
-            : Icon(Icons.logout, color: context.appColors.shinyGold),
+            : const Icon(Icons.logout),
         label: Text(
           'Log out',
           style: GoogleFonts.cormorantGaramond(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
-            color: Colors.red.shade700,
+            color: AppColors.navy,
           ),
         ),
       ),
