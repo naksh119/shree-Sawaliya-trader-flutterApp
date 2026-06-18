@@ -75,63 +75,76 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
-    final logoWidth = (screenSize.width * 0.88).clamp(0.0, 360.0);
-    final logoMaxHeight = (screenSize.height * 0.34).clamp(160.0, 280.0);
 
     return Scaffold(
       backgroundColor: context.appColors.card,
       body: AppBackground(
-        child: Stack(
-          children: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: logoWidth,
-                        maxHeight: logoMaxHeight,
+        showOverlay: Theme.of(context).brightness == Brightness.dark,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxHeight < 680;
+              final logoWidth = (screenSize.width * 0.88).clamp(0.0, 360.0);
+              final logoMaxHeight =
+                  (constraints.maxHeight * (compact ? 0.30 : 0.34)).clamp(
+                compact ? 72.0 : 120.0,
+                compact ? 160.0 : 260.0,
+              );
+              final contentGap = compact ? 10.0 : 20.0;
+              final loaderGap = compact ? 20.0 : 36.0;
+
+              final content = Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: logoWidth,
+                      maxHeight: logoMaxHeight,
+                    ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 28,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
                       ),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.06),
-                              blurRadius: 28,
-                              offset: const Offset(0, 12),
-                            ),
-                          ],
-                        ),
-                        child: Image.asset(AppAssets.logo, fit: BoxFit.contain),
+                      child: Image.asset(
+                        AppAssets.logo,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    _GoldenShimmerText(
-                      text: _visibleTitle,
-                      style: GoogleFonts.cormorantGaramond(
-                        fontSize: 22,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: (screenSize.height * 0.24).clamp(96.0, 160.0),
                   ),
-                  child: const AppLoader(size: AppLoaderSize.large),
+                  SizedBox(height: contentGap),
+                  _GoldenShimmerText(
+                    text: _visibleTitle,
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: compact ? 18 : 22,
+                      letterSpacing: compact ? 0.8 : 1.2,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: loaderGap),
+                  AppLoader(
+                    size: compact ? AppLoaderSize.medium : AppLoaderSize.large,
+                  ),
+                ],
+              );
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.center,
+                    child: content,
+                  ),
                 ),
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
       ),
     );

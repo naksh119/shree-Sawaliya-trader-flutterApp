@@ -4,9 +4,14 @@ import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 /// Full-screen background matching the splash screen aesthetic.
 class AppBackground extends StatelessWidget {
-  const AppBackground({required this.child, super.key});
+  const AppBackground({
+    required this.child,
+    this.showOverlay = true,
+    super.key,
+  });
 
   final Widget child;
+  final bool showOverlay;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,7 @@ class AppBackground extends StatelessWidget {
           alignment: Alignment.topCenter,
           filterQuality: FilterQuality.high,
         ),
-        ColoredBox(color: context.appColors.overlay),
+        if (showOverlay) ColoredBox(color: context.appColors.overlay),
         child,
       ],
     );

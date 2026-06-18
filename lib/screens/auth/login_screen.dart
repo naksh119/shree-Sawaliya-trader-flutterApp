@@ -111,83 +111,122 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
-    final logoWidth = (screenSize.width * 0.45).clamp(0.0, 180.0);
-    final topPadding = (screenSize.height * 0.1).clamp(40.0, 96.0);
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final keyboardOpen = bottomInset > 0;
 
     return Scaffold(
       backgroundColor: context.appColors.surface,
       resizeToAvoidBottomInset: false,
       body: AppBackground(
+        showOverlay: Theme.of(context).brightness == Brightness.dark,
         child: Stack(
           fit: StackFit.expand,
           children: [
             SafeArea(
-              child: SingleChildScrollView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: EdgeInsets.fromLTRB(
-                  24,
-                  topPadding,
-                  24,
-                  24 + bottomInset,
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                          Image.asset(
-                            AppAssets.logo,
-                            width: logoWidth,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(height: 20),
-                          Text('Welcome Back', style: AppTextStyles.heading(context)),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Sign in to Shree Sawaliya Multitrade',
-                            style: AppTextStyles.subtitle(context),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 28),
-                          AppTextField(
-                            controller: _emailController,
-                            label: 'Email Address',
-                            hint: 'Enter your email',
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            validator: _validateEmail,
-                          ),
-                          const SizedBox(height: 18),
-                          AppTextField(
-                            controller: _passwordController,
-                            label: 'Password',
-                            hint: 'Enter your password',
-                            obscureText: _obscurePassword,
-                            textInputAction: TextInputAction.done,
-                            onFieldSubmitted: (_) => _onLogin(),
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                                color: context.appColors.shinyGold.withValues(alpha: 0.75),
-                              ),
-                              onPressed: _togglePasswordVisibility,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxHeight < 680;
+                  final logoWidth = compact
+                      ? (screenSize.width * 0.38).clamp(0.0, 140.0)
+                      : (screenSize.width * 0.45).clamp(0.0, 180.0);
+                  final topPadding = compact
+                      ? 12.0
+                      : (screenSize.height * 0.1).clamp(40.0, 96.0);
+                  final horizontalPadding = 24.0;
+                  final bottomPadding = 24.0 + bottomInset;
+                  final availableHeight =
+                      constraints.maxHeight - topPadding - bottomPadding;
+
+                  final form = Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          AppAssets.logo,
+                          width: logoWidth,
+                          fit: BoxFit.contain,
+                        ),
+                        SizedBox(height: compact ? 10 : 20),
+                        Text('Welcome Back', style: AppTextStyles.heading(context)),
+                        SizedBox(height: compact ? 4 : 6),
+                        Text(
+                          'Sign in to Shree Sawaliya Multitrade',
+                          style: AppTextStyles.subtitle(context),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: compact ? 16 : 28),
+                        AppTextField(
+                          controller: _emailController,
+                          label: 'Email Address',
+                          hint: 'Enter your email',
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          validator: _validateEmail,
+                        ),
+                        SizedBox(height: compact ? 12 : 18),
+                        AppTextField(
+                          controller: _passwordController,
+                          label: 'Password',
+                          hint: 'Enter your password',
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _onLogin(),
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: context.appColors.shinyGold.withValues(alpha: 0.75),
                             ),
-                            validator: _validatePassword,
+                            onPressed: _togglePasswordVisibility,
                           ),
-                          const SizedBox(height: 32),
-                          AppPrimaryButton(
-                            label: 'Login',
-                            onPressed: _isSubmitting ? null : _onLogin,
+                          validator: _validatePassword,
+                        ),
+                        SizedBox(height: compact ? 20 : 32),
+                        AppPrimaryButton(
+                          label: 'Login',
+                          onPressed: _isSubmitting ? null : _onLogin,
+                        ),
+                      ],
+                    ),
+                  );
+
+                  return SingleChildScrollView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    physics: keyboardOpen
+                        ? const ClampingScrollPhysics()
+                        : const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      topPadding,
+                      horizontalPadding,
+                      bottomPadding,
+                    ),
+                    child: keyboardOpen
+                        ? form
+                        : ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: availableHeight),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.topCenter,
+                                  child: SizedBox(
+                                    width: constraints.maxWidth - (horizontalPadding * 2),
+                                    child: form,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                    ],
-                  ),
-                ),
+                  );
+                },
               ),
             ),
             const SafeArea(
