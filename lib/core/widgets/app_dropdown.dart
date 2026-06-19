@@ -1,6 +1,134 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+
+Future<T?> showAppScrollableDropdownMenu<T>({
+  required BuildContext context,
+  required RenderBox button,
+  required List<DropdownMenuItem<T>> items,
+  required double menuWidth,
+  required double menuMaxHeight,
+  required double itemHeight,
+  double dividerHeight = 1,
+}) async {
+  if (items.isEmpty) return null;
+
+  final overlay = Overlay.of(context);
+  final offset = button.localToGlobal(Offset.zero);
+  final buttonSize = button.size;
+  final screenSize = MediaQuery.sizeOf(context);
+  final completer = Completer<T?>();
+  final scrollController = ScrollController();
+
+  final totalContentHeight = items.length * itemHeight +
+      (items.length > 1 ? (items.length - 1) * dividerHeight : 0);
+  final menuHeight = math.min(totalContentHeight, menuMaxHeight);
+  final canScroll = totalContentHeight > menuMaxHeight;
+
+  var left = offset.dx;
+  if (left + menuWidth > screenSize.width - 16) {
+    left = screenSize.width - 16 - menuWidth;
+  }
+  if (left < 16) left = 16;
+
+  late OverlayEntry entry;
+
+  void close([T? value]) {
+    if (!completer.isCompleted) {
+      completer.complete(value);
+    }
+    entry.remove();
+    scrollController.dispose();
+  }
+
+  entry = OverlayEntry(
+    builder: (overlayContext) {
+      final colors = overlayContext.appColors;
+
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => close(),
+              behavior: HitTestBehavior.translucent,
+            ),
+          ),
+          Positioned(
+            left: left,
+            top: offset.dy + buttonSize.height + 4,
+            width: menuWidth,
+            child: Material(
+              color: colors.card,
+              elevation: 8,
+              shadowColor: Colors.black.withValues(alpha: 0.2),
+              shape: AppDropdownDecoration.openMenuShape(overlayContext),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox(
+                height: menuHeight,
+                child: ScrollbarTheme(
+                  data: ScrollbarThemeData(
+                    thumbColor: WidgetStateProperty.all(
+                      colors.gold.withValues(alpha: 0.85),
+                    ),
+                    trackColor: WidgetStateProperty.all(
+                      colors.border.withValues(alpha: 0.35),
+                    ),
+                    trackBorderColor: WidgetStateProperty.all(
+                      colors.border.withValues(alpha: 0.2),
+                    ),
+                    thickness: WidgetStateProperty.all(5),
+                    radius: const Radius.circular(6),
+                    crossAxisMargin: 2,
+                    mainAxisMargin: 4,
+                    interactive: true,
+                  ),
+                  child: Scrollbar(
+                    controller: scrollController,
+                    thumbVisibility: canScroll,
+                    trackVisibility: canScroll,
+                    interactive: true,
+                    child: ListView.separated(
+                      controller: scrollController,
+                      padding: EdgeInsets.zero,
+                      physics: canScroll
+                          ? const ClampingScrollPhysics()
+                          : const NeverScrollableScrollPhysics(),
+                      itemCount: items.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: dividerHeight,
+                        thickness: dividerHeight,
+                        color: AppDropdownDecoration.isDark(overlayContext)
+                            ? colors.gold
+                            : colors.gold.withValues(alpha: 0.35),
+                      ),
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        return InkWell(
+                          onTap: item.enabled ? () => close(item.value) : null,
+                          child: SizedBox(
+                            height: itemHeight,
+                            width: menuWidth,
+                            child: item.child,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  overlay.insert(entry);
+  return completer.future;
+}
 
 Future<T?> showAppDropdownMenu<T>({
   required BuildContext context,
@@ -8,6 +136,8 @@ Future<T?> showAppDropdownMenu<T>({
   required List<DropdownMenuItem<T>> items,
   double? menuMinWidth,
   double? menuMaxWidth,
+  double? menuMaxHeight,
+  double menuItemHeight = kMinInteractiveDimension,
 }) {
   final offset = button.localToGlobal(Offset.zero);
   final size = button.size;
@@ -25,6 +155,10 @@ Future<T?> showAppDropdownMenu<T>({
       PopupMenuItem<T>(
         value: item.value,
         enabled: item.enabled,
+        height: menuItemHeight,
+        padding: menuItemHeight < kMinInteractiveDimension
+            ? EdgeInsets.zero
+            : const EdgeInsets.symmetric(horizontal: 16),
         child: item.child,
       ),
     );
@@ -43,6 +177,7 @@ Future<T?> showAppDropdownMenu<T>({
     constraints: BoxConstraints(
       minWidth: resolvedMinWidth,
       maxWidth: resolvedMaxWidth,
+      maxHeight: menuMaxHeight ?? double.infinity,
     ),
     items: menuEntries,
   );

@@ -567,10 +567,22 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
 abstract final class _FilterDropdownMetrics {
   static const padding = EdgeInsets.symmetric(horizontal: 8, vertical: 6);
   static const iconSize = 18.0;
-  static const menuExtraWidth = 36.0;
+  static const menuExtraWidth = 44.0;
+  static const menuItemHeight = 36.0;
+  static const visibleMenuItems = 4;
+  static const menuDividerHeight = 1.0;
+  static const menuItemPadding = EdgeInsets.symmetric(horizontal: 12);
 
   static TextStyle textStyle(BuildContext context) =>
       AppTextStyles.body(context).copyWith(fontSize: 13);
+
+  static double menuMaxHeight(int itemCount) {
+    final visibleCount = math.min(itemCount, visibleMenuItems);
+    if (visibleCount <= 0) return menuItemHeight;
+
+    final dividerCount = visibleCount > 1 ? visibleCount - 1 : 0;
+    return visibleCount * menuItemHeight + dividerCount * menuDividerHeight;
+  }
 }
 
 class _StatusDropdown extends StatelessWidget {
@@ -648,17 +660,24 @@ class _BranchDropdownState extends State<_BranchDropdown> {
 
   List<DropdownMenuItem<int>> get _items {
     final textStyle = _FilterDropdownMetrics.textStyle(context);
+    Widget menuLabel(String text) => Padding(
+          padding: _FilterDropdownMetrics.menuItemPadding,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(text, style: textStyle, maxLines: 2),
+          ),
+        );
 
     return [
       DropdownMenuItem(
         value: _kAllBranchesFilterId,
-        child: Text('All branches', style: textStyle),
+        child: menuLabel('All branches'),
       ),
       for (final branch in widget.branches)
         if (branch.id != null)
           DropdownMenuItem(
             value: branch.id!,
-            child: Text(branch.label, style: textStyle),
+            child: menuLabel(branch.label),
           ),
     ];
   }
@@ -687,12 +706,15 @@ class _BranchDropdownState extends State<_BranchDropdown> {
     if (box == null) return;
 
     final menuWidth = _menuWidthFor(context, box);
-    final selected = await showAppDropdownMenu<int>(
+    final menuMaxHeight = _FilterDropdownMetrics.menuMaxHeight(_items.length);
+    final selected = await showAppScrollableDropdownMenu<int>(
       context: context,
       button: box,
       items: _items,
-      menuMinWidth: menuWidth,
-      menuMaxWidth: menuWidth,
+      menuWidth: menuWidth,
+      menuMaxHeight: menuMaxHeight,
+      itemHeight: _FilterDropdownMetrics.menuItemHeight,
+      dividerHeight: _FilterDropdownMetrics.menuDividerHeight,
     );
     if (selected != null && selected != widget.value) {
       widget.onChanged(selected);
