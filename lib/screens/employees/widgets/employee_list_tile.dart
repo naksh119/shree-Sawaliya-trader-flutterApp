@@ -41,16 +41,28 @@ class EmployeeListTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(employee.displayName, style: AppTextStyles.label(context)),
+                    Text(
+                      employee.displayName,
+                      style: AppTextStyles.label(context),
+                    ),
                     const SizedBox(height: 4),
-                    Text(employee.displayCode, style: AppTextStyles.subtitle(context)),
-                    if (employee.email != null) ...[
+                    Text(
+                      employee.displayCode,
+                      style: AppTextStyles.subtitle(context),
+                    ),
+                    if (employee.roleLabel.isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(employee.email!, style: AppTextStyles.body(context)),
+                      Text(
+                        employee.roleLabel,
+                        style: AppTextStyles.body(context),
+                      ),
                     ],
-                    if (employee.locationLine.isNotEmpty) ...[
+                    if (employee.branch.isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(employee.locationLine, style: AppTextStyles.subtitle(context)),
+                      Text(
+                        employee.branch,
+                        style: AppTextStyles.subtitle(context),
+                      ),
                     ],
                   ],
                 ),
@@ -96,9 +108,9 @@ class _EmployeeAvatar extends StatelessWidget {
       backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
       child: Text(
         employee.initials,
-        style: AppTextStyles.label(context).copyWith(
-          color: context.appColors.shinyGold,
-        ),
+        style: AppTextStyles.label(
+          context,
+        ).copyWith(color: context.appColors.shinyGold),
       ),
     );
   }
@@ -111,7 +123,9 @@ class _ActiveChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? const Color(0xFF4CAF50) : context.appColors.textPrimary;
+    final color = isActive
+        ? const Color(0xFF4CAF50)
+        : context.appColors.textPrimary;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -121,11 +135,9 @@ class _ActiveChip extends StatelessWidget {
       ),
       child: Text(
         isActive ? 'Active' : 'Inactive',
-        style: AppTextStyles.subtitle(context).copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 11,
-        ),
+        style: AppTextStyles.subtitle(
+          context,
+        ).copyWith(color: color, fontWeight: FontWeight.w600, fontSize: 11),
       ),
     );
   }

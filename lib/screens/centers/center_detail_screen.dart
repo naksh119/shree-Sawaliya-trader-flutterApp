@@ -239,14 +239,6 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       child: Scaffold(
         appBar: ThemedAppBar(
           title: center?.name ?? 'Center',
-          actions: center == null
-              ? const []
-              : buildEntityEditDeleteAppBarActions(
-                  context,
-                  entityName: center.name,
-                  canEdit: permissions.canEditCenter,
-                  canDelete: permissions.canDeleteCenter,
-                ),
         ),
         body: _buildBody(center, permissions),
         bottomNavigationBar: center == null

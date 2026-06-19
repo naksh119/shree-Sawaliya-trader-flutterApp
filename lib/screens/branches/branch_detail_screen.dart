@@ -225,14 +225,6 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
     final scaffold = Scaffold(
       appBar: ThemedAppBar(
         title: branch.name,
-        actions: permissions == null
-            ? const []
-            : buildEntityEditDeleteAppBarActions(
-                context,
-                entityName: branch.name,
-                canEdit: permissions.canEditBranch,
-                canDelete: permissions.canDeleteBranch,
-              ),
       ),
       body: body,
       bottomNavigationBar: permissions == null

@@ -111,21 +111,25 @@ class EmployeeDto {
 
   String get roleLabel => EmployeeRole.displayNameFor(role);
 
-  bool matchesRole({
-    int? roleId,
-    required String roleCode,
-    String? roleName,
-  }) {
+  bool matchesRole({int? roleId, required String roleCode, String? roleName}) {
     if (roleId != null && this.roleId != null && this.roleId == roleId) {
       return true;
     }
     final normalizedRole = role.toUpperCase();
     if (normalizedRole == roleCode.toUpperCase()) return true;
-    if (roleName != null &&
-        roleLabel.toUpperCase() == roleName.toUpperCase()) {
+    if (roleName != null && roleLabel.toUpperCase() == roleName.toUpperCase()) {
       return true;
     }
     return false;
+  }
+
+  bool matchesBranch({required String branchName, required String branchCode}) {
+    final employeeBranch = branch.trim().toUpperCase();
+    if (employeeBranch.isEmpty) return false;
+
+    final name = branchName.trim().toUpperCase();
+    final code = branchCode.trim().toUpperCase();
+    return employeeBranch == name || employeeBranch == code;
   }
 
   String get locationLine {

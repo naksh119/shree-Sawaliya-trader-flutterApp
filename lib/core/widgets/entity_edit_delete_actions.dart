@@ -148,33 +148,6 @@ class EntityEditDeleteIconStack extends StatelessWidget {
   }
 }
 
-/// Edit + Delete icon buttons for [ThemedAppBar.actions].
-List<Widget> buildEntityEditDeleteAppBarActions(
-  BuildContext context, {
-  required String entityName,
-  required bool canEdit,
-  required bool canDelete,
-  VoidCallback? onEdit,
-  VoidCallback? onDelete,
-}) {
-  if (!canEdit && !canDelete) return const [];
-
-  return [
-    Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: Center(
-        child: EntityEditDeleteIconStack(
-          entityName: entityName,
-          canEdit: canEdit,
-          canDelete: canDelete,
-          onEdit: onEdit,
-          onDelete: onDelete,
-        ),
-      ),
-    ),
-  ];
-}
-
 /// Compact edit/delete icons for list tiles.
 class EntityEditDeleteTrailingActions extends StatelessWidget {
   const EntityEditDeleteTrailingActions({

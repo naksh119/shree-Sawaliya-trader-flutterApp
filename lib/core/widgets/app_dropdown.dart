@@ -6,10 +6,14 @@ Future<T?> showAppDropdownMenu<T>({
   required BuildContext context,
   required RenderBox button,
   required List<DropdownMenuItem<T>> items,
+  double? menuMinWidth,
+  double? menuMaxWidth,
 }) {
   final offset = button.localToGlobal(Offset.zero);
   final size = button.size;
   final screenSize = MediaQuery.sizeOf(context);
+  final resolvedMinWidth = menuMinWidth ?? size.width;
+  final resolvedMaxWidth = menuMaxWidth ?? size.width;
 
   final menuEntries = <PopupMenuEntry<T>>[];
   for (var index = 0; index < items.length; index++) {
@@ -37,8 +41,8 @@ Future<T?> showAppDropdownMenu<T>({
       screenSize.height - offset.dy - size.height,
     ),
     constraints: BoxConstraints(
-      minWidth: size.width,
-      maxWidth: size.width,
+      minWidth: resolvedMinWidth,
+      maxWidth: resolvedMaxWidth,
     ),
     items: menuEntries,
   );
@@ -53,6 +57,8 @@ class AppInlineDropdown<T> extends StatefulWidget {
     this.isExpanded = false,
     this.icon,
     this.style,
+    this.menuMinWidth,
+    this.menuMaxWidth,
   });
 
   final T value;
@@ -61,6 +67,8 @@ class AppInlineDropdown<T> extends StatefulWidget {
   final bool isExpanded;
   final Widget? icon;
   final TextStyle? style;
+  final double? menuMinWidth;
+  final double? menuMaxWidth;
 
   @override
   State<AppInlineDropdown<T>> createState() => _AppInlineDropdownState<T>();
@@ -82,6 +90,8 @@ class _AppInlineDropdownState<T> extends State<AppInlineDropdown<T>> {
       context: context,
       button: box,
       items: widget.items,
+      menuMinWidth: widget.menuMinWidth,
+      menuMaxWidth: widget.menuMaxWidth,
     );
     if (selected != null && selected != widget.value) {
       widget.onChanged(selected);

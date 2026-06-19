@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
+import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_dto.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
@@ -22,6 +25,8 @@ import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 enum _StatusFilter { all, active, inactive }
 
+const _kAllBranchesFilterId = 0;
+
 class EmployeesListScreen extends StatefulWidget {
   const EmployeesListScreen({super.key});
 
@@ -38,7 +43,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   LoginResponse? _session;
   final List<EmployeeDto> _items = [];
   List<RoleOption> _roles = [];
+  List<BranchOption> _branches = [];
   int? _roleFilter;
+  int _branchFilterId = _kAllBranchesFilterId;
   _StatusFilter _statusFilter = _StatusFilter.all;
   String _searchQuery = '';
   int _page = 1;
@@ -68,7 +75,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
         '[Employees] session from SessionScope userId=${inherited.id} '
         'role=${inherited.employee?.role} branch=${inherited.employee?.branch}',
       );
-      _loadRoles().then((_) => _loadEmployees(reset: true));
+      _loadFilterOptions().then((_) => _loadEmployees(reset: true));
       return;
     }
 
@@ -94,7 +101,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     if (!mounted) return;
     setState(() => _session = session);
     if (session != null) {
-      await _loadRoles();
+      await _loadFilterOptions();
       await _loadEmployees(reset: true);
     } else {
       setState(() => _isLoading = false);
@@ -102,7 +109,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   }
 
   void _onScroll() {
-    if (_roleFilter != null) return;
+    if (_usesClientSideFiltering) return;
     if (!_scrollController.hasClients || _isLoadingMore || _isLoading) return;
     if (_scrollController.position.pixels <
         _scrollController.position.maxScrollExtent - 200) {
@@ -113,29 +120,57 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   }
 
   bool? get _isActiveParam => switch (_statusFilter) {
-        _StatusFilter.all => null,
-        _StatusFilter.active => true,
-        _StatusFilter.inactive => false,
-      };
+    _StatusFilter.all => null,
+    _StatusFilter.active => true,
+    _StatusFilter.inactive => false,
+  };
 
-  Future<void> _loadRoles() async {
+  bool _canFilterByBranch(LoginResponse session) {
+    final permissions = PermissionService(session);
+    return permissions.isSuperuser ||
+        permissions.hasRole(EmployeeRole.admin) ||
+        permissions.hasRole(EmployeeRole.hrm);
+  }
+
+  Future<void> _loadFilterOptions() async {
     final session = _session;
     if (session == null) return;
 
+    final canFilterByBranch = _canFilterByBranch(session);
+
     try {
-      final roles = await _employeeService.fetchRoles(session: session);
+      final results = await Future.wait([
+        _employeeService.fetchRoles(session: session),
+        if (canFilterByBranch)
+          _employeeService.fetchBranches(session: session)
+        else
+          Future<List<BranchOption>>.value(const []),
+      ]);
+
       if (!mounted) return;
+
+      final roles = (results[0] as List<RoleOption>)
+          .where((role) => role.isActive && role.code.isNotEmpty)
+          .toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
+
+      var branches = <BranchOption>[];
+      if (canFilterByBranch) {
+        branches = (results[1] as List<BranchOption>)
+            .where((branch) => branch.id != null)
+            .toList();
+        branches.sort((a, b) => a.name.compareTo(b.name));
+      }
+
       setState(() {
-        _roles = roles
-            .where((role) => role.isActive && role.code.isNotEmpty)
-            .toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
+        _roles = roles;
+        _branches = branches;
         if (_roleFilter == null && _roles.isNotEmpty) {
           _roleFilter = _roles.first.id;
         }
       });
     } catch (error) {
-      debugPrint('[Employees] load roles failed: $error');
+      debugPrint('[Employees] load filter options failed: $error');
     }
   }
 
@@ -168,7 +203,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
       final fetchEmployees = _employeeService.fetchEmployees(
         session: session,
         page: reset ? 1 : _page,
-        pageSize: selectedRole == null ? 20 : 200,
+        pageSize: _usesClientSideFiltering ? 200 : 20,
         search: _searchQuery.isEmpty ? null : _searchQuery,
         isActive: _isActiveParam,
         role: _roleFilter,
@@ -180,7 +215,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
           : await fetchEmployees;
 
       if (!mounted) return;
-      final filteredItems = _filterBySelectedRole(response.items);
+      final filteredItems = _filterEmployees(response.items);
       setState(() {
         if (reset) {
           _items
@@ -189,7 +224,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
         } else {
           _items.addAll(filteredItems);
         }
-        _total = selectedRole == null ? response.total : filteredItems.length;
+        _total = _usesClientSideFiltering
+            ? filteredItems.length
+            : response.total;
         _page = response.page + 1;
         _error = null;
       });
@@ -222,11 +259,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   }
 
   String? _branchFilterFor(LoginResponse session) {
-    final permissions = PermissionService(session);
-    if (permissions.isSuperuser ||
-        permissions.hasRole(EmployeeRole.admin) ||
-        permissions.hasRole(EmployeeRole.hrm)) {
-      return null;
+    if (_canFilterByBranch(session)) {
+      if (_branchFilterId == _kAllBranchesFilterId) return null;
+      return _branchFilterId.toString();
     }
     return session.employee?.branch;
   }
@@ -244,6 +279,21 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     return null;
   }
 
+  BranchOption? get _selectedBranch {
+    if (_branchFilterId == _kAllBranchesFilterId) return null;
+    for (final branch in _branches) {
+      if (branch.id == _branchFilterId) return branch;
+    }
+    return null;
+  }
+
+  bool get _usesClientSideFiltering =>
+      _selectedRole != null || _selectedBranch != null;
+
+  List<EmployeeDto> _filterEmployees(List<EmployeeDto> items) {
+    return _filterBySelectedBranch(_filterBySelectedRole(items));
+  }
+
   List<EmployeeDto> _filterBySelectedRole(List<EmployeeDto> items) {
     final selected = _selectedRole;
     if (selected == null) return items;
@@ -259,9 +309,29 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
         .toList();
   }
 
+  List<EmployeeDto> _filterBySelectedBranch(List<EmployeeDto> items) {
+    final selected = _selectedBranch;
+    if (selected == null) return items;
+
+    return items
+        .where(
+          (employee) => employee.matchesBranch(
+            branchName: selected.name,
+            branchCode: selected.code,
+          ),
+        )
+        .toList();
+  }
+
   void _onStatusSelected(_StatusFilter? status) {
     if (status == null) return;
     setState(() => _statusFilter = status);
+    _loadEmployees(reset: true);
+  }
+
+  void _onBranchSelected(int? branchId) {
+    if (branchId == null) return;
+    setState(() => _branchFilterId = branchId);
     _loadEmployees(reset: true);
   }
 
@@ -286,7 +356,8 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(title: 'Employees',
+        appBar: ThemedAppBar(
+          title: 'Employees',
           actions: [
             UserHeaderBadge(
               initials: userDisplay.initials,
@@ -297,8 +368,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
         floatingActionButton: permissions.canCreateEmployee
             ? CreateFabButton(
                 onTap: () async {
-                  final created =
-                      await context.push<bool>(AppRoutes.employeeNew);
+                  final created = await context.push<bool>(
+                    AppRoutes.employeeNew,
+                  );
                   if (created == true) _loadEmployees(reset: true);
                 },
               )
@@ -314,9 +386,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
                 style: AppTextStyles.body(context),
                 decoration: InputDecoration(
                   hintText: 'Search by name, code, or email',
-                  hintStyle: AppTextStyles.body(context).copyWith(
-                    color: context.appColors.textSecondary,
-                  ),
+                  hintStyle: AppTextStyles.body(
+                    context,
+                  ).copyWith(color: context.appColors.textSecondary),
                   prefixIcon: Icon(
                     Icons.search,
                     color: context.appColors.shinyGold.withValues(alpha: 0.7),
@@ -326,15 +398,11 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
-                    ),
+                    borderSide: BorderSide(color: context.appColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
-                    ),
+                    borderSide: BorderSide(color: context.appColors.border),
                   ),
                 ),
                 textInputAction: TextInputAction.search,
@@ -343,9 +411,27 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: _StatusDropdown(
-                value: _statusFilter,
-                onChanged: _onStatusSelected,
+              child: Row(
+                children: [
+                  Flexible(
+                    flex: 2,
+                    child: _StatusDropdown(
+                      value: _statusFilter,
+                      onChanged: _onStatusSelected,
+                    ),
+                  ),
+                  if (_canFilterByBranch(session)) ...[
+                    const SizedBox(width: 6),
+                    Flexible(
+                      flex: 3,
+                      child: _BranchDropdown(
+                        value: _branchFilterId,
+                        branches: _branches,
+                        onChanged: _onBranchSelected,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             SizedBox(
@@ -393,11 +479,17 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_error!, style: AppTextStyles.body(context), textAlign: TextAlign.center),
+              Text(
+                _error!,
+                style: AppTextStyles.body(context),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => _loadEmployees(reset: true),
-                style: FilledButton.styleFrom(backgroundColor: context.appColors.gold),
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.appColors.gold,
+                ),
                 child: const Text('Retry'),
               ),
             ],
@@ -466,43 +558,178 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     };
     final role = _selectedRole;
     final rolePart = role != null ? ' ${role.name}' : '';
-    return 'No$status$rolePart employees found.';
+    final branch = _selectedBranch;
+    final branchPart = branch != null ? ' ${branch.name}' : '';
+    return 'No$status$rolePart$branchPart employees found.';
   }
 }
 
+abstract final class _FilterDropdownMetrics {
+  static const padding = EdgeInsets.symmetric(horizontal: 8, vertical: 6);
+  static const iconSize = 18.0;
+  static const menuExtraWidth = 36.0;
+
+  static TextStyle textStyle(BuildContext context) =>
+      AppTextStyles.body(context).copyWith(fontSize: 13);
+}
+
 class _StatusDropdown extends StatelessWidget {
-  const _StatusDropdown({
-    required this.value,
-    required this.onChanged,
-  });
+  const _StatusDropdown({required this.value, required this.onChanged});
 
   final _StatusFilter value;
   final ValueChanged<_StatusFilter?> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = _FilterDropdownMetrics.textStyle(context);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: _FilterDropdownMetrics.padding,
       decoration: AppDropdownDecoration.container(context),
       child: AppInlineDropdown<_StatusFilter>(
         value: value,
         isExpanded: true,
-        style: AppTextStyles.body(context),
-        items: const [
+        style: textStyle,
+        icon: Icon(
+          Icons.expand_more_rounded,
+          size: _FilterDropdownMetrics.iconSize,
+          color: context.appColors.shinyGold.withValues(alpha: 0.8),
+        ),
+        items: [
           DropdownMenuItem(
             value: _StatusFilter.all,
-            child: Text('All employees'),
+            child: Text('All employees', style: textStyle, overflow: TextOverflow.ellipsis),
           ),
           DropdownMenuItem(
             value: _StatusFilter.active,
-            child: Text('Active employees'),
+            child: Text('Active employees', style: textStyle, overflow: TextOverflow.ellipsis),
           ),
           DropdownMenuItem(
             value: _StatusFilter.inactive,
-            child: Text('Inactive employees'),
+            child: Text('Inactive employees', style: textStyle, overflow: TextOverflow.ellipsis),
           ),
         ],
         onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _BranchDropdown extends StatefulWidget {
+  const _BranchDropdown({
+    required this.value,
+    required this.branches,
+    required this.onChanged,
+  });
+
+  final int value;
+  final List<BranchOption> branches;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  State<_BranchDropdown> createState() => _BranchDropdownState();
+}
+
+class _BranchDropdownState extends State<_BranchDropdown> {
+  final _anchorKey = GlobalKey();
+
+  String get _selectedLabel {
+    if (widget.value == _kAllBranchesFilterId) return 'All branches';
+    for (final branch in widget.branches) {
+      if (branch.id == widget.value) return branch.label;
+    }
+    return 'All branches';
+  }
+
+  List<String> get _allLabels => [
+        'All branches',
+        for (final branch in widget.branches) branch.label,
+      ];
+
+  List<DropdownMenuItem<int>> get _items {
+    final textStyle = _FilterDropdownMetrics.textStyle(context);
+
+    return [
+      DropdownMenuItem(
+        value: _kAllBranchesFilterId,
+        child: Text('All branches', style: textStyle),
+      ),
+      for (final branch in widget.branches)
+        if (branch.id != null)
+          DropdownMenuItem(
+            value: branch.id!,
+            child: Text(branch.label, style: textStyle),
+          ),
+    ];
+  }
+
+  double _menuWidthFor(BuildContext context, RenderBox button) {
+    final style = _FilterDropdownMetrics.textStyle(context);
+    final painter = TextPainter(
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    );
+
+    var maxTextWidth = 0.0;
+    for (final label in _allLabels) {
+      painter.text = TextSpan(text: label, style: style);
+      painter.layout();
+      maxTextWidth = math.max(maxTextWidth, painter.width);
+    }
+
+    final contentWidth = maxTextWidth + _FilterDropdownMetrics.menuExtraWidth;
+    return contentWidth.clamp(button.size.width, MediaQuery.sizeOf(context).width * 0.72);
+  }
+
+  Future<void> _openMenu() async {
+    final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+
+    final menuWidth = _menuWidthFor(context, box);
+    final selected = await showAppDropdownMenu<int>(
+      context: context,
+      button: box,
+      items: _items,
+      menuMinWidth: menuWidth,
+      menuMaxWidth: menuWidth,
+    );
+    if (selected != null && selected != widget.value) {
+      widget.onChanged(selected);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = _FilterDropdownMetrics.textStyle(context);
+
+    return Container(
+      padding: _FilterDropdownMetrics.padding,
+      decoration: AppDropdownDecoration.container(context),
+      child: InkWell(
+        key: _anchorKey,
+        onTap: _openMenu,
+        borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _selectedLabel,
+                  style: textStyle,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.expand_more_rounded,
+              size: _FilterDropdownMetrics.iconSize,
+              color: context.appColors.shinyGold.withValues(alpha: 0.8),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -528,7 +755,9 @@ class _RoleChip extends StatelessWidget {
       selected: selected,
       onSelected: (_) => onTap(),
       labelStyle: AppTextStyles.subtitle(context).copyWith(
-        color: selected ? context.appColors.gold : context.appColors.textPrimary,
+        color: selected
+            ? context.appColors.gold
+            : context.appColors.textPrimary,
         fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
       ),
       selectedColor: context.appColors.gold.withValues(alpha: 0.18),
@@ -544,9 +773,6 @@ class _RoleChip extends StatelessWidget {
 
     if (tooltip == null || tooltip!.isEmpty) return chip;
 
-    return Tooltip(
-      message: tooltip!,
-      child: chip,
-    );
+    return Tooltip(message: tooltip!, child: chip);
   }
 }

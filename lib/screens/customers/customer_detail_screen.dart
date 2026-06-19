@@ -143,14 +143,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       child: Scaffold(
         appBar: ThemedAppBar(
           title: customer?.fullName ?? 'Customer',
-          actions: customer == null
-              ? const []
-              : buildEntityEditDeleteAppBarActions(
-                  context,
-                  entityName: customer.fullName,
-                  canEdit: permissions.canEditCustomer,
-                  canDelete: permissions.canDeleteCustomer,
-                ),
         ),
         body: _buildBody(customer, permissions),
         bottomNavigationBar: customer == null

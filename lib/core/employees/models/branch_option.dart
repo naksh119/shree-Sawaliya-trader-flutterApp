@@ -9,8 +9,11 @@ class BranchOption {
   });
 
   factory BranchOption.fromJson(Map<String, dynamic> json) {
-    final code = readString(json, ['branch_code', 'code', 'name']) ?? '';
-    final name = readString(json, ['branch_name', 'name', 'branch_code']) ?? code;
+    final code = readString(json, ['branch_code', 'code']) ?? '';
+    final name =
+        readString(json, ['branch_name']) ??
+        readString(json, ['name']) ??
+        code;
 
     return BranchOption(
       id: readInt(json, ['id', 'branch_id']),
@@ -26,8 +29,9 @@ class BranchOption {
   final String? city;
 
   String get label {
-    if (city != null && city!.isNotEmpty) return '$name · $city';
-    return name;
+    final branchName = name.isNotEmpty ? name : code;
+    if (city != null && city!.isNotEmpty) return '$branchName · $city';
+    return branchName;
   }
 
   /// Value sent to the employee register API (`branch` field).

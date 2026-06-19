@@ -90,7 +90,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
     return value
         .toLowerCase()
         .split('_')
-        .map((part) => part.isEmpty ? part : '${part[0].toUpperCase()}${part.substring(1)}')
+        .map(
+          (part) => part.isEmpty
+              ? part
+              : '${part[0].toUpperCase()}${part.substring(1)}',
+        )
         .join(' ');
   }
 
@@ -111,8 +115,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
     final employee = _employee;
     if (_error != null || employee == null) {
       return Scaffold(
-        appBar: ThemedAppBar(title: 'Employee',
-        ),
+        appBar: ThemedAppBar(title: 'Employee'),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -146,12 +149,6 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       child: Scaffold(
         appBar: ThemedAppBar(
           title: employee.displayName,
-          actions: buildEntityEditDeleteAppBarActions(
-            context,
-            entityName: employee.displayName,
-            canEdit: permissions.canEditEmployee,
-            canDelete: permissions.canDeleteEmployee,
-          ),
         ),
         body: RefreshIndicator(
           onRefresh: _load,
@@ -317,13 +314,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   children: [
                     CustomerInfoRow(
                       label: 'Role',
-                      value: employee.roleName ??
+                      value:
+                          employee.roleName ??
                           EmployeeRole.displayNameFor(employee.role),
                     ),
-                    CustomerInfoRow(
-                      label: 'Role code',
-                      value: employee.role,
-                    ),
+                    CustomerInfoRow(label: 'Role code', value: employee.role),
                     if (employee.roleId != null)
                       CustomerInfoRow(
                         label: 'Role ID',
@@ -333,10 +328,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                       label: 'Role description',
                       value: employee.roleDescription ?? '',
                     ),
-                    CustomerInfoRow(
-                      label: 'Branch',
-                      value: employee.branch,
-                    ),
+                    CustomerInfoRow(label: 'Branch', value: employee.branch),
                     CustomerInfoRow(
                       label: 'Branch code',
                       value: employee.branchCode ?? '',
@@ -488,7 +480,9 @@ class _PermissionChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.gold.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: context.appColors.gold.withValues(alpha: 0.35)),
+        border: Border.all(
+          color: context.appColors.gold.withValues(alpha: 0.35),
+        ),
       ),
       child: Text(
         permission,
@@ -526,7 +520,10 @@ class _EmployeeHeader extends StatelessWidget {
               children: [
                 Text(employee.displayName, style: AppTextStyles.label(context)),
                 const SizedBox(height: 4),
-                Text(employee.displayCode, style: AppTextStyles.subtitle(context)),
+                Text(
+                  employee.displayCode,
+                  style: AppTextStyles.subtitle(context),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   '${employee.roleName ?? employee.roleLabel} · ${employee.branch}',
@@ -543,10 +540,9 @@ class _EmployeeHeader extends StatelessWidget {
             ),
             child: Text(
               employee.isActive ? 'Active' : 'Inactive',
-              style: AppTextStyles.subtitle(context).copyWith(
-                color: statusColor,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.subtitle(
+                context,
+              ).copyWith(color: statusColor, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -576,10 +572,9 @@ class _EmployeeAvatar extends StatelessWidget {
       backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
       child: Text(
         employee.initials,
-        style: AppTextStyles.heading(context).copyWith(
-          color: context.appColors.shinyGold,
-          fontSize: 22,
-        ),
+        style: AppTextStyles.heading(
+          context,
+        ).copyWith(color: context.appColors.shinyGold, fontSize: 22),
       ),
     );
   }
