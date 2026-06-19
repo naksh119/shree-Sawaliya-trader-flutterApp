@@ -3,17 +3,21 @@ import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/customers/customer_validators.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_register_request.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
+import 'package:sawaliyatrader/core/widgets/upper_case_text_input_formatter.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -28,6 +32,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   final _authService = AuthService();
   final _employeeService = EmployeeService();
   final _formKey = GlobalKey<FormState>();
+  final _scrollController = ScrollController();
 
   LoginResponse? _session;
   bool _isLoadingOptions = true;
@@ -51,6 +56,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   DateTime? _joiningDate;
   DateTime? _confirmationDate;
   DateTime? _payableFromDate;
+  PickedImage? _employeePhoto;
 
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -121,6 +127,15 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
         _maybeClearFieldError(entry.value, entry.key.text);
       });
     }
+
+    _passwordController.addListener(_onPasswordChanged);
+  }
+
+  void _onPasswordChanged() {
+    if (!_autoValidate) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _formKey.currentState?.validate();
+    });
   }
 
   @override
@@ -150,6 +165,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     _emergencyNameController.dispose();
     _emergencyRelationController.dispose();
     _emergencyMobileController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -244,11 +260,32 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       case 'last_name':
         return trimmed.isNotEmpty;
       case 'pan_card_no':
-        if (trimmed.isEmpty) return true;
-        return RegExp(r'^[A-Za-z]{5}\d{4}[A-Za-z]$').hasMatch(trimmed);
+        return CustomerValidators.pan(trimmed) == null;
       default:
         return trimmed.isNotEmpty;
     }
+  }
+
+  void _setFieldError(String field, String message) {
+    setState(() {
+      _fieldErrors = Map<String, String>.from(_fieldErrors)..[field] = message;
+      _generalError = null;
+      _autoValidate = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _formKey.currentState?.validate();
+    });
+  }
+
+  void _scrollToTopOnValidationFailure() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   void _applyApiErrors(ApiException error) {
@@ -290,31 +327,42 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     if (picked != null) onPicked(picked);
   }
 
+  Future<void> _pickEmployeePhoto() async {
+    final picked = await PickedImage.pick();
+    if (picked == null) return;
+    setState(() {
+      _employeePhoto = picked;
+      _fieldErrors = Map<String, String>.from(_fieldErrors)
+        ..remove('employee_photo');
+    });
+  }
+
+  void _clearEmployeePhoto() {
+    setState(() {
+      _employeePhoto = null;
+      _fieldErrors = Map<String, String>.from(_fieldErrors)
+        ..remove('employee_photo');
+    });
+  }
+
   Future<void> _submit() async {
     final session = _session;
     if (session == null || _isSaving) return;
     if (!_formKey.currentState!.validate()) {
       setState(() => _autoValidate = true);
+      _scrollToTopOnValidationFailure();
       return;
     }
 
     if (_selectedRoleId == null) {
-      setState(() {
-        _fieldErrors = const {'role': 'Please select a role.'};
-        _generalError = null;
-        _autoValidate = true;
-      });
-      _formKey.currentState?.validate();
+      _setFieldError('role', 'Please select a role.');
+      _scrollToTopOnValidationFailure();
       return;
     }
 
     if (_selectedBranchId == null) {
-      setState(() {
-        _fieldErrors = const {'branch': 'Please select a branch.'};
-        _generalError = null;
-        _autoValidate = true;
-      });
-      _formKey.currentState?.validate();
+      _setFieldError('branch', 'Please select a branch.');
+      _scrollToTopOnValidationFailure();
       return;
     }
 
@@ -369,6 +417,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       final created = await _employeeService.registerEmployee(
         session: session,
         request: request,
+        employeePhoto: _employeePhoto,
       );
 
       if (!mounted) return;
@@ -414,6 +463,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     ? AutovalidateMode.onUserInteraction
                     : AutovalidateMode.disabled,
                 child: ListView(
+                  controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
                   children: [
                     Text(
@@ -426,6 +476,18 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     _SectionCard(
                       title: 'Personal details',
                       children: [
+                        AppPhotoPicker(
+                          label: 'Employee photo',
+                          hint: 'Upload a profile photo (optional).',
+                          placeholderIcon: Icons.person_outline,
+                          image: _employeePhoto,
+                          errorText: _apiError('employee_photo'),
+                          onPick: _pickEmployeePhoto,
+                          onClear: _employeePhoto?.isNotEmpty == true
+                              ? _clearEmployeePhoto
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
                         AppTextField(
                           controller: _firstNameController,
                           label: 'First name',
@@ -558,7 +620,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                           controller: _panController,
                           label: 'PAN',
                           textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: const [UpperCaseTextInputFormatter()],
                           externalError: _apiError('pan_card_no'),
+                          validator: CustomerValidators.pan,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -668,7 +733,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                             ),
                           ),
                           validator: (v) {
-                            if (v != _passwordController.text) {
+                            final trimmed = v?.trim() ?? '';
+                            if (trimmed.isEmpty) {
+                              return 'Confirm password is required';
+                            }
+                            if (trimmed != _passwordController.text) {
                               return 'Passwords do not match';
                             }
                             return null;
@@ -1037,7 +1106,7 @@ class _DropdownField<T> extends StatelessWidget {
           onChanged: onChanged,
           style: AppTextStyles.body(context),
           dropdownColor: context.appColors.card,
-          validator: errorText == null ? null : (_) => errorText,
+          validator: (_) => errorText,
           decoration: InputDecoration(
             filled: true,
             fillColor: context.appColors.inputFill,

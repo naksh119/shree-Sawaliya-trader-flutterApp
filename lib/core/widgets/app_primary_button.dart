@@ -11,12 +11,18 @@ class AppPrimaryButton extends StatelessWidget {
     super.key,
     this.isLoading = false,
     this.textColor,
+    this.width = double.infinity,
+    this.height = 52,
+    this.fontSize = 18,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
   final Color? textColor;
+  final double width;
+  final double height;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +30,8 @@ class AppPrimaryButton extends StatelessWidget {
     final labelColor = textColor ?? AppColors.navy;
 
     return SizedBox(
-      width: double.infinity,
-      height: 52,
+      width: width,
+      height: height,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
@@ -42,7 +48,7 @@ class AppPrimaryButton extends StatelessWidget {
             : Text(
                 label,
                 style: GoogleFonts.cormorantGaramond(
-                  fontSize: 18,
+                  fontSize: fontSize,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
                   color: labelColor,

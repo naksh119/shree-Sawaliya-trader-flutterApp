@@ -12,6 +12,8 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/screens/employees/widgets/employee_list_tile.dart';
@@ -447,6 +449,8 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
           final employee = _items[index];
           return EmployeeListTile(
             employee: employee,
+            canEdit: permissions.canEditEmployee,
+            canDelete: permissions.canDeleteEmployee,
             onTap: () => context.push(AppRoutes.employeeDetail(employee.id)),
           );
         },
@@ -479,37 +483,26 @@ class _StatusDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: context.appColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.appColors.border),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<_StatusFilter>(
-          value: value,
-          isExpanded: true,
-          icon: Icon(
-            Icons.expand_more_rounded,
-            color: context.appColors.shinyGold.withValues(alpha: 0.8),
+      decoration: AppDropdownDecoration.container(context),
+      child: AppInlineDropdown<_StatusFilter>(
+        value: value,
+        isExpanded: true,
+        style: AppTextStyles.body(context),
+        items: const [
+          DropdownMenuItem(
+            value: _StatusFilter.all,
+            child: Text('All employees'),
           ),
-          style: AppTextStyles.body(context),
-          dropdownColor: context.appColors.card,
-          items: const [
-            DropdownMenuItem(
-              value: _StatusFilter.all,
-              child: Text('All employees'),
-            ),
-            DropdownMenuItem(
-              value: _StatusFilter.active,
-              child: Text('Active employees'),
-            ),
-            DropdownMenuItem(
-              value: _StatusFilter.inactive,
-              child: Text('Inactive employees'),
-            ),
-          ],
-          onChanged: onChanged,
-        ),
+          DropdownMenuItem(
+            value: _StatusFilter.active,
+            child: Text('Active employees'),
+          ),
+          DropdownMenuItem(
+            value: _StatusFilter.inactive,
+            child: Text('Inactive employees'),
+          ),
+        ],
+        onChanged: onChanged,
       ),
     );
   }

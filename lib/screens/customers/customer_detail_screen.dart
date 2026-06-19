@@ -13,6 +13,7 @@ import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_status_chip.dart';
+import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -140,19 +141,39 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(title: customer?.fullName ?? 'Customer'),
+        appBar: ThemedAppBar(
+          title: customer?.fullName ?? 'Customer',
+          actions: customer == null
+              ? const []
+              : buildEntityEditDeleteAppBarActions(
+                  context,
+                  entityName: customer.fullName,
+                  canEdit: permissions.canEditCustomer,
+                  canDelete: permissions.canDeleteCustomer,
+                ),
+        ),
         body: _buildBody(customer, permissions),
         bottomNavigationBar: customer == null
             ? null
-            : _StatusActionBar(
-                customer: customer,
-                permissions: permissions,
-                isUpdating: _isUpdatingStatus,
-                onApprove: () => _updateStatus(CustomerStatus.approved),
-                onReject: () => _updateStatus(CustomerStatus.rejected),
-                onMarkApplied: () => _updateStatus(CustomerStatus.applied),
-                onMarkUnderReview: () =>
-                    _updateStatus(CustomerStatus.underReview),
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  EntityEditDeleteBar(
+                    entityName: customer.fullName,
+                    canEdit: permissions.canEditCustomer,
+                    canDelete: permissions.canDeleteCustomer,
+                  ),
+                  _StatusActionBar(
+                    customer: customer,
+                    permissions: permissions,
+                    isUpdating: _isUpdatingStatus,
+                    onApprove: () => _updateStatus(CustomerStatus.approved),
+                    onReject: () => _updateStatus(CustomerStatus.rejected),
+                    onMarkApplied: () => _updateStatus(CustomerStatus.applied),
+                    onMarkUnderReview: () =>
+                        _updateStatus(CustomerStatus.underReview),
+                  ),
+                ],
               ),
       ),
     );

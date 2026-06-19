@@ -30,6 +30,8 @@ class CustomerDetail extends CustomerDto {
     this.monthlyIncome,
     this.sourcedBy,
     this.updatedAt,
+    this.livePhoto,
+    this.housePhoto,
     this.familyMembers = const [],
     this.guarantors = const [],
     this.maternalHouse,
@@ -77,6 +79,8 @@ class CustomerDetail extends CustomerDto {
       monthlyIncome: readDouble(json, ['monthly_income', 'income']),
       sourcedBy: readString(json, ['sourced_by', 'sourced_by_name']),
       updatedAt: readDateTime(json, ['updated_at']),
+      livePhoto: readString(json, ['live_photo']),
+      housePhoto: readString(json, ['house_photo']),
       familyMembers: parseList('family_members', FamilyMember.fromJson),
       guarantors: parseList('guarantors', Guarantor.fromJson),
       maternalHouse: maternalHouse,
@@ -98,6 +102,8 @@ class CustomerDetail extends CustomerDto {
   final double? monthlyIncome;
   final String? sourcedBy;
   final DateTime? updatedAt;
+  final String? livePhoto;
+  final String? housePhoto;
   final List<FamilyMember> familyMembers;
   final List<Guarantor> guarantors;
   final MaternalHouse? maternalHouse;
@@ -166,6 +172,8 @@ class CustomerDetail extends CustomerDto {
       monthlyIncome: monthlyIncome,
       sourcedBy: sourcedBy,
       updatedAt: updatedAt,
+      livePhoto: this.livePhoto,
+      housePhoto: this.housePhoto,
       familyMembers: familyMembers ?? this.familyMembers,
       guarantors: guarantors ?? this.guarantors,
       maternalHouse: maternalHouse ?? this.maternalHouse,

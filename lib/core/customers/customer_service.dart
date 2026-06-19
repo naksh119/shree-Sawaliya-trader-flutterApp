@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:sawaliyatrader/core/api/api_client.dart';
-import 'package:sawaliyatrader/core/api/api_exception.dart';
+import 'package:sawaliyatrader/core/api/multipart_form.dart';
+import 'package:sawaliyatrader/core/api/api_client.dart';import 'package:sawaliyatrader/core/api/api_error_parser.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/constants/api_config.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_detail.dart';
@@ -12,7 +12,7 @@ import 'package:sawaliyatrader/core/customers/models/guarantor.dart';
 import 'package:sawaliyatrader/core/customers/models/json_parse.dart';
 import 'package:sawaliyatrader/core/customers/models/maternal_house.dart';
 import 'package:sawaliyatrader/core/customers/models/other_loan.dart';
-
+import 'package:sawaliyatrader/core/models/picked_image.dart';
 class CustomerService {
   CustomerService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
 
@@ -53,15 +53,33 @@ class CustomerService {
   Future<CustomerDetail> createCustomer({
     required LoginResponse session,
     required Map<String, dynamic> payload,
+    PickedImage? livePhoto,
+    PickedImage? housePhoto,
   }) async {
-    final body = await _apiClient.post(
-      ApiConfig.customersPath,
-      data: payload,
-    );
+    final files = <String, PickedImage>{};
+    if (livePhoto != null && livePhoto.isNotEmpty) {
+      files['live_photo'] = livePhoto;
+    }
+    if (housePhoto != null && housePhoto.isNotEmpty) {
+      files['house_photo'] = housePhoto;
+    }
+
+    final Map<String, dynamic> body;
+    if (multipartHasFiles(files)) {
+      body = await _apiClient.postMultipart(
+        ApiConfig.customersPath,
+        data: await buildMultipartFormData(fields: payload, files: files),
+      );
+    } else {
+      body = await _apiClient.post(
+        ApiConfig.customersPath,
+        data: payload,
+      );
+    }
+
     _ensureSuccess(body, 'Failed to create customer');
     return CustomerDetail.fromJson(dataMap(body));
   }
-
   Future<CustomerDetail> updateCustomer({
     required LoginResponse session,
     required int customerId,
@@ -167,7 +185,7 @@ class CustomerService {
 
   void _ensureSuccess(Map<String, dynamic> body, String fallback) {
     if (body['success'] != true) {
-      throw ApiException(body['error'] as String? ?? fallback);
+      throw apiExceptionFromError(body['error'], fallback: fallback);
     }
   }
 }

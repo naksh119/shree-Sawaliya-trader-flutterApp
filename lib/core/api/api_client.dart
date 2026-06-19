@@ -58,9 +58,12 @@ class ApiClient {
     if (onRefresh != null &&
         onRefreshFailed != null &&
         getAccessToken != null) {
+      final retryDio = Dio(dio.options);
+      retryDio.interceptors.add(CookieManager(cookieJar));
+
       dio.interceptors.add(
         AuthInterceptor(
-          dio: dio,
+          retryDio: retryDio,
           getAccessToken: getAccessToken,
           onRefresh: onRefresh,
           onRefreshFailed: onRefreshFailed,

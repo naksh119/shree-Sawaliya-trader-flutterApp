@@ -5,8 +5,10 @@ import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -155,10 +157,20 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
     }
 
     final session = _session;
+    final permissions = session != null ? PermissionService(session) : null;
+
     final body = RefreshIndicator(
       onRefresh: () => _load(),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          permissions != null &&
+                  (permissions.canEditBranch || permissions.canDeleteBranch)
+              ? 100
+              : 32,
+        ),
         children: [
           _BranchHeader(branch: branch),
           const SizedBox(height: 16),
@@ -211,8 +223,25 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
     );
 
     final scaffold = Scaffold(
-      appBar: ThemedAppBar(title: branch.name),
+      appBar: ThemedAppBar(
+        title: branch.name,
+        actions: permissions == null
+            ? const []
+            : buildEntityEditDeleteAppBarActions(
+                context,
+                entityName: branch.name,
+                canEdit: permissions.canEditBranch,
+                canDelete: permissions.canDeleteBranch,
+              ),
+      ),
       body: body,
+      bottomNavigationBar: permissions == null
+          ? null
+          : EntityEditDeleteBar(
+              entityName: branch.name,
+              canEdit: permissions.canEditBranch,
+              canDelete: permissions.canDeleteBranch,
+            ),
     );
 
     if (session == null) return scaffold;

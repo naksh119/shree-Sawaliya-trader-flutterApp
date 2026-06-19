@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -17,6 +18,8 @@ class AppTextField extends StatefulWidget {
     this.autocorrect = true,
     this.enableSuggestions = true,
     this.externalError,
+    this.inputFormatters,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final TextEditingController controller;
@@ -31,18 +34,31 @@ class AppTextField extends StatefulWidget {
   final bool autocorrect;
   final bool enableSuggestions;
   final String? externalError;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextCapitalization textCapitalization;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
 }
 
 class _AppTextFieldState extends State<AppTextField> {
+  final _fieldKey = GlobalKey<FormFieldState<String>>();
   late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(AppTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.externalError != oldWidget.externalError) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fieldKey.currentState?.validate();
+      });
+    }
   }
 
   @override
@@ -89,6 +105,10 @@ class _AppTextFieldState extends State<AppTextField> {
           width: 1.5,
         ),
       ),
+      errorStyle: AppTextStyles.subtitle(context).copyWith(
+        color: Colors.red.shade700,
+      ),
+      errorMaxLines: 3,
       suffixIcon: widget.suffixIcon,
     );
   }
@@ -107,7 +127,7 @@ class _AppTextFieldState extends State<AppTextField> {
         Text(widget.label, style: AppTextStyles.label(context)),
         const SizedBox(height: 8),
         TextFormField(
-          key: ValueKey(widget.label),
+          key: _fieldKey,
           controller: widget.controller,
           focusNode: _focusNode,
           keyboardType: widget.keyboardType,
@@ -117,6 +137,8 @@ class _AppTextFieldState extends State<AppTextField> {
           onFieldSubmitted: widget.onFieldSubmitted,
           autocorrect: widget.autocorrect,
           enableSuggestions: widget.enableSuggestions,
+          inputFormatters: widget.inputFormatters,
+          textCapitalization: widget.textCapitalization,
           style: AppTextStyles.body(context),
           cursorColor: context.appColors.gold,
           scrollPadding: const EdgeInsets.only(bottom: 120),

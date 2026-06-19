@@ -17,6 +17,7 @@ class EmployeeDetail extends EmployeeDto {
     super.isActive,
     super.dateOfJoining,
     super.createdAt,
+    super.employeePhoto,
     this.updatedAt,
     this.fatherName,
     this.dateOfBirth,
@@ -25,7 +26,6 @@ class EmployeeDetail extends EmployeeDto {
     this.maritalStatus,
     this.nationality,
     this.languagesKnown,
-    this.employeePhoto,
     this.aadhaarCardNo,
     this.panCardNo,
     this.secondaryMobile,
@@ -77,6 +77,7 @@ class EmployeeDetail extends EmployeeDto {
       isActive: base.isActive,
       dateOfJoining: base.dateOfJoining,
       createdAt: base.createdAt,
+      employeePhoto: base.employeePhoto,
       updatedAt: readDateTime(flat, ['updated_at']),
       fatherName: readString(flat, ['father_name']),
       dateOfBirth: readDateTime(flat, ['date_of_birth', 'dob']),
@@ -85,7 +86,6 @@ class EmployeeDetail extends EmployeeDto {
       maritalStatus: readString(flat, ['marital_status']),
       nationality: readString(flat, ['nationality']),
       languagesKnown: readString(flat, ['languages_known']),
-      employeePhoto: readString(flat, ['employee_photo', 'photo']),
       aadhaarCardNo: readString(flat, ['aadhaar_card_no', 'aadhaar']),
       panCardNo: readString(flat, ['pan_card_no', 'pan']),
       secondaryMobile: readString(flat, [
@@ -173,7 +173,6 @@ class EmployeeDetail extends EmployeeDto {
   final String? maritalStatus;
   final String? nationality;
   final String? languagesKnown;
-  final String? employeePhoto;
   final String? aadhaarCardNo;
   final String? panCardNo;
   final String? secondaryMobile;

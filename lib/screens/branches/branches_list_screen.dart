@@ -11,7 +11,10 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
+import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -358,6 +361,8 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
 
           return _BranchListTile(
             branch: _items[index],
+            canEdit: permissions.canEditBranch,
+            canDelete: permissions.canDeleteBranch,
             onTap: () => context.push(
               AppRoutes.branchDetail(_items[index].id),
               extra: _items[index],
@@ -385,10 +390,14 @@ class _BranchListTile extends StatelessWidget {
   const _BranchListTile({
     required this.branch,
     required this.onTap,
+    this.canEdit = false,
+    this.canDelete = false,
   });
 
   final BranchDto branch;
   final VoidCallback onTap;
+  final bool canEdit;
+  final bool canDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -436,7 +445,17 @@ class _BranchListTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              _BranchActiveChip(isActive: branch.isActive),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _BranchActiveChip(isActive: branch.isActive),
+                  EntityEditDeleteTrailingActions(
+                    entityName: branch.name,
+                    canEdit: canEdit,
+                    canDelete: canDelete,
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -485,37 +504,26 @@ class _StatusDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: context.appColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.appColors.border),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<_StatusFilter>(
-          value: value,
-          isExpanded: true,
-          icon: Icon(
-            Icons.expand_more_rounded,
-            color: context.appColors.shinyGold.withValues(alpha: 0.8),
+      decoration: AppDropdownDecoration.container(context),
+      child: AppInlineDropdown<_StatusFilter>(
+        value: value,
+        isExpanded: true,
+        style: AppTextStyles.body(context),
+        items: const [
+          DropdownMenuItem(
+            value: _StatusFilter.all,
+            child: Text('All branches'),
           ),
-          style: AppTextStyles.body(context),
-          dropdownColor: context.appColors.card,
-          items: const [
-            DropdownMenuItem(
-              value: _StatusFilter.all,
-              child: Text('All branches'),
-            ),
-            DropdownMenuItem(
-              value: _StatusFilter.active,
-              child: Text('Active branches'),
-            ),
-            DropdownMenuItem(
-              value: _StatusFilter.inactive,
-              child: Text('Inactive branches'),
-            ),
-          ],
-          onChanged: onChanged,
-        ),
+          DropdownMenuItem(
+            value: _StatusFilter.active,
+            child: Text('Active branches'),
+          ),
+          DropdownMenuItem(
+            value: _StatusFilter.inactive,
+            child: Text('Inactive branches'),
+          ),
+        ],
+        onChanged: onChanged,
       ),
     );
   }

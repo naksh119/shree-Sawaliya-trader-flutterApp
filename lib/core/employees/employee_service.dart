@@ -1,3 +1,4 @@
+import 'package:sawaliyatrader/core/api/multipart_form.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sawaliyatrader/core/api/api_client.dart';
 import 'package:sawaliyatrader/core/api/api_error_parser.dart';
@@ -9,6 +10,7 @@ import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_register_request.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_list_response.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
+import 'package:sawaliyatrader/core/models/picked_image.dart';
 
 class EmployeeService {
   EmployeeService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
@@ -82,12 +84,25 @@ class EmployeeService {
   Future<EmployeeDetail> registerEmployee({
     required LoginResponse session,
     required EmployeeRegisterRequest request,
+    PickedImage? employeePhoto,
   }) async {
+    final Map<String, dynamic> body;
 
-    final body = await _apiClient.post(
-      ApiConfig.employeeRegisterPath,
-      data: request.toJson(),
-    );
+    if (employeePhoto != null && employeePhoto.isNotEmpty) {
+      body = await _apiClient.postMultipart(
+        ApiConfig.employeeRegisterPath,
+        data: await buildMultipartFormData(
+          fields: request.toJson(),
+          files: {'employee_photo': employeePhoto},
+        ),
+      );
+    } else {
+      body = await _apiClient.post(
+        ApiConfig.employeeRegisterPath,
+        data: request.toJson(),
+      );
+    }
+
     _ensureSuccess(body, 'Failed to register employee');
     return EmployeeDetail.fromJson(dataMap(body));
   }

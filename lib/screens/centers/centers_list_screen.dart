@@ -3,36 +3,36 @@ import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
-import 'package:sawaliyatrader/core/customers/customer_service.dart';
-import 'package:sawaliyatrader/core/customers/models/customer_dto.dart';
-import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
+import 'package:sawaliyatrader/core/centers/center_service.dart';
+import 'package:sawaliyatrader/core/centers/models/center_dto.dart';
+import 'package:sawaliyatrader/core/centers/models/center_status.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
-import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
-import 'package:sawaliyatrader/screens/customers/widgets/customer_list_tile.dart';
-import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
+import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
+import 'package:sawaliyatrader/screens/centers/widgets/center_list_tile.dart';
 
-class CustomersListScreen extends StatefulWidget {
-  const CustomersListScreen({super.key});
+class CentersListScreen extends StatefulWidget {
+  const CentersListScreen({super.key});
 
   @override
-  State<CustomersListScreen> createState() => _CustomersListScreenState();
+  State<CentersListScreen> createState() => _CentersListScreenState();
 }
 
-class _CustomersListScreenState extends State<CustomersListScreen> {
+class _CentersListScreenState extends State<CentersListScreen> {
   final _authService = AuthService();
-  final _customerService = CustomerService();
+  final _centerService = CenterService();
   final _searchController = TextEditingController();
   final _scrollController = ScrollController();
 
   LoginResponse? _session;
-  final List<CustomerDto> _items = [];
-  CustomerStatus? _statusFilter;
+  final List<CenterDto> _items = [];
+  CenterStatus? _statusFilter;
   String _searchQuery = '';
   int _page = 1;
   int _total = 0;
@@ -62,7 +62,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     final session = await _authService.getSession();
     if (!mounted) return;
     setState(() => _session = session);
-    if (session != null) await _loadCustomers(reset: true);
+    if (session != null) await _loadCenters(reset: true);
   }
 
   void _onScroll() {
@@ -72,10 +72,10 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
       return;
     }
     if (_items.length >= _total) return;
-    _loadCustomers();
+    _loadCenters();
   }
 
-  Future<void> _loadCustomers({bool reset = false}) async {
+  Future<void> _loadCenters({bool reset = false}) async {
     final session = _session;
     if (session == null) return;
 
@@ -90,7 +90,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     }
 
     try {
-      final fetchCustomers = _customerService.fetchCustomers(
+      final fetchCenters = _centerService.fetchCenters(
         session: session,
         page: reset ? 1 : _page,
         search: _searchQuery.isEmpty ? null : _searchQuery,
@@ -98,8 +98,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         branch: session.employee?.branch,
       );
       final response = reset && _items.isEmpty
-          ? await awaitWithMinPageLoaderDuration(fetchCustomers)
-          : await fetchCustomers;
+          ? await awaitWithMinPageLoaderDuration(fetchCenters)
+          : await fetchCenters;
 
       if (!mounted) return;
       setState(() {
@@ -128,12 +128,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
   void _onSearchSubmitted(String value) {
     _searchQuery = value.trim();
-    _loadCustomers(reset: true);
+    _loadCenters(reset: true);
   }
 
-  void _onStatusSelected(CustomerStatus? status) {
+  void _onStatusSelected(CenterStatus? status) {
     setState(() => _statusFilter = status);
-    _loadCustomers(reset: true);
+    _loadCenters(reset: true);
   }
 
   @override
@@ -151,7 +151,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(title: 'Customers',
+        appBar: ThemedAppBar(
+          title: 'Centers',
           actions: [
             UserHeaderBadge(
               initials: userDisplay.initials,
@@ -159,9 +160,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             ),
           ],
         ),
-        floatingActionButton: permissions.canCreateCustomer
+        floatingActionButton: permissions.canCreateCenter
             ? CreateFabButton(
-                onTap: () => context.push(AppRoutes.customerNew),
+                onTap: () async {
+                  final created = await context.push<bool>(AppRoutes.centerNew);
+                  if (created == true && mounted) {
+                    await _loadCenters(reset: true);
+                  }
+                },
               )
             : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -173,7 +179,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                 controller: _searchController,
                 style: AppTextStyles.body(context),
                 decoration: InputDecoration(
-                  hintText: 'Search by name, mobile, or code',
+                  hintText: 'Search by name or code',
                   hintStyle: AppTextStyles.body(context).copyWith(
                     color: context.appColors.textSecondary,
                   ),
@@ -186,15 +192,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
-                    ),
+                    borderSide: BorderSide(color: context.appColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
-                    ),
+                    borderSide: BorderSide(color: context.appColors.border),
                   ),
                 ),
                 textInputAction: TextInputAction.search,
@@ -212,7 +214,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     selected: _statusFilter == null,
                     onTap: () => _onStatusSelected(null),
                   ),
-                  for (final status in CustomerStatus.filterOptions) ...[
+                  for (final status in CenterStatus.filterOptions) ...[
                     const SizedBox(width: 8),
                     _FilterChip(
                       label: status.label,
@@ -244,11 +246,17 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_error!, style: AppTextStyles.body(context), textAlign: TextAlign.center),
+              Text(
+                _error!,
+                style: AppTextStyles.body(context),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => _loadCustomers(reset: true),
-                style: FilledButton.styleFrom(backgroundColor: context.appColors.gold),
+                onPressed: () => _loadCenters(reset: true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.appColors.gold,
+                ),
                 child: const Text('Retry'),
               ),
             ],
@@ -259,14 +267,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
     if (_items.isEmpty) {
       return RefreshIndicator(
-        onRefresh: () => _loadCustomers(reset: true),
+        onRefresh: () => _loadCenters(reset: true),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             const SizedBox(height: 80),
             Center(
               child: Text(
-                'No customers found.',
+                'No centers found.',
                 style: AppTextStyles.body(context),
               ),
             ),
@@ -276,14 +284,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: () => _loadCustomers(reset: true),
+      onRefresh: () => _loadCenters(reset: true),
       child: ListView.separated(
         controller: _scrollController,
         padding: EdgeInsets.fromLTRB(
           16,
           0,
           16,
-          permissions.canCreateCustomer ? 88 : 24,
+          permissions.canCreateCenter ? 88 : 24,
         ),
         itemCount: _items.length + (_isLoadingMore ? 1 : 0),
         separatorBuilder: (_, __) => const SizedBox(height: 8),
@@ -295,12 +303,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             );
           }
 
-          final customer = _items[index];
-          return CustomerListTile(
-            customer: customer,
-            canEdit: permissions.canEditCustomer,
-            canDelete: permissions.canDeleteCustomer,
-            onTap: () => context.push(AppRoutes.customerDetail(customer.id)),
+          final center = _items[index];
+          return CenterListTile(
+            center: center,
+            canEdit: permissions.canEditCenter,
+            canDelete: permissions.canDeleteCenter,
+            onTap: () => context.push(AppRoutes.centerDetail(center.id)),
           );
         },
       ),

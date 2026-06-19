@@ -23,6 +23,8 @@ class RouteAccess {
     if (path == AppRoutes.customerNew) return permissions.canCreateCustomer;
     if (_isCustomerDetail(path)) return permissions.canViewCustomers;
     if (path == AppRoutes.centers) return permissions.canViewCenters;
+    if (path == AppRoutes.centerNew) return permissions.canCreateCenter;
+    if (_isCenterDetail(path)) return permissions.canViewCenters;
     if (path == AppRoutes.emis) return permissions.canCollectEmi;
     if (path == AppRoutes.employees) return permissions.canViewEmployees;
     if (path == AppRoutes.employeeNew) return permissions.canCreateEmployee;
@@ -63,6 +65,13 @@ class RouteAccess {
     final segments = path.split('/').where((s) => s.isNotEmpty).toList();
     return segments.length == 2 &&
         segments[0] == 'branches' &&
+        segments[1] != 'new';
+  }
+
+  static bool _isCenterDetail(String path) {
+    final segments = path.split('/').where((s) => s.isNotEmpty).toList();
+    return segments.length == 2 &&
+        segments[0] == 'centers' &&
         segments[1] != 'new';
   }
 }

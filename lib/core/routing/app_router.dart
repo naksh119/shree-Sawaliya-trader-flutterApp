@@ -13,6 +13,9 @@ import 'package:sawaliyatrader/screens/branches/branch_create_screen.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/screens/branches/branch_detail_screen.dart';
 import 'package:sawaliyatrader/screens/branches/branches_list_screen.dart';
+import 'package:sawaliyatrader/screens/centers/center_create_screen.dart';
+import 'package:sawaliyatrader/screens/centers/center_detail_screen.dart';
+import 'package:sawaliyatrader/screens/centers/centers_list_screen.dart';
 import 'package:sawaliyatrader/screens/customers/customer_detail_screen.dart';
 import 'package:sawaliyatrader/screens/customers/customer_wizard_screen.dart';
 import 'package:sawaliyatrader/screens/customers/customers_list_screen.dart';
@@ -92,10 +95,7 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.centers,
-                builder: (context, state) => const ModulePlaceholderScreen(
-                  title: 'Centers',
-                  description: 'Manage lending centers and members.',
-                ),
+                builder: (context, state) => const CentersListScreen(),
               ),
             ],
           ),
@@ -186,6 +186,23 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             );
           }
           return CustomerDetailScreen(customerId: id);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.centerNew,
+        builder: (context, state) => const CenterCreateScreen(),
+      ),
+      GoRoute(
+        path: '/centers/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) {
+            return const ModulePlaceholderScreen(
+              title: 'Center',
+              description: 'Invalid center id.',
+            );
+          }
+          return CenterDetailScreen(centerId: id);
         },
       ),
       GoRoute(

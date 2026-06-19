@@ -5,16 +5,18 @@ import 'package:sawaliyatrader/core/constants/api_config.dart';
 /// Attaches the access token to every API call and refreshes on 401.
 class AuthInterceptor extends QueuedInterceptor {
   AuthInterceptor({
-    required Dio dio,
+    required Dio retryDio,
     required Future<String?> Function() getAccessToken,
     required Future<String> Function() onRefresh,
     required Future<void> Function() onRefreshFailed,
-  })  : _dio = dio,
+  })  : _retryDio = retryDio,
         _getAccessToken = getAccessToken,
         _onRefresh = onRefresh,
         _onRefreshFailed = onRefreshFailed;
 
-  final Dio _dio;
+  /// Separate client for retries — must not use [QueuedInterceptor] or the
+  /// retry deadlocks waiting for [onError] to finish.
+  final Dio _retryDio;
   final Future<String?> Function() _getAccessToken;
   final Future<String> Function() _onRefresh;
   final Future<void> Function() _onRefreshFailed;
@@ -82,7 +84,10 @@ class AuthInterceptor extends QueuedInterceptor {
       options.headers['Authorization'] = 'Bearer $access';
 
       debugPrint('[Auth] Retrying ${options.path} with refreshed token');
-      final response = await _dio.fetch<dynamic>(options);
+      final response = await _retryDio.fetch<dynamic>(options);
+      debugPrint(
+        '[Auth] Retry ${options.path} → status: ${response.statusCode}',
+      );
       return handler.resolve(response);
     } catch (error, stack) {
       debugPrint('[Auth] Refresh/retry failed: $error\n$stack');

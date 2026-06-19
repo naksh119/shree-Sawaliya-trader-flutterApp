@@ -56,18 +56,34 @@ class PermissionService {
     if (!has(permission)) throw PermissionDeniedException(permission);
   }
 
-  bool get canManageBranches =>
+  bool get _hasAdminPrivileges =>
       isSuperuser || hasRole(EmployeeRole.admin) || hasFullAccess;
+
+  bool get canManageBranches => _hasAdminPrivileges;
+
+  bool get canEditBranch => canManageBranches;
+
+  bool get canDeleteBranch => canManageBranches;
 
   bool get canViewCustomers => has(AppPermission.customerView);
 
   bool get canCreateCustomer => has(AppPermission.customerCreate);
 
-  bool get canEditCustomer => has(AppPermission.customerEdit);
+  bool get canEditCustomer =>
+      has(AppPermission.customerEdit) || _hasAdminPrivileges;
+
+  bool get canDeleteCustomer => canEditCustomer;
 
   bool get canApproveCustomer => has(AppPermission.customerApprove);
 
   bool get canViewCenters => has(AppPermission.centerView);
+
+  bool get canCreateCenter => has(AppPermission.centerCreate);
+
+  bool get canEditCenter =>
+      has(AppPermission.centerCreate) || _hasAdminPrivileges;
+
+  bool get canDeleteCenter => canEditCenter;
 
   bool get canCollectEmi => has(AppPermission.emiCollect);
 
@@ -83,7 +99,12 @@ class PermissionService {
       hasRole(EmployeeRole.admin) ||
       hasRole(EmployeeRole.hrm);
 
-  bool get canEditEmployee => has(AppPermission.employeeEdit);
+  bool get canEditEmployee =>
+      has(AppPermission.employeeEdit) ||
+      _hasAdminPrivileges ||
+      hasRole(EmployeeRole.hrm);
+
+  bool get canDeleteEmployee => canEditEmployee;
 
   bool get canViewNotifications =>
       hasFullAccess || has(AppPermission.notificationView);

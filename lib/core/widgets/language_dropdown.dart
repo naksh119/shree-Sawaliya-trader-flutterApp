@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/locale/locale_notifier.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 
 const _englishFlag = '🇺🇸';
@@ -19,6 +21,7 @@ Widget _languageMenuItem(String flag, String label, {bool selected = false}) {
 }
 
 List<PopupMenuEntry<Locale>> _languageMenuItems(
+  BuildContext context,
   AppLocalizations l10n,
   Locale current,
 ) {
@@ -31,6 +34,7 @@ List<PopupMenuEntry<Locale>> _languageMenuItems(
         selected: current.languageCode == 'en',
       ),
     ),
+    AppDropdownDecoration.menuDivider(context),
     PopupMenuItem(
       value: const Locale('hi'),
       child: _languageMenuItem(
@@ -61,11 +65,16 @@ class LanguageGlobeButton extends StatelessWidget {
           tooltip: l10n.selectLanguage,
           position: PopupMenuPosition.over,
           offset: const Offset(0, -8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: AppDropdownDecoration.isDark(context)
+                ? BorderSide(color: colors.gold)
+                : BorderSide.none,
+          ),
           color: Theme.of(context).colorScheme.surface,
           onSelected: notifier.setLocale,
           itemBuilder: (context) =>
-              _languageMenuItems(l10n, notifier.locale),
+              _languageMenuItems(context, l10n, notifier.locale),
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -119,31 +128,27 @@ class LanguageDropdown extends StatelessWidget {
           padding: const EdgeInsets.only(right: 4),
           child: Tooltip(
             message: l10n.selectLanguage,
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<Locale>(
-                value: notifier.locale,
-                icon: Icon(Icons.arrow_drop_down, color: gold, size: 20),
-                dropdownColor: Theme.of(context).colorScheme.surface,
-                style: TextStyle(
-                  color: gold,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                items: [
-                  DropdownMenuItem(
-                    value: const Locale('en'),
-                    child: _languageItem(_englishFlag, l10n.languageEnglish),
-                  ),
-                  DropdownMenuItem(
-                    value: const Locale('hi'),
-                    child: _languageItem(_hindiFlag, l10n.languageHindi),
-                  ),
-                ],
-                onChanged: (locale) {
-                  if (locale != null) notifier.setLocale(locale);
-                },
+            child: AppInlineDropdown<Locale>(
+              value: notifier.locale,
+              icon: Icon(Icons.arrow_drop_down, color: gold, size: 20),
+              style: TextStyle(
+                color: gold,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
+              items: [
+                DropdownMenuItem(
+                  value: const Locale('en'),
+                  child: _languageItem(_englishFlag, l10n.languageEnglish),
+                ),
+                DropdownMenuItem(
+                  value: const Locale('hi'),
+                  child: _languageItem(_hindiFlag, l10n.languageHindi),
+                ),
+              ],
+              onChanged: (locale) {
+                if (locale != null) notifier.setLocale(locale);
+              },
             ),
           ),
         );

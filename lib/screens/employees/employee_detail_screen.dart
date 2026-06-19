@@ -6,8 +6,10 @@ import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
+import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -137,10 +139,20 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       );
     }
 
+    final permissions = PermissionService(session);
+
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(title: employee.displayName),
+        appBar: ThemedAppBar(
+          title: employee.displayName,
+          actions: buildEntityEditDeleteAppBarActions(
+            context,
+            entityName: employee.displayName,
+            canEdit: permissions.canEditEmployee,
+            canDelete: permissions.canDeleteEmployee,
+          ),
+        ),
         body: RefreshIndicator(
           onRefresh: _load,
           child: ListView(
@@ -404,6 +416,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ],
             ],
           ),
+        ),
+        bottomNavigationBar: EntityEditDeleteBar(
+          entityName: employee.displayName,
+          canEdit: permissions.canEditEmployee,
+          canDelete: permissions.canDeleteEmployee,
         ),
       ),
     );

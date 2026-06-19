@@ -52,4 +52,17 @@ class ApiConfig {
   static String branchPath(int id) => '/branches/api/$id';
 
   static String employeePath(int id) => '/employees/api/$id/';
+
+  static const centersPath = '/operations/api/centers/';
+
+  static String centerPath(int id) => '/operations/api/centers/$id/';
+
+  static String centerMembersPath(int centerId) =>
+      '/operations/api/centers/$centerId/members/';
+
+  static String centerMemberPath(int centerId, int memberId) =>
+      '/operations/api/centers/$centerId/members/$memberId/';
+
+  static String centerGenerateEmiPath(int centerId) =>
+      '/operations/api/centers/$centerId/generate-emi/';
 }

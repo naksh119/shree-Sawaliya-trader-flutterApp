@@ -86,7 +86,7 @@ class DashboardService {
 
     var centerTotal = 0;
     if (checker.canViewCenters) {
-      centerTotal = await _fetchTotal('/operations/api/centers/', baseQuery) ?? 0;
+      centerTotal = await _fetchTotal(ApiConfig.centersPath, baseQuery) ?? 0;
     }
 
     var employeeTotal = 0;

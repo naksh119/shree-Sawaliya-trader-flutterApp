@@ -18,6 +18,7 @@ class EmployeeDto {
     this.isActive = true,
     this.dateOfJoining,
     this.createdAt,
+    this.employeePhoto,
   });
 
   factory EmployeeDto.fromJson(Map<String, dynamic> json) {
@@ -46,6 +47,7 @@ class EmployeeDto {
       isActive: readBool(flat, ['is_active', 'active']) ?? true,
       dateOfJoining: readDateTime(flat, ['date_of_joining', 'joining_date']),
       createdAt: readDateTime(flat, ['created_at']),
+      employeePhoto: readString(flat, ['employee_photo', 'photo']),
     );
   }
 
@@ -91,6 +93,7 @@ class EmployeeDto {
   final bool isActive;
   final DateTime? dateOfJoining;
   final DateTime? createdAt;
+  final String? employeePhoto;
 
   String get displayName {
     final first = firstName?.trim();

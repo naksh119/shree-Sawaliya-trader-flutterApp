@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/customers/models/customer_dto.dart';
+import 'package:intl/intl.dart';
+import 'package:sawaliyatrader/core/centers/models/center_dto.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-import 'package:sawaliyatrader/screens/customers/widgets/customer_status_chip.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
+import 'package:sawaliyatrader/screens/centers/widgets/center_status_chip.dart';
 
-class CustomerListTile extends StatelessWidget {
-  const CustomerListTile({
-    required this.customer,
+class CenterListTile extends StatelessWidget {
+  const CenterListTile({
+    required this.center,
     required this.onTap,
     this.canEdit = false,
     this.canDelete = false,
     super.key,
   });
 
-  final CustomerDto customer;
+  final CenterDto center;
   final VoidCallback onTap;
   final bool canEdit;
   final bool canDelete;
 
   @override
   Widget build(BuildContext context) {
+    final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+    final subtitle = center.subtitleLine;
+
     return Material(
       color: context.appColors.card,
       borderRadius: BorderRadius.circular(12),
@@ -40,10 +44,10 @@ class CustomerListTile extends StatelessWidget {
                 radius: 22,
                 backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
                 child: Text(
-                  customer.fullName.isNotEmpty
-                      ? customer.fullName[0].toUpperCase()
-                      : '?',
-                  style: AppTextStyles.label(context).copyWith(color: context.appColors.shinyGold),
+                  center.initials,
+                  style: AppTextStyles.label(context).copyWith(
+                    color: context.appColors.shinyGold,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -51,19 +55,24 @@ class CustomerListTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(customer.fullName, style: AppTextStyles.label(context)),
+                    Text(center.name, style: AppTextStyles.label(context)),
                     const SizedBox(height: 4),
                     Text(
-                      customer.displayCode,
+                      center.displayCode,
                       style: AppTextStyles.subtitle(context),
                     ),
-                    if (customer.mobile != null) ...[
+                    if (subtitle.isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(customer.mobile!, style: AppTextStyles.body(context)),
+                      Text(subtitle, style: AppTextStyles.body(context)),
                     ],
-                    if (customer.locationLine.isNotEmpty) ...[
+                    if (center.loanAmount != null) ...[
                       const SizedBox(height: 4),
-                      Text(customer.locationLine, style: AppTextStyles.subtitle(context)),
+                      Text(
+                        currency.format(center.loanAmount),
+                        style: AppTextStyles.body(context).copyWith(
+                          color: context.appColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -72,9 +81,17 @@ class CustomerListTile extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  CustomerStatusChip(status: customer.status, compact: true),
+                  CenterStatusChip(status: center.status, compact: true),
+                  if (center.emiGenerated) ...[
+                    const SizedBox(height: 6),
+                    Icon(
+                      Icons.event_available_outlined,
+                      size: 16,
+                      color: context.appColors.shinyGold.withValues(alpha: 0.8),
+                    ),
+                  ],
                   EntityEditDeleteTrailingActions(
-                    entityName: customer.fullName,
+                    entityName: center.name,
                     canEdit: canEdit,
                     canDelete: canDelete,
                   ),

@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const customers = '/customers';
   static const customerNew = '/customers/new';
   static const centers = '/centers';
+  static const centerNew = '/centers/new';
   static const emis = '/emis';
   static const employees = '/employees';
   static const employeeNew = '/employees/new';
@@ -21,4 +22,6 @@ abstract final class AppRoutes {
   static String employeeDetail(int id) => '/employees/$id';
 
   static String branchDetail(int id) => '/branches/$id';
+
+  static String centerDetail(int id) => '/centers/$id';
 }
