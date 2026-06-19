@@ -1,4 +1,3 @@
-import 'package:sawaliyatrader/core/api/multipart_form.dart';
 import 'package:sawaliyatrader/core/api/api_client.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
@@ -9,7 +8,6 @@ import 'package:sawaliyatrader/core/centers/models/center_member.dart';
 import 'package:sawaliyatrader/core/centers/models/center_status.dart';
 import 'package:sawaliyatrader/core/constants/api_config.dart';
 import 'package:sawaliyatrader/core/customers/models/json_parse.dart';
-import 'package:sawaliyatrader/core/models/picked_image.dart';
 
 class CenterService {
   CenterService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
@@ -51,28 +49,11 @@ class CenterService {
   Future<CenterDetail> createCenter({
     required LoginResponse session,
     required CenterCreateRequest request,
-    PickedImage? centerPhoto,
   }) async {
-    final files = centerPhoto != null && centerPhoto.isNotEmpty
-        ? {'center_photo': centerPhoto}
-        : const <String, PickedImage>{};
-
-    final Map<String, dynamic> body;
-    if (multipartHasFiles(files)) {
-      body = await _apiClient.postMultipart(
-        ApiConfig.centersPath,
-        data: await buildMultipartFormData(
-          fields: request.toJson(),
-          files: files,
-        ),
-      );
-    } else {
-      body = await _apiClient.post(
-        ApiConfig.centersPath,
-        data: request.toJson(),
-      );
-    }
-
+    final body = await _apiClient.post(
+      ApiConfig.centersPath,
+      data: request.toJson(),
+    );
     _ensureSuccess(body, 'Failed to create center');
     return CenterDetail.fromJson(dataMap(body));
   }

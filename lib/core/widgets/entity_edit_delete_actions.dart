@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -27,12 +28,13 @@ abstract final class EntityActionPlaceholder {
             onPressed: () => Navigator.of(context).pop(false),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Colors.red.shade700),
+            style: FilledButton.styleFrom(
+              backgroundColor: context.appColors.gold,
+              foregroundColor: AppColors.navy,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -54,14 +56,12 @@ class _GoldenIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
-    this.iconColor,
     this.size = 34,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback onPressed;
-  final Color? iconColor;
   final double size;
 
   @override
@@ -87,7 +87,7 @@ class _GoldenIconButton extends StatelessWidget {
             child: Icon(
               icon,
               size: size * 0.5,
-              color: iconColor ?? context.appColors.shinyGold,
+              color: context.appColors.shinyGold,
             ),
           ),
         ),
@@ -139,7 +139,6 @@ class EntityEditDeleteIconStack extends StatelessWidget {
             size: buttonSize,
             tooltip: 'Delete',
             icon: Icons.delete_outline,
-            iconColor: Colors.red.shade400,
             onPressed: onDelete ??
                 () => EntityActionPlaceholder.onDelete(context, entityName),
           ),
@@ -220,12 +219,12 @@ class EntityEditDeleteBar extends StatelessWidget {
             if (canEdit && canDelete) const SizedBox(width: 12),
             if (canDelete)
               Expanded(
-                child: OutlinedButton.icon(
+                child: FilledButton.icon(
                   onPressed: onDelete ??
                       () => EntityActionPlaceholder.onDelete(context, entityName),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade700,
-                    side: BorderSide(color: Colors.red.shade300),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: context.appColors.gold,
+                    foregroundColor: AppColors.navy,
                   ),
                   icon: const Icon(Icons.delete_outline, size: 18),
                   label: const Text('Delete'),

@@ -19,7 +19,6 @@ class CenterDetail {
     this.weight,
     this.purity,
     this.remarks,
-    this.centerPhoto,
     this.emiGenerated = false,
     this.startDate,
     this.createdAt,
@@ -63,7 +62,6 @@ class CenterDetail {
       ]),
       purity: readString(centerJson, ['purity', 'gold_purity', 'silver_purity']),
       remarks: readString(centerJson, ['remarks', 'notes']),
-      centerPhoto: readString(centerJson, ['center_photo', 'photo']),
       status: CenterStatus.fromValue(readString(centerJson, ['status'])) ??
           CenterStatus.pending,
       emiGenerated:
@@ -88,7 +86,6 @@ class CenterDetail {
   final double? weight;
   final String? purity;
   final String? remarks;
-  final String? centerPhoto;
   final CenterStatus status;
   final bool emiGenerated;
   final DateTime? startDate;

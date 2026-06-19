@@ -306,8 +306,6 @@ class _CentersListScreenState extends State<CentersListScreen> {
           final center = _items[index];
           return CenterListTile(
             center: center,
-            canEdit: permissions.canEditCenter,
-            canDelete: permissions.canDeleteCenter,
             onTap: () => context.push(AppRoutes.centerDetail(center.id)),
           );
         },

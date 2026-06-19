@@ -56,10 +56,8 @@ class PermissionService {
     if (!has(permission)) throw PermissionDeniedException(permission);
   }
 
-  bool get _hasAdminPrivileges =>
+  bool get canManageBranches =>
       isSuperuser || hasRole(EmployeeRole.admin) || hasFullAccess;
-
-  bool get canManageBranches => _hasAdminPrivileges;
 
   bool get canEditBranch => canManageBranches;
 
@@ -69,8 +67,7 @@ class PermissionService {
 
   bool get canCreateCustomer => has(AppPermission.customerCreate);
 
-  bool get canEditCustomer =>
-      has(AppPermission.customerEdit) || _hasAdminPrivileges;
+  bool get canEditCustomer => has(AppPermission.customerEdit);
 
   bool get canDeleteCustomer => canEditCustomer;
 
@@ -79,11 +76,6 @@ class PermissionService {
   bool get canViewCenters => has(AppPermission.centerView);
 
   bool get canCreateCenter => has(AppPermission.centerCreate);
-
-  bool get canEditCenter =>
-      has(AppPermission.centerCreate) || _hasAdminPrivileges;
-
-  bool get canDeleteCenter => canEditCenter;
 
   bool get canCollectEmi => has(AppPermission.emiCollect);
 
@@ -99,10 +91,7 @@ class PermissionService {
       hasRole(EmployeeRole.admin) ||
       hasRole(EmployeeRole.hrm);
 
-  bool get canEditEmployee =>
-      has(AppPermission.employeeEdit) ||
-      _hasAdminPrivileges ||
-      hasRole(EmployeeRole.hrm);
+  bool get canEditEmployee => has(AppPermission.employeeEdit);
 
   bool get canDeleteEmployee => canEditEmployee;
 

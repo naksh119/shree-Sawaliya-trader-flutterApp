@@ -3,22 +3,17 @@ import 'package:intl/intl.dart';
 import 'package:sawaliyatrader/core/centers/models/center_dto.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
-import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/screens/centers/widgets/center_status_chip.dart';
 
 class CenterListTile extends StatelessWidget {
   const CenterListTile({
     required this.center,
     required this.onTap,
-    this.canEdit = false,
-    this.canDelete = false,
     super.key,
   });
 
   final CenterDto center;
   final VoidCallback onTap;
-  final bool canEdit;
-  final bool canDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -90,11 +85,6 @@ class CenterListTile extends StatelessWidget {
                       color: context.appColors.shinyGold.withValues(alpha: 0.8),
                     ),
                   ],
-                  EntityEditDeleteTrailingActions(
-                    entityName: center.name,
-                    canEdit: canEdit,
-                    canDelete: canDelete,
-                  ),
                 ],
               ),
             ],

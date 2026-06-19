@@ -9,17 +9,15 @@ import 'package:sawaliyatrader/core/customers/customer_service.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_dto.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
-import 'package:sawaliyatrader/core/models/picked_image.dart';
-import 'package:sawaliyatrader/core/permissions/session_scope.dart';import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/permissions/session_scope.dart';
+import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
-import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
-import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
 
 class CenterCreateScreen extends StatefulWidget {
   const CenterCreateScreen({super.key});
@@ -53,7 +51,6 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
 
   CenterProductType _productType = CenterProductType.gold;
   DateTime? _startDate;
-  PickedImage? _centerPhoto;
   final Set<int> _selectedMemberIds = {};
   List<CustomerDto> _approvedCustomers = [];
   String _memberSearch = '';
@@ -172,7 +169,6 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
       final created = await _centerService.createCenter(
         session: session,
         request: request,
-        centerPhoto: _centerPhoto,
       );
 
       if (!mounted) return;
@@ -200,14 +196,6 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
     if (trimmed.isEmpty) return null;
     return double.tryParse(trimmed);
   }
-
-  Future<void> _pickCenterPhoto() async {
-    final picked = await PickedImage.pick();
-    if (picked == null) return;
-    setState(() => _centerPhoto = picked);
-  }
-
-  void _clearCenterPhoto() => setState(() => _centerPhoto = null);
 
   Future<void> _pickStartDate() async {
     final picked = await showDatePicker(
@@ -237,7 +225,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
               session: session,
               child: Column(
                 children: [
-                  WizardStepIndicator(steps: _steps, currentStep: _step),
+                  _StepIndicator(steps: _steps, currentStep: _step),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -330,15 +318,6 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
               label: 'Purity',
               hint: _productType == CenterProductType.gold ? 'e.g. 22K' : 'e.g. 999',
               textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 16),
-            AppPhotoPicker(
-              label: 'Center photo',
-              hint: 'Upload a photo for this center (optional).',
-              placeholderIcon: Icons.groups_outlined,
-              image: _centerPhoto,
-              onPick: _pickCenterPhoto,
-              onClear: _centerPhoto?.isNotEmpty == true ? _clearCenterPhoto : null,
             ),
           ],
         ),
@@ -553,6 +532,78 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
             );
           }),
       ],
+    );
+  }
+}
+
+class _StepIndicator extends StatelessWidget {
+  const _StepIndicator({
+    required this.steps,
+    required this.currentStep,
+  });
+
+  final List<String> steps;
+  final int currentStep;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Row(
+        children: [
+          for (var index = 0; index < steps.length; index++) ...[
+            if (index > 0)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  color: index <= currentStep
+                      ? context.appColors.gold.withValues(alpha: 0.5)
+                      : context.appColors.border,
+                ),
+              ),
+            _StepDot(
+              label: '${index + 1}',
+              isActive: index == currentStep,
+              isComplete: index < currentStep,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  const _StepDot({
+    required this.label,
+    required this.isActive,
+    required this.isComplete,
+  });
+
+  final String label;
+  final bool isActive;
+  final bool isComplete;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isActive || isComplete
+        ? context.appColors.gold
+        : context.appColors.border;
+
+    return Container(
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isActive || isComplete
+            ? color.withValues(alpha: 0.18)
+            : context.appColors.card,
+        border: Border.all(color: color),
+      ),
+      child: isComplete
+          ? Icon(Icons.check, size: 16, color: context.appColors.shinyGold)
+          : Text(label, style: AppTextStyles.subtitle(context)),
     );
   }
 }

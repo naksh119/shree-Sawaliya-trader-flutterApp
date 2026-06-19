@@ -17,7 +17,6 @@ import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
-import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/screens/centers/widgets/center_status_chip.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
@@ -237,27 +236,15 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(
-          title: center?.name ?? 'Center',
-        ),
+        appBar: ThemedAppBar(title: center?.name ?? 'Center'),
         body: _buildBody(center, permissions),
         bottomNavigationBar: center == null
             ? null
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  EntityEditDeleteBar(
-                    entityName: center.name,
-                    canEdit: permissions.canEditCenter,
-                    canDelete: permissions.canDeleteCenter,
-                  ),
-                  _ActionBar(
-                    center: center,
-                    permissions: permissions,
-                    isGeneratingEmi: _isGeneratingEmi,
-                    onGenerateEmi: _generateEmi,
-                  ),
-                ],
+            : _ActionBar(
+                center: center,
+                permissions: permissions,
+                isGeneratingEmi: _isGeneratingEmi,
+                onGenerateEmi: _generateEmi,
               ),
       ),
     );
