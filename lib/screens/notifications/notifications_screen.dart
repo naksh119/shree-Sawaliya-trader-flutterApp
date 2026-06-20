@@ -29,7 +29,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _loadSession() async {
     final session =
-        await awaitWithMinPageLoaderDuration(_authService.getSession());
+        await _authService.getSession();
     if (!mounted) return;
 
     setState(() => _session = session);

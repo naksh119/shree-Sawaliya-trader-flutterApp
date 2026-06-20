@@ -9,6 +9,7 @@ import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -27,7 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _sessionFuture = awaitWithMinPageLoaderDuration(_authService.getSession());
+    _sessionFuture = _authService.getSession();
   }
 
   Future<void> _onLogout() async {
@@ -68,9 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context.go(AppRoutes.login);
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      await showAppErrorMessage(context, message: error.message);
     } finally {
       if (mounted) setState(() => _isLoggingOut = false);
     }

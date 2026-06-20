@@ -47,7 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _dashboardFuture = awaitWithMinPageLoaderDuration(_loadDashboard());
+    _dashboardFuture = _loadDashboard();
   }
 
   Future<_DashboardViewModel?> _loadDashboard() async {

@@ -47,9 +47,9 @@ class ApiConfig {
   static const employeesPath = '/employees/api/';
   static const employeeRegisterPath = '/employees/register/';
   static const employeeRolesPath = '/employees/api/roles/';
-  static const branchesPath = '/branches/api';
+  static const branchesPath = '/branches/api/';
 
-  static String branchPath(int id) => '/branches/api/$id';
+  static String branchPath(int id) => '/branches/api/$id/';
 
   static String employeePath(int id) => '/employees/api/$id/';
 

@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
-import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/notifications/models/notification_dto.dart';
 import 'package:sawaliyatrader/core/notifications/notification_filter.dart';
 import 'package:sawaliyatrader/core/notifications/notification_service.dart';
@@ -43,11 +42,8 @@ class NotificationNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = _items.isEmpty
-          ? await awaitWithMinPageLoaderDuration(
-              _service.fetchNotifications(session: session),
-            )
-          : await _service.fetchNotifications(session: session);
+      final response =
+          await _service.fetchNotifications(session: session);
       _items = response.items;
       _unreadCount = response.unreadCount;
     } catch (error) {

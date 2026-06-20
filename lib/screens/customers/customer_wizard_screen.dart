@@ -17,6 +17,7 @@ import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
@@ -258,9 +259,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
       });
 
   Future<void> _loadSession() async {
-    final session = await awaitWithMinPageLoaderDuration(
-      _authService.getSession(),
-    );
+    final session = await _authService.getSession();
     if (!mounted) return;
     setState(() => _session = session);
   }
@@ -1038,6 +1037,25 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
             side: BorderSide(color: context.appColors.border),
           ),
         ),
+        if (_pickedFilePath != null &&
+            appPreviewImageIsLocalImagePath(_pickedFilePath)) ...[
+          const SizedBox(height: 12),
+          Text(
+            'Selected preview',
+            style: AppTextStyles.subtitle(context).copyWith(
+              color: context.appColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          AppPreviewImage(
+            imagePath: _pickedFilePath,
+            height: 140,
+            width: 140,
+            fit: BoxFit.contain,
+            borderRadius: BorderRadius.circular(12),
+            viewerTitle: 'Document preview',
+          ),
+        ],
       ],
     );
   }

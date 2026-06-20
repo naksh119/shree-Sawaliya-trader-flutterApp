@@ -11,13 +11,13 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/screens/branches/branch_delete_helper.dart';
 
 enum _StatusFilter { all, active, inactive }
 
@@ -31,7 +31,6 @@ class BranchesListScreen extends StatefulWidget {
 class _BranchesListScreenState extends State<BranchesListScreen> {
   final _authService = AuthService();
   final _branchService = BranchService();
-  final _searchController = TextEditingController();
   final _scrollController = ScrollController();
 
   LoginResponse? _session;
@@ -72,13 +71,12 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _bootstrap() async {
-    await awaitWithMinPageLoaderDuration(_bootstrapWork());
+    await _bootstrapWork();
   }
 
   Future<void> _bootstrapWork() async {
@@ -135,9 +133,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
         search: _searchQuery.isEmpty ? null : _searchQuery,
         isActive: _isActiveParam,
       );
-      final response = reset && _items.isEmpty
-          ? await awaitWithMinPageLoaderDuration(fetchBranches)
-          : await fetchBranches;
+      final response = await fetchBranches;
 
       if (!mounted || generation != _loadGeneration) return;
 
@@ -168,15 +164,8 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
     }
   }
 
-  void _onSearchSubmitted(String value) {
-    _searchQuery = value.trim();
-    _loadBranches(reset: true);
-  }
-
-  void _clearSearch() {
-    _searchController.clear();
-    if (_searchQuery.isEmpty) return;
-    setState(() => _searchQuery = '');
+  void _onSearch(String query) {
+    setState(() => _searchQuery = query);
     _loadBranches(reset: true);
   }
 
@@ -184,6 +173,36 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
     if (status == null || status == _statusFilter) return;
     setState(() => _statusFilter = status);
     _loadBranches(reset: true);
+  }
+
+  Future<void> _deleteBranch(BranchDto branch) async {
+    final session = _session;
+    if (session == null || !mounted) return;
+
+    final deleted = await confirmAndDeleteBranch(
+      context: context,
+      branchService: _branchService,
+      session: session,
+      branch: branch,
+    );
+
+    if (!deleted || !mounted) return;
+
+    setState(() {
+      _items.removeWhere((item) => item.id == branch.id);
+      if (_total > 0) _total -= 1;
+    });
+  }
+
+  Future<void> _editBranch(BranchDto branch) async {
+    final updated = await context.push<bool>(
+      AppRoutes.branchEdit(branch.id),
+      extra: branch,
+    );
+
+    if (updated == true && mounted) {
+      _loadBranches(reset: true);
+    }
   }
 
   @override
@@ -232,52 +251,20 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: TextField(
-                controller: _searchController,
-                style: AppTextStyles.body(context),
-                decoration: InputDecoration(
-                  hintText: 'Search by name, code, or city',
-                  hintStyle: AppTextStyles.body(context).copyWith(
-                    color: context.appColors.textSecondary,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: context.appColors.shinyGold.withValues(alpha: 0.7),
-                  ),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(
-                            Icons.close_rounded,
-                            color: context.appColors.textSecondary,
-                          ),
-                          onPressed: _clearSearch,
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: context.appColors.inputFill,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppSearchField(
+                      hintText: 'Search by name, code, or city',
+                      onSearch: _onSearch,
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
-                    ),
+                  const SizedBox(width: 8),
+                  _StatusFilterButton(
+                    value: _statusFilter,
+                    onChanged: _onStatusSelected,
                   ),
-                ),
-                textInputAction: TextInputAction.search,
-                onSubmitted: _onSearchSubmitted,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: _StatusDropdown(
-                value: _statusFilter,
-                onChanged: _onStatusSelected,
+                ],
               ),
             ),
             if (!_isLoading && _error == null && _items.isNotEmpty)
@@ -363,10 +350,17 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
             branch: _items[index],
             canEdit: permissions.canEditBranch,
             canDelete: permissions.canDeleteBranch,
-            onTap: () => context.push(
-              AppRoutes.branchDetail(_items[index].id),
-              extra: _items[index],
-            ),
+            onTap: () async {
+              final deleted = await context.push<bool>(
+                AppRoutes.branchDetail(_items[index].id),
+                extra: _items[index],
+              );
+              if (deleted == true && mounted) {
+                _loadBranches(reset: true);
+              }
+            },
+            onEdit: () => _editBranch(_items[index]),
+            onDelete: () => _deleteBranch(_items[index]),
           );
         },
       ),
@@ -392,16 +386,20 @@ class _BranchListTile extends StatelessWidget {
     required this.onTap,
     this.canEdit = false,
     this.canDelete = false,
+    this.onEdit,
+    this.onDelete,
   });
 
   final BranchDto branch;
   final VoidCallback onTap;
   final bool canEdit;
   final bool canDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final location = branch.locationLine;
+    final location = branch.location?.trim() ?? '';
 
     return Material(
       color: context.appColors.card,
@@ -432,15 +430,32 @@ class _BranchListTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(branch.name, style: AppTextStyles.label(context)),
-                    const SizedBox(height: 4),
-                    Text(
-                      location.isNotEmpty ? location : 'No location set',
-                      style: AppTextStyles.body(context).copyWith(
-                        color: location.isNotEmpty
-                            ? context.appColors.textSecondary
-                            : context.appColors.textSecondary,
-                      ),
+                    const SizedBox(height: 6),
+                    _BranchMetaRow(
+                      icon: Icons.tag_outlined,
+                      text: branch.displayCode,
+                      style: AppTextStyles.subtitle(context),
                     ),
+                    if (branch.city.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      _BranchMetaRow(
+                        icon: Icons.location_city_outlined,
+                        text: branch.city,
+                        style: AppTextStyles.body(context).copyWith(
+                          color: context.appColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                    if (location.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      _BranchMetaRow(
+                        icon: Icons.place_outlined,
+                        text: location,
+                        style: AppTextStyles.body(context).copyWith(
+                          color: context.appColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -453,6 +468,8 @@ class _BranchListTile extends StatelessWidget {
                     entityName: branch.name,
                     canEdit: canEdit,
                     canDelete: canDelete,
+                    onEdit: onEdit,
+                    onDelete: onDelete,
                   ),
                 ],
               ),
@@ -460,6 +477,36 @@ class _BranchListTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BranchMetaRow extends StatelessWidget {
+  const _BranchMetaRow({
+    required this.icon,
+    required this.text,
+    required this.style,
+  });
+
+  final IconData icon;
+  final String text;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: context.appColors.shinyGold.withValues(alpha: 0.75),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(text, style: style),
+        ),
+      ],
     );
   }
 }
@@ -491,8 +538,8 @@ class _BranchActiveChip extends StatelessWidget {
   }
 }
 
-class _StatusDropdown extends StatelessWidget {
-  const _StatusDropdown({
+class _StatusFilterButton extends StatelessWidget {
+  const _StatusFilterButton({
     required this.value,
     required this.onChanged,
   });
@@ -502,28 +549,46 @@ class _StatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: AppDropdownDecoration.container(context),
-      child: AppInlineDropdown<_StatusFilter>(
-        value: value,
-        isExpanded: true,
-        style: AppTextStyles.body(context),
-        items: const [
-          DropdownMenuItem(
-            value: _StatusFilter.all,
-            child: Text('All branches'),
+    final isFiltered = value != _StatusFilter.all;
+    final iconColor = isFiltered
+        ? context.appColors.gold
+        : context.appColors.shinyGold.withValues(alpha: 0.7);
+
+    return PopupMenuButton<_StatusFilter>(
+      tooltip: 'Filter by status',
+      initialValue: value,
+      onSelected: onChanged,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: context.appColors.border),
+      ),
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: _StatusFilter.all,
+          child: Text('All branches'),
+        ),
+        const PopupMenuItem(
+          value: _StatusFilter.active,
+          child: Text('Active branches'),
+        ),
+        const PopupMenuItem(
+          value: _StatusFilter.inactive,
+          child: Text('Inactive branches'),
+        ),
+      ],
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: context.appColors.inputFill,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isFiltered
+                ? context.appColors.gold.withValues(alpha: 0.5)
+                : context.appColors.border,
           ),
-          DropdownMenuItem(
-            value: _StatusFilter.active,
-            child: Text('Active branches'),
-          ),
-          DropdownMenuItem(
-            value: _StatusFilter.inactive,
-            child: Text('Inactive branches'),
-          ),
-        ],
-        onChanged: onChanged,
+        ),
+        child: Icon(Icons.filter_list_rounded, color: iconColor),
       ),
     );
   }

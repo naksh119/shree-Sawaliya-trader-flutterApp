@@ -15,8 +15,9 @@ import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
-import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
+import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/screens/centers/widgets/center_status_chip.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
@@ -84,11 +85,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       }
     }
 
-    if (_center == null) {
-      await awaitWithMinPageLoaderDuration(fetchCenter());
-    } else {
-      await fetchCenter();
-    }
+    await fetchCenter();
   }
 
   Future<void> _generateEmi() async {
@@ -109,7 +106,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       );
     } catch (error) {
       if (!mounted) return;
-      _showSnack(error.toString());
+      await showAppErrorMessage(context, message: error.toString());
     } finally {
       if (mounted) setState(() => _isGeneratingEmi = false);
     }
@@ -146,10 +143,11 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       );
       if (!mounted) return;
       await _load();
-      _showSnack('Member added.');
+      if (!mounted) return;
+      await showAppSuccessMessage(context, message: 'Member added.');
     } catch (error) {
       if (!mounted) return;
-      _showSnack(error.toString());
+      await showAppErrorMessage(context, message: error.toString());
     } finally {
       if (mounted) setState(() => _isUpdatingMembers = false);
     }
@@ -195,19 +193,14 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       );
       if (!mounted) return;
       await _load();
-      _showSnack('Member removed.');
+      if (!mounted) return;
+      await showAppSuccessMessage(context, message: 'Member removed.');
     } catch (error) {
       if (!mounted) return;
-      _showSnack(error.toString());
+      await showAppErrorMessage(context, message: error.toString());
     } finally {
       if (mounted) setState(() => _isUpdatingMembers = false);
     }
-  }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
   }
 
   String _formatMoney(double? value) {
@@ -533,7 +526,6 @@ class _AddMemberSheet extends StatefulWidget {
 }
 
 class _AddMemberSheetState extends State<_AddMemberSheet> {
-  final _searchController = TextEditingController();
   List<CustomerDto> _customers = [];
   bool _isLoading = true;
   String? _error;
@@ -542,12 +534,6 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
   void initState() {
     super.initState();
     _loadCustomers();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadCustomers({String? search}) async {
@@ -598,27 +584,9 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
-                controller: _searchController,
-                style: AppTextStyles.body(context),
-                decoration: InputDecoration(
-                  hintText: 'Search approved customers',
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: context.appColors.shinyGold.withValues(alpha: 0.7),
-                  ),
-                  filled: true,
-                  fillColor: context.appColors.inputFill,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: context.appColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: context.appColors.border),
-                  ),
-                ),
-                onSubmitted: (value) => _loadCustomers(search: value.trim()),
+              child: AppSearchField(
+                hintText: 'Search approved customers',
+                onSearch: (query) => _loadCustomers(search: query),
               ),
             ),
             const SizedBox(height: 12),

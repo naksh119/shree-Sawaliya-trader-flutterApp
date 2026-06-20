@@ -17,19 +17,8 @@ enum AppLoaderSize {
 /// Fixed size for full-page loaders (login, dashboard, shell, overlays).
 const AppLoaderSize kAppPageLoaderSize = AppLoaderSize.xlarge;
 
-/// Minimum time a full-page loader stays visible (avoids a quick flash).
-const Duration kAppPageLoaderMinDuration = Duration(milliseconds: 800);
-
 /// Slower rotation for the large page feather loader.
 const Duration kAppPageLoaderRotationDuration = Duration(milliseconds: 2200);
-
-/// Waits for [future] and at least [kAppPageLoaderMinDuration] before completing.
-Future<T> awaitWithMinPageLoaderDuration<T>(Future<T> future) {
-  return Future.wait([
-    future,
-    Future<void>.delayed(kAppPageLoaderMinDuration),
-  ]).then((results) => results[0] as T);
-}
 
 /// Standard app-wide feather spinner. Use this instead of [CircularProgressIndicator].
 class AppLoader extends StatefulWidget {

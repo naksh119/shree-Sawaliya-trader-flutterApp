@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_message.dart';
 
 /// Placeholder handlers until edit/delete APIs are wired.
 abstract final class EntityActionPlaceholder {
-  static void onEdit(BuildContext context, String entityName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Edit $entityName — API coming soon'),
-        behavior: SnackBarBehavior.floating,
-      ),
+  static Future<void> onEdit(BuildContext context, String entityName) {
+    return showAppSuccessMessage(
+      context,
+      message: 'Edit $entityName — API coming soon',
     );
   }
 
@@ -42,11 +41,9 @@ abstract final class EntityActionPlaceholder {
 
     if (confirmed != true || !context.mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Delete $entityName — API coming soon'),
-        behavior: SnackBarBehavior.floating,
-      ),
+    await showAppSuccessMessage(
+      context,
+      message: 'Delete $entityName — API coming soon',
     );
   }
 }

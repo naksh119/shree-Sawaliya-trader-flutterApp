@@ -13,6 +13,8 @@ import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_status_chip.dart';
+import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
+import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -78,11 +80,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       }
     }
 
-    if (_customer == null) {
-      await awaitWithMinPageLoaderDuration(fetchCustomer());
-    } else {
-      await fetchCustomer();
-    }
+    await fetchCustomer();
   }
 
   Future<void> _updateStatus(CustomerStatus status) async {
@@ -98,20 +96,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       );
       if (!mounted) return;
       setState(() => _customer = updated);
-      _showSnack('Status updated to ${status.label}');
+      await showAppSuccessMessage(
+        context,
+        message: 'Status updated to ${status.label}',
+      );
     } catch (error) {
       if (!mounted) return;
-      _showSnack(error.toString());
+      await showAppErrorMessage(context, message: error.toString());
     } finally {
       if (!mounted) return;
       setState(() => _isUpdatingStatus = false);
     }
-  }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
   }
 
   String _formatMoney(double? value) {
@@ -251,6 +246,45 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               ],
             ),
           ),
+          if (appPreviewImageIsNetworkUrl(customer.livePhoto) ||
+              appPreviewImageIsNetworkUrl(customer.housePhoto)) ...[
+            const SizedBox(height: 12),
+            CustomerSectionCard(
+              title: 'Photos',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (appPreviewImageIsNetworkUrl(customer.livePhoto)) ...[
+                    Text('Customer image', style: AppTextStyles.subtitle(context)),
+                    const SizedBox(height: 8),
+                    AppPreviewImage(
+                      imageUrl: customer.livePhoto,
+                      height: 140,
+                      width: 140,
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.circular(12),
+                      viewerTitle: 'Customer image',
+                    ),
+                  ],
+                  if (appPreviewImageIsNetworkUrl(customer.livePhoto) &&
+                      appPreviewImageIsNetworkUrl(customer.housePhoto))
+                    const SizedBox(height: 16),
+                  if (appPreviewImageIsNetworkUrl(customer.housePhoto)) ...[
+                    Text('House photo', style: AppTextStyles.subtitle(context)),
+                    const SizedBox(height: 8),
+                    AppPreviewImage(
+                      imageUrl: customer.housePhoto,
+                      height: 140,
+                      width: 140,
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.circular(12),
+                      viewerTitle: 'House photo',
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           CustomerSectionCard(
             title: 'Family Members',

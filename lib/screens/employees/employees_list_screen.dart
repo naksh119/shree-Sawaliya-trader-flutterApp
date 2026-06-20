@@ -17,6 +17,7 @@ import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/screens/employees/widgets/employee_list_tile.dart';
@@ -37,7 +38,6 @@ class EmployeesListScreen extends StatefulWidget {
 class _EmployeesListScreenState extends State<EmployeesListScreen> {
   final _authService = AuthService();
   final _employeeService = EmployeeService();
-  final _searchController = TextEditingController();
   final _scrollController = ScrollController();
 
   LoginResponse? _session;
@@ -87,13 +87,12 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _bootstrap() async {
-    await awaitWithMinPageLoaderDuration(_bootstrapWork());
+    await _bootstrapWork();
   }
 
   Future<void> _bootstrapWork() async {
@@ -210,9 +209,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
         roleCode: selectedRole?.code,
         branch: _branchFilterFor(session),
       );
-      final response = reset && _items.isEmpty
-          ? await awaitWithMinPageLoaderDuration(fetchEmployees)
-          : await fetchEmployees;
+      final response = await fetchEmployees;
 
       if (!mounted) return;
       final filteredItems = _filterEmployees(response.items);
@@ -253,8 +250,8 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     }
   }
 
-  void _onSearchSubmitted(String value) {
-    _searchQuery = value.trim();
+  void _onSearch(String query) {
+    setState(() => _searchQuery = query);
     _loadEmployees(reset: true);
   }
 
@@ -381,32 +378,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: TextField(
-                controller: _searchController,
-                style: AppTextStyles.body(context),
-                decoration: InputDecoration(
-                  hintText: 'Search by name, code, or email',
-                  hintStyle: AppTextStyles.body(
-                    context,
-                  ).copyWith(color: context.appColors.textSecondary),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: context.appColors.shinyGold.withValues(alpha: 0.7),
-                  ),
-                  filled: true,
-                  fillColor: context.appColors.inputFill,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: context.appColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: context.appColors.border),
-                  ),
-                ),
-                textInputAction: TextInputAction.search,
-                onSubmitted: _onSearchSubmitted,
+              child: AppSearchField(
+                hintText: 'Search by name, code, or email',
+                onSearch: _onSearch,
               ),
             ),
             Padding(

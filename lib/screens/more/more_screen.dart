@@ -48,7 +48,7 @@ class _MoreScreenState extends State<MoreScreen> {
 
     super.initState();
 
-    _sessionFuture = awaitWithMinPageLoaderDuration(AuthService().getSession());
+    _sessionFuture = AuthService().getSession();
 
   }
 

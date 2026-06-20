@@ -11,6 +11,7 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_list_tile.dart';
@@ -27,7 +28,6 @@ class CustomersListScreen extends StatefulWidget {
 class _CustomersListScreenState extends State<CustomersListScreen> {
   final _authService = AuthService();
   final _customerService = CustomerService();
-  final _searchController = TextEditingController();
   final _scrollController = ScrollController();
 
   LoginResponse? _session;
@@ -49,13 +49,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _bootstrap() async {
-    await awaitWithMinPageLoaderDuration(_bootstrapWork());
+    await _bootstrapWork();
   }
 
   Future<void> _bootstrapWork() async {
@@ -97,9 +96,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         status: _statusFilter,
         branch: session.employee?.branch,
       );
-      final response = reset && _items.isEmpty
-          ? await awaitWithMinPageLoaderDuration(fetchCustomers)
-          : await fetchCustomers;
+      final response = await fetchCustomers;
 
       if (!mounted) return;
       setState(() {
@@ -126,8 +123,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     }
   }
 
-  void _onSearchSubmitted(String value) {
-    _searchQuery = value.trim();
+  void _onSearch(String query) {
+    setState(() => _searchQuery = query);
     _loadCustomers(reset: true);
   }
 
@@ -169,36 +166,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: TextField(
-                controller: _searchController,
-                style: AppTextStyles.body(context),
-                decoration: InputDecoration(
-                  hintText: 'Search by name, mobile, or code',
-                  hintStyle: AppTextStyles.body(context).copyWith(
-                    color: context.appColors.textSecondary,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: context.appColors.shinyGold.withValues(alpha: 0.7),
-                  ),
-                  filled: true,
-                  fillColor: context.appColors.inputFill,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: context.appColors.border,
-                    ),
-                  ),
-                ),
-                textInputAction: TextInputAction.search,
-                onSubmitted: _onSearchSubmitted,
+              child: AppSearchField(
+                hintText: 'Search by name, mobile, or code',
+                onSearch: _onSearch,
               ),
             ),
             SizedBox(

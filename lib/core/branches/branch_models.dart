@@ -17,7 +17,7 @@ class BranchDto {
   factory BranchDto.fromJson(Map<String, dynamic> json) {
     final branchJson = asJsonMap(json['branch']) ?? json;
     return BranchDto(
-      id: readInt(branchJson, ['id', 'branch_id']) ?? 0,
+      id: readInt(branchJson, ['id', 'branch_id', 'pk']) ?? 0,
       name: readString(branchJson, ['branch_name', 'name']) ?? '',
       code: readString(branchJson, ['branch_code', 'code']) ?? '',
       city: readString(branchJson, ['branch_city', 'city']) ?? '',
@@ -87,6 +87,7 @@ class BranchListResponse {
 }
 
 class BranchCreateRequest {
+  /// POST `/branches/api/` request body — creates a new branch.
   const BranchCreateRequest({
     required this.name,
     required this.code,
@@ -108,6 +109,47 @@ class BranchCreateRequest {
       'branch_city': city,
       if (location != null && location!.isNotEmpty) 'branch_location': location,
       'is_active': isActive,
+    };
+  }
+}
+
+class BranchUpdateRequest {
+  /// PUT `/branches/api/{id}/` request body — full replace of all branch fields.
+  const BranchUpdateRequest({
+    required this.name,
+    required this.code,
+    required this.city,
+    this.location,
+    this.isActive = true,
+    this.isDeleted = false,
+  });
+
+  factory BranchUpdateRequest.fromBranch(BranchDto branch) {
+    return BranchUpdateRequest(
+      name: branch.name,
+      code: branch.code,
+      city: branch.city,
+      location: branch.location,
+      isActive: branch.isActive,
+      isDeleted: branch.isDeleted,
+    );
+  }
+
+  final String name;
+  final String code;
+  final String city;
+  final String? location;
+  final bool isActive;
+  final bool isDeleted;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'branch_name': name,
+      'branch_code': code.toUpperCase(),
+      'branch_city': city,
+      if (location != null && location!.isNotEmpty) 'branch_location': location,
+      'is_active': isActive,
+      'is_deleted': isDeleted,
     };
   }
 }

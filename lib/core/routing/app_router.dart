@@ -12,6 +12,7 @@ import 'package:sawaliyatrader/screens/notifications/notifications_screen.dart';
 import 'package:sawaliyatrader/screens/branches/branch_create_screen.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/screens/branches/branch_detail_screen.dart';
+import 'package:sawaliyatrader/screens/branches/branch_edit_screen.dart';
 import 'package:sawaliyatrader/screens/branches/branches_list_screen.dart';
 import 'package:sawaliyatrader/screens/centers/center_create_screen.dart';
 import 'package:sawaliyatrader/screens/centers/center_detail_screen.dart';
@@ -135,6 +136,24 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
       GoRoute(
         path: AppRoutes.branchNew,
         builder: (context, state) => const BranchCreateScreen(),
+      ),
+      GoRoute(
+        path: '/branches/:id/edit',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) {
+            return const ModulePlaceholderScreen(
+              title: 'Edit Branch',
+              description: 'Invalid branch id.',
+            );
+          }
+          final initialBranch =
+              state.extra is BranchDto ? state.extra! as BranchDto : null;
+          return BranchEditScreen(
+            branchId: id,
+            initialBranch: initialBranch,
+          );
+        },
       ),
       GoRoute(
         path: '/branches/:id',

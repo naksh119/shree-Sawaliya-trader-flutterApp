@@ -14,6 +14,7 @@ import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
+import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
@@ -31,7 +32,6 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   final _centerService = CenterService();
   final _customerService = CustomerService();
   final _formKey = GlobalKey<FormState>();
-  final _memberSearchController = TextEditingController();
 
   LoginResponse? _session;
   bool _isLoadingSession = true;
@@ -73,12 +73,11 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
     _weightController.dispose();
     _purityController.dispose();
     _remarksController.dispose();
-    _memberSearchController.dispose();
     super.dispose();
   }
 
   Future<void> _bootstrap() async {
-    await awaitWithMinPageLoaderDuration(_bootstrapWork());
+    await _bootstrapWork();
   }
 
   Future<void> _bootstrapWork() async {
@@ -413,31 +412,10 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: _memberSearchController,
-          style: AppTextStyles.body(context),
-          decoration: InputDecoration(
-            hintText: 'Search approved customers',
-            hintStyle: AppTextStyles.body(context).copyWith(
-              color: context.appColors.textSecondary,
-            ),
-            prefixIcon: Icon(
-              Icons.search,
-              color: context.appColors.shinyGold.withValues(alpha: 0.7),
-            ),
-            filled: true,
-            fillColor: context.appColors.inputFill,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: context.appColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: context.appColors.border),
-            ),
-          ),
-          onSubmitted: (value) {
-            setState(() => _memberSearch = value.trim());
+        AppSearchField(
+          hintText: 'Search approved customers',
+          onSearch: (query) {
+            setState(() => _memberSearch = query);
             _loadApprovedCustomers();
           },
         ),

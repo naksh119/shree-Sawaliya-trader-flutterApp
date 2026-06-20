@@ -4,6 +4,8 @@ abstract final class AppRoutes {
   static const dashboard = '/';
   static const branches = '/branches';
   static const branchNew = '/branches/new';
+
+  static String branchEdit(int id) => '/branches/$id/edit';
   static const customers = '/customers';
   static const customerNew = '/customers/new';
   static const centers = '/centers';

@@ -9,6 +9,7 @@ import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
@@ -73,11 +74,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       }
     }
 
-    if (_employee == null) {
-      await awaitWithMinPageLoaderDuration(fetchEmployee());
-    } else {
-      await fetchEmployee();
-    }
+    await fetchEmployee();
   }
 
   String _formatDate(DateTime? value) {
@@ -559,6 +556,27 @@ class _EmployeeAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final photo = employee.employeePhoto?.trim();
+    if (photo != null &&
+        photo.isNotEmpty &&
+        appPreviewImageIsNetworkUrl(photo)) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => showAppImageViewer(
+            context,
+            imageUrl: photo,
+            title: 'Employee photo',
+          ),
+          customBorder: const CircleBorder(),
+          child: CircleAvatar(
+            radius: 32,
+            backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+            backgroundImage: NetworkImage(photo),
+          ),
+        ),
+      );
+    }
+
     if (photo != null && photo.isNotEmpty) {
       return CircleAvatar(
         radius: 32,

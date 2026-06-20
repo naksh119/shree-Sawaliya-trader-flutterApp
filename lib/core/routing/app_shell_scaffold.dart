@@ -40,8 +40,7 @@ class _AppShellScaffoldState extends State<AppShellScaffold> {
   }
 
   Future<void> _loadSession() async {
-    final session =
-        await awaitWithMinPageLoaderDuration(_authService.getSession());
+    final session = await _authService.getSession();
     if (!mounted) return;
     setState(() {
       _session = session;

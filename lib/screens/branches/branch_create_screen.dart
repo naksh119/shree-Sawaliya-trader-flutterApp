@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
-import 'package:sawaliyatrader/core/branches/branch_service.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
+import 'package:sawaliyatrader/core/branches/branch_service.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_message.dart';
+import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
-import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class BranchCreateScreen extends StatefulWidget {
   const BranchCreateScreen({super.key});
@@ -35,6 +37,8 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
   final _cityController = TextEditingController();
   final _locationController = TextEditingController();
 
+  PickedImage? _paymentQrCode;
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +55,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
   }
 
   Future<void> _bootstrap() async {
-    await awaitWithMinPageLoaderDuration(_bootstrapWork());
+    await _bootstrapWork();
   }
 
   Future<void> _bootstrapWork() async {
@@ -84,18 +88,15 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
       final created = await _branchService.createBranch(
         session: session,
         request: request,
+        paymentQrCode: _paymentQrCode,
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Branch ${created.name} created.',
-            style: AppTextStyles.body(context).copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.navy,
-        ),
+      await showAppSuccessMessage(
+        context,
+        message: 'Branch ${created.name} created.',
       );
+      if (!mounted) return;
       context.pop(true);
     } catch (error) {
       if (!mounted) return;
@@ -110,6 +111,16 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
   String? _emptyToNull(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
+  }
+
+  Future<void> _pickPaymentQr() async {
+    final picked = await PickedImage.pick();
+    if (picked == null) return;
+    setState(() => _paymentQrCode = picked);
+  }
+
+  void _clearPaymentQr() {
+    setState(() => _paymentQrCode = null);
   }
 
   @override
@@ -187,6 +198,22 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
                           hint: 'Street address or landmark',
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.streetAddress,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionCard(
+                      title: 'Payment QR',
+                      children: [
+                        AppPhotoPicker(
+                          label: 'Payment QR code',
+                          hint: 'Upload the branch payment QR image (optional).',
+                          placeholderIcon: Icons.qr_code_2_rounded,
+                          image: _paymentQrCode,
+                          onPick: _pickPaymentQr,
+                          onClear: _paymentQrCode?.isNotEmpty == true
+                              ? _clearPaymentQr
+                              : null,
                         ),
                       ],
                     ),

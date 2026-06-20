@@ -114,19 +114,26 @@ class ApiClient {
 
   Future<void> clearCookies() => _cookieJar.deleteAll();
 
+  /// Django [APPEND_SLASH] redirects missing slashes with 301; POST then loses its body.
+  static String _normalizePath(String path) {
+    if (path.isEmpty || path.endsWith('/')) return path;
+    return '$path/';
+  }
+
   Future<Map<String, dynamic>> post(
     String path, {
     Map<String, dynamic>? data,
   }) async {
+    final requestPath = _normalizePath(path);
     try {
-      final response = await _dio.post<Map<String, dynamic>>(
-        path,
+      final response = await _dio.post<dynamic>(
+        requestPath,
         data: data,
       );
-      final body = response.data;
+      final body = asJsonMap(response.data);
 
       debugPrint(
-        'API POST $path → status: ${response.statusCode}, body: $body',
+        'API POST $requestPath → status: ${response.statusCode}, body: $body',
       );
 
       if (body == null) {
@@ -136,7 +143,7 @@ class ApiClient {
       return body;
     } on DioException catch (error) {
       debugPrint(
-        'API POST $path failed → status: ${error.response?.statusCode}, '
+        'API POST $requestPath failed → status: ${error.response?.statusCode}, '
         'body: ${error.response?.data}',
       );
       throw _mapDioError(error);
@@ -147,9 +154,10 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? queryParameters,
   }) async {
+    final requestPath = _normalizePath(path);
     try {
       final response = await _dio.get<dynamic>(
-        path,
+        requestPath,
         queryParameters: queryParameters,
       );
       final body = asJsonMap(response.data);
@@ -175,12 +183,13 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> delete(String path) async {
+    final requestPath = _normalizePath(path);
     try {
-      final response = await _dio.delete<Map<String, dynamic>>(path);
+      final response = await _dio.delete<Map<String, dynamic>>(requestPath);
       final body = response.data;
 
       debugPrint(
-        'API DELETE $path → status: ${response.statusCode}, body: $body',
+        'API DELETE $requestPath → status: ${response.statusCode}, body: $body',
       );
 
       if (body == null) {
@@ -190,7 +199,7 @@ class ApiClient {
       return body;
     } on DioException catch (error) {
       debugPrint(
-        'API DELETE $path failed → status: ${error.response?.statusCode}, '
+        'API DELETE $requestPath failed → status: ${error.response?.statusCode}, '
         'body: ${error.response?.data}',
       );
       throw _mapDioError(error);
@@ -201,16 +210,17 @@ class ApiClient {
     String path, {
     required FormData data,
   }) async {
+    final requestPath = _normalizePath(path);
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        path,
+        requestPath,
         data: data,
         options: Options(contentType: 'multipart/form-data'),
       );
       final body = response.data;
 
       debugPrint(
-        'API POST (multipart) $path → status: ${response.statusCode}',
+        'API POST (multipart) $requestPath → status: ${response.statusCode}',
       );
 
       if (body == null) {
@@ -220,7 +230,37 @@ class ApiClient {
       return body;
     } on DioException catch (error) {
       debugPrint(
-        'API POST (multipart) $path failed → status: ${error.response?.statusCode}',
+        'API POST (multipart) $requestPath failed → status: ${error.response?.statusCode}',
+      );
+      throw _mapDioError(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> putMultipart(
+    String path, {
+    required FormData data,
+  }) async {
+    final requestPath = _normalizePath(path);
+    try {
+      final response = await _dio.put<Map<String, dynamic>>(
+        requestPath,
+        data: data,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final body = response.data;
+
+      debugPrint(
+        'API PUT (multipart) $requestPath → status: ${response.statusCode}',
+      );
+
+      if (body == null) {
+        throw const ApiException('Empty response from server');
+      }
+
+      return body;
+    } on DioException catch (error) {
+      debugPrint(
+        'API PUT (multipart) $requestPath failed → status: ${error.response?.statusCode}',
       );
       throw _mapDioError(error);
     }
@@ -230,12 +270,14 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? data,
   }) async {
+    final requestPath = _normalizePath(path);
     try {
-      final response = await _dio.patch<Map<String, dynamic>>(path, data: data);
-      final body = response.data;
+      final response =
+          await _dio.patch<dynamic>(requestPath, data: data);
+      final body = asJsonMap(response.data);
 
       debugPrint(
-        'API PATCH $path → status: ${response.statusCode}, body: $body',
+        'API PATCH $requestPath → status: ${response.statusCode}, body: $body',
       );
 
       if (body == null) {
@@ -245,7 +287,34 @@ class ApiClient {
       return body;
     } on DioException catch (error) {
       debugPrint(
-        'API PATCH $path failed → status: ${error.response?.statusCode}, '
+        'API PATCH $requestPath failed → status: ${error.response?.statusCode}, '
+        'body: ${error.response?.data}',
+      );
+      throw _mapDioError(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> put(
+    String path, {
+    Map<String, dynamic>? data,
+  }) async {
+    final requestPath = _normalizePath(path);
+    try {
+      final response = await _dio.put<dynamic>(requestPath, data: data);
+      final body = asJsonMap(response.data);
+
+      debugPrint(
+        'API PUT $requestPath → status: ${response.statusCode}, body: $body',
+      );
+
+      if (body == null) {
+        throw const ApiException('Empty response from server');
+      }
+
+      return body;
+    } on DioException catch (error) {
+      debugPrint(
+        'API PUT $requestPath failed → status: ${error.response?.statusCode}, '
         'body: ${error.response?.data}',
       );
       throw _mapDioError(error);

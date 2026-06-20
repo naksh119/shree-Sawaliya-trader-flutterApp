@@ -170,7 +170,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Future<void> _bootstrap() async {
-    await awaitWithMinPageLoaderDuration(_bootstrapWork());
+    await _bootstrapWork();
   }
 
   Future<void> _bootstrapWork() async {
