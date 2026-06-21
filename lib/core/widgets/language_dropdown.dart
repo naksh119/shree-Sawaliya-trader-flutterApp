@@ -3,7 +3,6 @@ import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/locale/locale_notifier.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 
 const _englishFlag = '🇺🇸';
@@ -65,13 +64,8 @@ class LanguageGlobeButton extends StatelessWidget {
           tooltip: l10n.selectLanguage,
           position: PopupMenuPosition.over,
           offset: const Offset(0, -8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: AppDropdownDecoration.isDark(context)
-                ? BorderSide(color: colors.gold)
-                : BorderSide.none,
-          ),
-          color: Theme.of(context).colorScheme.surface,
+          color: AppDropdownDecoration.menuBackground(context),
+          shape: AppDropdownDecoration.openMenuShape(context),
           onSelected: notifier.setLocale,
           itemBuilder: (context) =>
               _languageMenuItems(context, l10n, notifier.locale),

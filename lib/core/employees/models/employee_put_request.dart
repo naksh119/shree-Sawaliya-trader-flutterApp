@@ -1,10 +1,10 @@
-class EmployeeRegisterRequest {
-  const EmployeeRegisterRequest({
+/// Request body for `PUT /employees/api/{id}/` (full replace).
+class EmployeePutRequest {
+  const EmployeePutRequest({
     required this.email,
     required this.password,
     required this.roleId,
     required this.branchId,
-    required this.employeeCode,
     required this.firstName,
     required this.lastName,
     this.fatherName,
@@ -42,7 +42,6 @@ class EmployeeRegisterRequest {
   final String password;
   final int roleId;
   final int branchId;
-  final String employeeCode;
   final String firstName;
   final String lastName;
   final String? fatherName;
@@ -81,7 +80,6 @@ class EmployeeRegisterRequest {
       'password': password,
       'role': roleId,
       'branch': branchId,
-      'employee_code': employeeCode,
       'first_name': firstName,
       'last_name': lastName,
       if (_hasText(fatherName)) 'father_name': fatherName,

@@ -10,6 +10,8 @@ class EmployeeListTile extends StatelessWidget {
     required this.onTap,
     this.canEdit = false,
     this.canDelete = false,
+    this.onEdit,
+    this.onDelete,
     super.key,
   });
 
@@ -17,6 +19,8 @@ class EmployeeListTile extends StatelessWidget {
   final VoidCallback onTap;
   final bool canEdit;
   final bool canDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +80,8 @@ class EmployeeListTile extends StatelessWidget {
                     entityName: employee.displayName,
                     canEdit: canEdit,
                     canDelete: canDelete,
+                    onEdit: onEdit,
+                    onDelete: onDelete,
                   ),
                 ],
               ),

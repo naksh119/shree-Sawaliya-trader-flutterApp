@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
@@ -16,10 +14,10 @@ import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
+import 'package:sawaliyatrader/screens/employees/employee_delete_helper.dart';
 import 'package:sawaliyatrader/screens/employees/widgets/employee_list_tile.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -255,6 +253,25 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     _loadEmployees(reset: true);
   }
 
+  Future<void> _deleteEmployee(EmployeeDto employee) async {
+    final session = _session;
+    if (session == null || !mounted) return;
+
+    final deleted = await confirmAndDeleteEmployee(
+      context: context,
+      employeeService: _employeeService,
+      session: session,
+      employee: employee,
+    );
+
+    if (!deleted || !mounted) return;
+
+    setState(() {
+      _items.removeWhere((item) => item.id == employee.id);
+      if (_total > 0) _total -= 1;
+    });
+  }
+
   String? _branchFilterFor(LoginResponse session) {
     if (_canFilterByBranch(session)) {
       if (_branchFilterId == _kAllBranchesFilterId) return null;
@@ -332,6 +349,37 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     _loadEmployees(reset: true);
   }
 
+  List<DropdownMenuItem<_StatusFilter>> _statusFilterItems(BuildContext context) {
+    final textStyle = AppDropdownMetrics.filterTextStyle(context);
+    Widget label(String text) =>
+        Text(text, style: textStyle, overflow: TextOverflow.ellipsis);
+
+    return [
+      DropdownMenuItem(value: _StatusFilter.all, child: label('All employees')),
+      DropdownMenuItem(value: _StatusFilter.active, child: label('Active employees')),
+      DropdownMenuItem(value: _StatusFilter.inactive, child: label('Inactive employees')),
+    ];
+  }
+
+  List<DropdownMenuItem<int>> _branchFilterItems(BuildContext context) {
+    final textStyle = AppDropdownMetrics.filterTextStyle(context);
+    Widget label(String text) =>
+        Text(text, style: textStyle, overflow: TextOverflow.ellipsis);
+
+    return [
+      DropdownMenuItem(
+        value: _kAllBranchesFilterId,
+        child: label('All branches'),
+      ),
+      for (final branch in _branches)
+        if (branch.id != null)
+          DropdownMenuItem(
+            value: branch.id!,
+            child: label(branch.label),
+          ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = _session ?? SessionScope.maybeOf(context)?.session;
@@ -389,8 +437,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
                 children: [
                   Flexible(
                     flex: 2,
-                    child: _StatusDropdown(
+                    child: AppFilterDropdown<_StatusFilter>(
                       value: _statusFilter,
+                      items: _statusFilterItems(context),
                       onChanged: _onStatusSelected,
                     ),
                   ),
@@ -398,9 +447,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
                     const SizedBox(width: 6),
                     Flexible(
                       flex: 3,
-                      child: _BranchDropdown(
+                      child: AppScrollableFilterDropdown<int>(
                         value: _branchFilterId,
-                        branches: _branches,
+                        items: _branchFilterItems(context),
                         onChanged: _onBranchSelected,
                       ),
                     ),
@@ -518,6 +567,12 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
             canEdit: permissions.canEditEmployee,
             canDelete: permissions.canDeleteEmployee,
             onTap: () => context.push(AppRoutes.employeeDetail(employee.id)),
+            onEdit: permissions.canEditEmployee
+                ? () => context.push(AppRoutes.employeePutEdit(employee.id))
+                : null,
+            onDelete: permissions.canDeleteEmployee
+                ? () => _deleteEmployee(employee)
+                : null,
           );
         },
       ),
@@ -535,199 +590,6 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     final branch = _selectedBranch;
     final branchPart = branch != null ? ' ${branch.name}' : '';
     return 'No$status$rolePart$branchPart employees found.';
-  }
-}
-
-abstract final class _FilterDropdownMetrics {
-  static const padding = EdgeInsets.symmetric(horizontal: 8, vertical: 6);
-  static const iconSize = 18.0;
-  static const menuExtraWidth = 44.0;
-  static const menuItemHeight = 36.0;
-  static const visibleMenuItems = 4;
-  static const menuDividerHeight = 1.0;
-  static const menuItemPadding = EdgeInsets.symmetric(horizontal: 12);
-
-  static TextStyle textStyle(BuildContext context) =>
-      AppTextStyles.body(context).copyWith(fontSize: 13);
-
-  static double menuMaxHeight(int itemCount) {
-    final visibleCount = math.min(itemCount, visibleMenuItems);
-    if (visibleCount <= 0) return menuItemHeight;
-
-    final dividerCount = visibleCount > 1 ? visibleCount - 1 : 0;
-    return visibleCount * menuItemHeight + dividerCount * menuDividerHeight;
-  }
-}
-
-class _StatusDropdown extends StatelessWidget {
-  const _StatusDropdown({required this.value, required this.onChanged});
-
-  final _StatusFilter value;
-  final ValueChanged<_StatusFilter?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final textStyle = _FilterDropdownMetrics.textStyle(context);
-
-    return Container(
-      padding: _FilterDropdownMetrics.padding,
-      decoration: AppDropdownDecoration.container(context),
-      child: AppInlineDropdown<_StatusFilter>(
-        value: value,
-        isExpanded: true,
-        style: textStyle,
-        icon: Icon(
-          Icons.expand_more_rounded,
-          size: _FilterDropdownMetrics.iconSize,
-          color: context.appColors.shinyGold.withValues(alpha: 0.8),
-        ),
-        items: [
-          DropdownMenuItem(
-            value: _StatusFilter.all,
-            child: Text('All employees', style: textStyle, overflow: TextOverflow.ellipsis),
-          ),
-          DropdownMenuItem(
-            value: _StatusFilter.active,
-            child: Text('Active employees', style: textStyle, overflow: TextOverflow.ellipsis),
-          ),
-          DropdownMenuItem(
-            value: _StatusFilter.inactive,
-            child: Text('Inactive employees', style: textStyle, overflow: TextOverflow.ellipsis),
-          ),
-        ],
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _BranchDropdown extends StatefulWidget {
-  const _BranchDropdown({
-    required this.value,
-    required this.branches,
-    required this.onChanged,
-  });
-
-  final int value;
-  final List<BranchOption> branches;
-  final ValueChanged<int?> onChanged;
-
-  @override
-  State<_BranchDropdown> createState() => _BranchDropdownState();
-}
-
-class _BranchDropdownState extends State<_BranchDropdown> {
-  final _anchorKey = GlobalKey();
-
-  String get _selectedLabel {
-    if (widget.value == _kAllBranchesFilterId) return 'All branches';
-    for (final branch in widget.branches) {
-      if (branch.id == widget.value) return branch.label;
-    }
-    return 'All branches';
-  }
-
-  List<String> get _allLabels => [
-        'All branches',
-        for (final branch in widget.branches) branch.label,
-      ];
-
-  List<DropdownMenuItem<int>> get _items {
-    final textStyle = _FilterDropdownMetrics.textStyle(context);
-    Widget menuLabel(String text) => Padding(
-          padding: _FilterDropdownMetrics.menuItemPadding,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(text, style: textStyle, maxLines: 2),
-          ),
-        );
-
-    return [
-      DropdownMenuItem(
-        value: _kAllBranchesFilterId,
-        child: menuLabel('All branches'),
-      ),
-      for (final branch in widget.branches)
-        if (branch.id != null)
-          DropdownMenuItem(
-            value: branch.id!,
-            child: menuLabel(branch.label),
-          ),
-    ];
-  }
-
-  double _menuWidthFor(BuildContext context, RenderBox button) {
-    final style = _FilterDropdownMetrics.textStyle(context);
-    final painter = TextPainter(
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-      maxLines: 1,
-    );
-
-    var maxTextWidth = 0.0;
-    for (final label in _allLabels) {
-      painter.text = TextSpan(text: label, style: style);
-      painter.layout();
-      maxTextWidth = math.max(maxTextWidth, painter.width);
-    }
-
-    final contentWidth = maxTextWidth + _FilterDropdownMetrics.menuExtraWidth;
-    return contentWidth.clamp(button.size.width, MediaQuery.sizeOf(context).width * 0.72);
-  }
-
-  Future<void> _openMenu() async {
-    final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null) return;
-
-    final menuWidth = _menuWidthFor(context, box);
-    final menuMaxHeight = _FilterDropdownMetrics.menuMaxHeight(_items.length);
-    final selected = await showAppScrollableDropdownMenu<int>(
-      context: context,
-      button: box,
-      items: _items,
-      menuWidth: menuWidth,
-      menuMaxHeight: menuMaxHeight,
-      itemHeight: _FilterDropdownMetrics.menuItemHeight,
-      dividerHeight: _FilterDropdownMetrics.menuDividerHeight,
-    );
-    if (selected != null && selected != widget.value) {
-      widget.onChanged(selected);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final textStyle = _FilterDropdownMetrics.textStyle(context);
-
-    return Container(
-      padding: _FilterDropdownMetrics.padding,
-      decoration: AppDropdownDecoration.container(context),
-      child: InkWell(
-        key: _anchorKey,
-        onTap: _openMenu,
-        borderRadius: BorderRadius.circular(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  _selectedLabel,
-                  style: textStyle,
-                  maxLines: 1,
-                ),
-              ),
-            ),
-            Icon(
-              Icons.expand_more_rounded,
-              size: _FilterDropdownMetrics.iconSize,
-              color: context.appColors.shinyGold.withValues(alpha: 0.8),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

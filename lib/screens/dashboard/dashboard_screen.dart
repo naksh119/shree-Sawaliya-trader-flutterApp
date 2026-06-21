@@ -118,6 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             body: Stack(
+              fit: StackFit.expand,
               children: [
                 SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 72),

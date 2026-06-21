@@ -7,6 +7,7 @@ import 'package:sawaliyatrader/core/constants/api_config.dart';
 import 'package:sawaliyatrader/core/customers/models/json_parse.dart';
 import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
+import 'package:sawaliyatrader/core/employees/models/employee_employment_history.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_register_request.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_list_response.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
@@ -79,6 +80,28 @@ class EmployeeService {
     final body = await _apiClient.get(ApiConfig.employeePath(employeeId));
     _ensureSuccess(body, 'Failed to load employee');
     return EmployeeDetail.fromJson(dataMap(body));
+  }
+
+  /// DELETE `/employees/api/{id}/` — Deletes an employee.
+  Future<void> deleteEmployee({
+    required LoginResponse session,
+    required int employeeId,
+  }) async {
+    final body = await _apiClient.delete(ApiConfig.employeePath(employeeId));
+    _ensureSuccess(body, 'Failed to delete employee');
+  }
+
+  Future<EmployeeEmploymentHistory> addEmploymentHistory({
+    required LoginResponse session,
+    required int employeeId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final body = await _apiClient.post(
+      ApiConfig.employeeEmploymentHistoryPath(employeeId),
+      data: payload,
+    );
+    _ensureSuccess(body, 'Failed to add employment history');
+    return EmployeeEmploymentHistory.fromJson(dataMap(body));
   }
 
   Future<EmployeeDetail> registerEmployee({

@@ -7,6 +7,7 @@ class CustomerValidators {
   static final _panPattern = RegExp(r'^[A-Za-z]{5}\d{4}[A-Za-z]$');
   static final _pincodePattern = RegExp(r'^\d{6}$');
   static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+  static const genderOptions = ['MALE', 'FEMALE', 'OTHER'];
 
   static String? requiredText(String? value, String label) {
     if (value == null || value.trim().isEmpty) {
@@ -35,9 +36,11 @@ class CustomerValidators {
     return null;
   }
 
-  static String? email(String? value) {
+  static String? email(String? value, {bool required = false}) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return null;
+    if (trimmed.isEmpty) {
+      return required ? 'Email is required' : null;
+    }
     if (!_emailPattern.hasMatch(trimmed)) {
       return 'Enter a valid email address';
     }
@@ -55,9 +58,11 @@ class CustomerValidators {
     return null;
   }
 
-  static String? pan(String? value) {
+  static String? pan(String? value, {bool required = false}) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return null;
+    if (trimmed.isEmpty) {
+      return required ? 'PAN is required' : null;
+    }
     if (!_panPattern.hasMatch(trimmed)) {
       return 'PAN must be in format ABCDE1234F';
     }
@@ -75,15 +80,46 @@ class CustomerValidators {
     return null;
   }
 
-  static String? decimalAmount(String? value, {String label = 'Amount'}) {
+  static String? decimalAmount(
+    String? value, {
+    String label = 'Amount',
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return null;
+    if (trimmed.isEmpty) {
+      return required ? '$label is required' : null;
+    }
     final parsed = double.tryParse(trimmed);
     if (parsed == null) {
       return '$label must be a valid number';
     }
     if (parsed < 0) {
       return '$label cannot be negative';
+    }
+    return null;
+  }
+
+  static String? gender(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Gender is required';
+    }
+    if (!genderOptions.contains(value)) {
+      return 'Select a valid gender';
+    }
+    return null;
+  }
+
+  static String? age(String? value, {bool required = false}) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return required ? 'Age is required' : null;
+    }
+    final parsed = int.tryParse(trimmed);
+    if (parsed == null) {
+      return 'Age must be a whole number';
+    }
+    if (parsed < 0 || parsed > 150) {
+      return 'Age must be between 0 and 150';
     }
     return null;
   }
@@ -126,7 +162,13 @@ class CustomerValidators {
       case 'outstanding_amount':
         if (trimmed.isEmpty) return true;
         return decimalAmount(trimmed) == null;
+      case 'gender':
+        return trimmed.isEmpty || genderOptions.contains(trimmed);
+      case 'age':
+        if (trimmed.isEmpty) return true;
+        return age(trimmed) == null;
       case 'address_line1':
+      case 'address_line2':
       case 'city':
       case 'state':
       case 'occupation':

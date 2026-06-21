@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
@@ -8,9 +9,11 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
+import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
+import 'package:sawaliyatrader/screens/employees/employee_delete_helper.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -75,6 +78,34 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
     }
 
     await fetchEmployee();
+  }
+
+  Future<void> _putEditEmployee(EmployeeDetail employee) async {
+    final updated = await context.push<bool>(
+      AppRoutes.employeePutEdit(widget.employeeId),
+      extra: employee,
+    );
+
+    if (updated == true && mounted) {
+      await _load();
+    }
+  }
+
+  Future<void> _deleteEmployee(EmployeeDetail employee) async {
+    final session = _session;
+    if (session == null || !mounted) return;
+
+    final deleted = await confirmAndDeleteEmployee(
+      context: context,
+      employeeService: _employeeService,
+      session: session,
+      employee: employee,
+      employeeId: widget.employeeId,
+    );
+
+    if (deleted && mounted) {
+      context.pop(true);
+    }
   }
 
   String _formatDate(DateTime? value) {
@@ -410,6 +441,8 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           entityName: employee.displayName,
           canEdit: permissions.canEditEmployee,
           canDelete: permissions.canDeleteEmployee,
+          onEdit: () => _putEditEmployee(employee),
+          onDelete: () => _deleteEmployee(employee),
         ),
       ),
     );

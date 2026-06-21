@@ -202,7 +202,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
               child: Form(
                 key: _formKey,
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
                     Text(
                       'Full update uses PUT (all fields) via Save changes on the edit screen.',
@@ -310,16 +310,24 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                             .copyWith(color: Colors.red.shade700),
                       ),
                     ],
-                    const SizedBox(height: 24),
-                    AppPrimaryButton(
-                      label: 'Save changes (PUT)',
-                      isLoading: _isSaving,
-                      onPressed: _submit,
-                    ),
                   ],
                 ),
               ),
             ),
+      bottomNavigationBar: session != null && !_isLoading
+          ? Material(
+              color: Colors.transparent,
+              elevation: 0,
+              child: SafeArea(
+                minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: AppPrimaryButton(
+                  label: 'Save changes (PUT)',
+                  isLoading: _isSaving,
+                  onPressed: _submit,
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

@@ -11,6 +11,7 @@ import 'package:sawaliyatrader/screens/more/more_screen.dart';
 import 'package:sawaliyatrader/screens/notifications/notifications_screen.dart';
 import 'package:sawaliyatrader/screens/branches/branch_create_screen.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
+import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
 import 'package:sawaliyatrader/screens/branches/branch_detail_screen.dart';
 import 'package:sawaliyatrader/screens/branches/branch_edit_screen.dart';
 import 'package:sawaliyatrader/screens/branches/branches_list_screen.dart';
@@ -22,6 +23,7 @@ import 'package:sawaliyatrader/screens/customers/customer_wizard_screen.dart';
 import 'package:sawaliyatrader/screens/customers/customers_list_screen.dart';
 import 'package:sawaliyatrader/screens/employees/employee_create_screen.dart';
 import 'package:sawaliyatrader/screens/employees/employee_detail_screen.dart';
+import 'package:sawaliyatrader/screens/employees/employee_put_edit_screen.dart';
 import 'package:sawaliyatrader/screens/employees/employees_list_screen.dart';
 import 'package:sawaliyatrader/screens/placeholder/module_placeholder_screen.dart';
 import 'package:sawaliyatrader/screens/profile/profile_screen.dart';
@@ -180,6 +182,25 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
       GoRoute(
         path: AppRoutes.employeeNew,
         builder: (context, state) => const EmployeeCreateScreen(),
+      ),
+      GoRoute(
+        path: '/employees/:id/put-edit',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) {
+            return const ModulePlaceholderScreen(
+              title: 'Edit Employee (PUT)',
+              description: 'Invalid employee id.',
+            );
+          }
+          final initialEmployee = state.extra is EmployeeDetail
+              ? state.extra! as EmployeeDetail
+              : null;
+          return EmployeePutEditScreen(
+            employeeId: id,
+            initialEmployee: initialEmployee,
+          );
+        },
       ),
       GoRoute(
         path: '/employees/:id',

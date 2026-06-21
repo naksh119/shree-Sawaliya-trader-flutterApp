@@ -23,6 +23,11 @@ abstract final class AppRoutes {
 
   static String employeeDetail(int id) => '/employees/$id';
 
+  static String employeePutEdit(int id) => '/employees/$id/put-edit';
+
+  @Deprecated('Use employeePutEdit')
+  static String employeeEdit(int id) => employeePutEdit(id);
+
   static String branchDetail(int id) => '/branches/$id';
 
   static String centerDetail(int id) => '/centers/$id';

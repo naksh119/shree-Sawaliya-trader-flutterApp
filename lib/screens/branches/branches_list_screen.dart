@@ -11,6 +11,7 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
@@ -260,9 +261,26 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _StatusFilterButton(
+                  AppFilterIconButton<_StatusFilter>(
+                    tooltip: 'Filter by status',
                     value: _statusFilter,
-                    onChanged: _onStatusSelected,
+                    isActive: _statusFilter != _StatusFilter.all,
+                    icon: Icons.filter_list_rounded,
+                    onSelected: _onStatusSelected,
+                    items: const [
+                      DropdownMenuItem(
+                        value: _StatusFilter.all,
+                        child: Text('All branches'),
+                      ),
+                      DropdownMenuItem(
+                        value: _StatusFilter.active,
+                        child: Text('Active branches'),
+                      ),
+                      DropdownMenuItem(
+                        value: _StatusFilter.inactive,
+                        child: Text('Inactive branches'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -533,62 +551,6 @@ class _BranchActiveChip extends StatelessWidget {
           fontWeight: FontWeight.w600,
           fontSize: 11,
         ),
-      ),
-    );
-  }
-}
-
-class _StatusFilterButton extends StatelessWidget {
-  const _StatusFilterButton({
-    required this.value,
-    required this.onChanged,
-  });
-
-  final _StatusFilter value;
-  final ValueChanged<_StatusFilter?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final isFiltered = value != _StatusFilter.all;
-    final iconColor = isFiltered
-        ? context.appColors.gold
-        : context.appColors.shinyGold.withValues(alpha: 0.7);
-
-    return PopupMenuButton<_StatusFilter>(
-      tooltip: 'Filter by status',
-      initialValue: value,
-      onSelected: onChanged,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: context.appColors.border),
-      ),
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: _StatusFilter.all,
-          child: Text('All branches'),
-        ),
-        const PopupMenuItem(
-          value: _StatusFilter.active,
-          child: Text('Active branches'),
-        ),
-        const PopupMenuItem(
-          value: _StatusFilter.inactive,
-          child: Text('Inactive branches'),
-        ),
-      ],
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: context.appColors.inputFill,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isFiltered
-                ? context.appColors.gold.withValues(alpha: 0.5)
-                : context.appColors.border,
-          ),
-        ),
-        child: Icon(Icons.filter_list_rounded, color: iconColor),
       ),
     );
   }

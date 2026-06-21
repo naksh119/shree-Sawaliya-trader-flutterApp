@@ -6,6 +6,7 @@ import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/customers/customer_validators.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
+import 'package:sawaliyatrader/core/employees/models/employee_employment_history.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_register_request.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
@@ -13,12 +14,15 @@ import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
-import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/upper_case_text_input_formatter.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class EmployeeCreateScreen extends StatefulWidget {
@@ -32,11 +36,13 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   final _authService = AuthService();
   final _employeeService = EmployeeService();
   final _formKey = GlobalKey<FormState>();
-  final _scrollController = ScrollController();
 
   LoginResponse? _session;
   bool _isLoadingOptions = true;
   bool _isSaving = false;
+  int _step = 0;
+  int? _employeeId;
+  String? _registeredEmployeeName;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _sameAsPresentAddress = true;
@@ -58,6 +64,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   DateTime? _payableFromDate;
   PickedImage? _employeePhoto;
 
+  final _employeeCodeController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _fatherNameController = TextEditingController();
@@ -79,13 +86,69 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   final _educationController = TextEditingController();
   final _professionalController = TextEditingController();
   final _membersInFamilyController = TextEditingController();
+  final _performanceAppraisalController = TextEditingController();
+  final _warningNotesController = TextEditingController();
   final _remarksController = TextEditingController();
   final _emergencyNameController = TextEditingController();
   final _emergencyRelationController = TextEditingController();
   final _emergencyMobileController = TextEditingController();
 
+  final _historyOrganizationController = TextEditingController();
+  final _historyDesignationController = TextEditingController();
+  final _historyAnnualCtcController = TextEditingController();
+  DateTime? _historyServiceFrom;
+  DateTime? _historyServiceTo;
+  final List<EmployeeEmploymentHistory> _savedHistories = [];
+
+  static const _steps = [
+    'Employee & Personal',
+    'Assessment',
+    'Identity & Login',
+    'Profile',
+    'Employment History',
+  ];
   static const _genderOptions = ['MALE', 'FEMALE', 'OTHER'];
   static const _maritalOptions = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'];
+
+  static const _fieldStepMap = <String, int>{
+    'employee_code': 0,
+    'role': 0,
+    'branch': 0,
+    'first_name': 0,
+    'last_name': 0,
+    'father_name': 0,
+    'date_of_birth': 0,
+    'place_of_birth': 0,
+    'gender': 0,
+    'marital_status': 0,
+    'nationality': 0,
+    'languages_known': 0,
+    'members_in_family': 0,
+    'employee_photo': 0,
+    'date_of_appointment': 1,
+    'date_of_joining': 1,
+    'date_of_confirmation': 1,
+    'payable_from_date': 1,
+    'performance_appraisal': 1,
+    'warning_notes': 1,
+    'aadhaar_card_no': 2,
+    'pan_card_no': 2,
+    'primary_mobile_number': 2,
+    'secondary_mobile_number': 2,
+    'email': 2,
+    'password': 2,
+    'present_address': 3,
+    'permanent_address': 3,
+    'height_cm': 3,
+    'weight_kg': 3,
+    'blood_group': 3,
+    'educational_qualifications': 3,
+    'professional_qualifications': 3,
+    'remarks': 3,
+    'emergency_contact_name': 3,
+    'emergency_contact_relation': 3,
+    'emergency_contact_number': 3,
+  };
 
   @override
   void initState() {
@@ -96,6 +159,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
 
   void _bindFieldErrorClearing() {
     final bindings = <TextEditingController, String>{
+      _employeeCodeController: 'employee_code',
       _firstNameController: 'first_name',
       _lastNameController: 'last_name',
       _fatherNameController: 'father_name',
@@ -116,6 +180,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       _educationController: 'educational_qualifications',
       _professionalController: 'professional_qualifications',
       _membersInFamilyController: 'members_in_family',
+      _performanceAppraisalController: 'performance_appraisal',
+      _warningNotesController: 'warning_notes',
       _remarksController: 'remarks',
       _emergencyNameController: 'emergency_contact_name',
       _emergencyRelationController: 'emergency_contact_relation',
@@ -140,6 +206,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
 
   @override
   void dispose() {
+    _employeeCodeController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _fatherNameController.dispose();
@@ -161,11 +228,15 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     _educationController.dispose();
     _professionalController.dispose();
     _membersInFamilyController.dispose();
+    _performanceAppraisalController.dispose();
+    _warningNotesController.dispose();
     _remarksController.dispose();
     _emergencyNameController.dispose();
     _emergencyRelationController.dispose();
     _emergencyMobileController.dispose();
-    _scrollController.dispose();
+    _historyOrganizationController.dispose();
+    _historyDesignationController.dispose();
+    _historyAnnualCtcController.dispose();
     super.dispose();
   }
 
@@ -245,11 +316,20 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       case 'password':
         return trimmed.length >= 8 && RegExp(r'[A-Z]').hasMatch(trimmed);
       case 'primary_mobile_number':
+        return CustomerValidators.mobile(trimmed, required: true) == null;
       case 'secondary_mobile_number':
+        return trimmed.isEmpty || RegExp(r'^\d{10}$').hasMatch(trimmed);
       case 'emergency_contact_number':
-        return RegExp(r'^\d{10}$').hasMatch(trimmed);
+        return CustomerValidators.mobile(trimmed, required: true) == null;
+      case 'father_name':
+      case 'place_of_birth':
+      case 'present_address':
+      case 'permanent_address':
+      case 'emergency_contact_name':
+      case 'emergency_contact_relation':
+        return trimmed.isNotEmpty;
       case 'aadhaar_card_no':
-        return RegExp(r'^\d{12}$').hasMatch(trimmed);
+        return CustomerValidators.aadhaar(trimmed, required: true) == null;
       case 'height_cm':
         if (trimmed.isEmpty) return false;
         final height = double.tryParse(trimmed);
@@ -260,7 +340,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       case 'last_name':
         return trimmed.isNotEmpty;
       case 'pan_card_no':
-        return CustomerValidators.pan(trimmed) == null;
+        return CustomerValidators.pan(trimmed, required: true) == null;
       default:
         return trimmed.isNotEmpty;
     }
@@ -277,28 +357,87 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     });
   }
 
-  void _scrollToTopOnValidationFailure() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) return;
-      _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    });
-  }
-
   void _applyApiErrors(ApiException error) {
     setState(() {
       _fieldErrors = error.fieldErrors;
       _generalError = error.hasFieldErrors ? null : error.message;
       _autoValidate = true;
+      if (error.hasFieldErrors) {
+        final firstField = error.fieldErrors.keys.first;
+        _step = _fieldStepMap[firstField] ?? _step;
+      }
     });
     if (error.hasFieldErrors) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _formKey.currentState?.validate();
       });
     }
+  }
+
+  bool _validateEmployeePersonalStep() {
+    var valid = true;
+
+    if (_dateOfBirth == null) {
+      _setFieldError('date_of_birth', 'Date of birth is required');
+      valid = false;
+    }
+    if (_fatherNameController.text.trim().isEmpty) {
+      _setFieldError('father_name', 'Father name is required');
+      valid = false;
+    }
+    if (_placeOfBirthController.text.trim().isEmpty) {
+      _setFieldError('place_of_birth', 'Place of birth is required');
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  bool _validateAssessmentStep() {
+    var valid = true;
+
+    if (_appointmentDate == null) {
+      _setFieldError('date_of_appointment', 'Date of appointment is required');
+      valid = false;
+    }
+    if (_joiningDate == null) {
+      _setFieldError('date_of_joining', 'Date of joining is required');
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  bool _validateProfileStep() {
+    var valid = true;
+
+    if (_presentAddressController.text.trim().isEmpty) {
+      _setFieldError('present_address', 'Present address is required');
+      valid = false;
+    }
+    if (!_sameAsPresentAddress &&
+        _permanentAddressController.text.trim().isEmpty) {
+      _setFieldError('permanent_address', 'Permanent address is required');
+      valid = false;
+    }
+    if (_emergencyNameController.text.trim().isEmpty) {
+      _setFieldError('emergency_contact_name', 'Contact name is required');
+      valid = false;
+    }
+    if (_emergencyRelationController.text.trim().isEmpty) {
+      _setFieldError('emergency_contact_relation', 'Relation is required');
+      valid = false;
+    }
+    final emergencyMobileError = CustomerValidators.mobile(
+      _emergencyMobileController.text,
+      required: true,
+    );
+    if (emergencyMobileError != null) {
+      _setFieldError('emergency_contact_number', emergencyMobileError);
+      valid = false;
+    }
+
+    return valid;
   }
 
   Future<void> _pickDate({
@@ -345,26 +484,165 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     });
   }
 
-  Future<void> _submit() async {
+  Future<void> _onNext() async {
+    if (!_autoValidate) {
+      setState(() => _autoValidate = true);
+    }
+
+    if (_step <= 2) {
+      if (!_formKey.currentState!.validate()) return;
+      if (_step == 0) {
+        if (_selectedRoleId == null) {
+          _setFieldError('role', 'Please select a role.');
+          return;
+        }
+        if (_selectedBranchId == null) {
+          _setFieldError('branch', 'Please select a branch.');
+          return;
+        }
+        if (!_validateEmployeePersonalStep()) return;
+      }
+      if (_step == 1 && !_validateAssessmentStep()) return;
+      setState(() {
+        _step += 1;
+        _generalError = null;
+        _fieldErrors = const {};
+      });
+      return;
+    }
+
+    if (_step == 3) {
+      if (!_formKey.currentState!.validate()) return;
+      if (!_validateProfileStep()) return;
+      await _registerEmployeeStep();
+      return;
+    }
+
+    if (_step == 4) {
+      await _finishWizard();
+    }
+  }
+
+  void _onBack() {
+    if (_step == 0) {
+      context.pop();
+      return;
+    }
+    if (_step == 4 && _employeeId != null) {
+      return;
+    }
+    setState(() {
+      _step -= 1;
+      _generalError = null;
+      _fieldErrors = const {};
+    });
+  }
+
+  bool _employmentHistoryFormHasData() {
+    return _historyOrganizationController.text.trim().isNotEmpty ||
+        _historyDesignationController.text.trim().isNotEmpty ||
+        _historyAnnualCtcController.text.trim().isNotEmpty ||
+        _historyServiceFrom != null ||
+        _historyServiceTo != null;
+  }
+
+  bool _validateEmploymentHistoryForm() {
+    var valid = true;
+
+    if (_historyOrganizationController.text.trim().isEmpty) {
+      _setFieldError('organization_name', 'Organization name is required');
+      valid = false;
+    }
+    if (_historyServiceFrom == null) {
+      _setFieldError('service_from', 'Service from date is required');
+      valid = false;
+    }
+    if (_historyServiceTo == null) {
+      _setFieldError('service_to', 'Service to date is required');
+      valid = false;
+    }
+    if (_historyServiceFrom != null &&
+        _historyServiceTo != null &&
+        _historyServiceTo!.isBefore(_historyServiceFrom!)) {
+      _setFieldError('service_to', 'Service to must be after service from');
+      valid = false;
+    }
+    final ctc = _historyAnnualCtcController.text.trim();
+    if (ctc.isNotEmpty && double.tryParse(ctc) == null) {
+      _setFieldError('annual_ctc', 'Enter a valid amount');
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  EmployeeEmploymentHistory _buildEmploymentHistoryPayload({required int id}) {
+    return EmployeeEmploymentHistory(
+      id: id,
+      employeeId: _employeeId ?? 0,
+      organizationName: _historyOrganizationController.text.trim(),
+      designation: _emptyToNull(_historyDesignationController.text),
+      serviceFrom: _historyServiceFrom,
+      serviceTo: _historyServiceTo,
+      annualCtc: _emptyToNull(_historyAnnualCtcController.text),
+    );
+  }
+
+  void _clearEmploymentHistoryForm() {
+    _historyOrganizationController.clear();
+    _historyDesignationController.clear();
+    _historyAnnualCtcController.clear();
+    setState(() {
+      _historyServiceFrom = null;
+      _historyServiceTo = null;
+      _fieldErrors = Map<String, String>.from(_fieldErrors)
+        ..remove('organization_name')
+        ..remove('service_from')
+        ..remove('service_to')
+        ..remove('annual_ctc');
+    });
+  }
+
+  Future<void> _saveEmploymentHistoryEntry({required bool clearAfterSave}) async {
+    final session = _session;
+    final employeeId = _employeeId;
+    if (session == null || employeeId == null || _isSaving) return;
+
+    if (!_validateEmploymentHistoryForm()) return;
+
+    setState(() {
+      _isSaving = true;
+      _generalError = null;
+    });
+
+    try {
+      final saved = await _employeeService.addEmploymentHistory(
+        session: session,
+        employeeId: employeeId,
+        payload: _buildEmploymentHistoryPayload(id: 0).toPayload(),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _savedHistories.add(saved);
+        if (clearAfterSave) {
+          _clearEmploymentHistoryForm();
+        }
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _applyApiErrors(error);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _generalError = error.toString());
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _registerEmployeeStep() async {
     final session = _session;
     if (session == null || _isSaving) return;
-    if (!_formKey.currentState!.validate()) {
-      setState(() => _autoValidate = true);
-      _scrollToTopOnValidationFailure();
-      return;
-    }
-
-    if (_selectedRoleId == null) {
-      _setFieldError('role', 'Please select a role.');
-      _scrollToTopOnValidationFailure();
-      return;
-    }
-
-    if (_selectedBranchId == null) {
-      _setFieldError('branch', 'Please select a branch.');
-      _scrollToTopOnValidationFailure();
-      return;
-    }
 
     setState(() {
       _isSaving = true;
@@ -383,6 +661,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
         password: _passwordController.text,
         roleId: _selectedRoleId!,
         branchId: _selectedBranchId!,
+        employeeCode: _employeeCodeController.text.trim().toUpperCase(),
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         fatherName: _emptyToNull(_fatherNameController.text),
@@ -405,6 +684,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
         dateOfJoining: _joiningDate,
         dateOfConfirmation: _confirmationDate ?? _joiningDate,
         payableFromDate: _payableFromDate ?? _joiningDate,
+        performanceAppraisal: _emptyToNull(_performanceAppraisalController.text),
+        warningNotes: _emptyToNull(_warningNotesController.text),
         remarks: _emptyToNull(_remarksController.text),
         educationalQualifications: _emptyToNull(_educationController.text),
         professionalQualifications: _emptyToNull(_professionalController.text),
@@ -421,12 +702,13 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       );
 
       if (!mounted) return;
-      await showAppSuccessMessage(
-        context,
-        message: 'Employee ${created.displayName} registered.',
-      );
-      if (!mounted) return;
-      context.pop(true);
+      setState(() {
+        _employeeId = created.id;
+        _registeredEmployeeName = created.displayName;
+        _step = 4;
+        _fieldErrors = const {};
+        _generalError = null;
+      });
     } on ApiException catch (error) {
       if (!mounted) return;
       _applyApiErrors(error);
@@ -434,10 +716,28 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       if (!mounted) return;
       setState(() => _generalError = error.toString());
     } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _finishWizard() async {
+    if (_isSaving) return;
+
+    if (_employmentHistoryFormHasData()) {
+      if (!_validateEmploymentHistoryForm()) return;
+      await _saveEmploymentHistoryEntry(clearAfterSave: false);
+      if (!mounted || _generalError != null || _fieldErrors.isNotEmpty) {
+        return;
       }
     }
+
+    if (!mounted) return;
+    await showAppSuccessMessage(
+      context,
+      message: 'Employee ${_registeredEmployeeName ?? 'registered'} saved.',
+    );
+    if (!mounted) return;
+    context.pop(true);
   }
 
   String? _emptyToNull(String value) {
@@ -451,600 +751,917 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     final isReady = session != null && !_isLoadingOptions;
 
     return Scaffold(
-      appBar: ThemedAppBar(title: 'New Employee',
+      appBar: ThemedAppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
+          onPressed: _onBack,
+        ),
+        title: 'New Employee',
       ),
       body: !isReady
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
           : SessionScope(
               session: session,
-              child: Form(
-                key: _formKey,
-                autovalidateMode: _autoValidate
-                    ? AutovalidateMode.onUserInteraction
-                    : AutovalidateMode.disabled,
-                child: ListView(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
-                  children: [
+              child: Column(
+                children: [
+                  WizardStepIndicator(steps: _steps, currentStep: _step),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      key: ValueKey(_step),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                      child: Form(
+                        key: _formKey,
+                        autovalidateMode: _autoValidate
+                            ? AutovalidateMode.onUserInteraction
+                            : AutovalidateMode.disabled,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _steps[_step],
+                              style: AppTextStyles.label(context),
+                            ),
+                            if (_step == 4) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                'Add previous employment records (optional).',
+                                style: AppTextStyles.body(context).copyWith(
+                                  color: context.appColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 16),
+                            _buildStepContent(),
+                            if (_generalError != null) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                _generalError!,
+                                style: AppTextStyles.body(context).copyWith(
+                                  color: Colors.red.shade700,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: Row(
+                        children: [
+                          if (_step > 0 &&
+                              !(_step == 4 && _employeeId != null)) ...[
+                            OutlinedButton(
+                              onPressed: _isSaving ? null : _onBack,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: context.appColors.shinyGold,
+                                side: BorderSide(
+                                  color: context.appColors.shinyGold,
+                                ),
+                                minimumSize: const Size(110, 40),
+                              ),
+                              child: const Text('Previous'),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          if (_step == 4) ...[
+                            OutlinedButton(
+                              onPressed: _isSaving
+                                  ? null
+                                  : () => _saveEmploymentHistoryEntry(
+                                        clearAfterSave: true,
+                                      ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: context.appColors.shinyGold,
+                                side: BorderSide(
+                                  color: context.appColors.shinyGold,
+                                ),
+                                minimumSize: const Size(120, 40),
+                              ),
+                              child: const Text('Add record'),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          const Spacer(),
+                          AppNextButton(
+                            isLastStep: _step == _steps.length - 1,
+                            isLoading: _isSaving,
+                            onPressed: _isSaving ? null : _onNext,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildStepContent() {
+    return switch (_step) {
+      0 => _buildEmployeePersonalStep(),
+      1 => _buildAssessmentStep(),
+      2 => _buildIdentityLoginStep(),
+      3 => _buildProfileStep(),
+      _ => _buildEmploymentHistoryStep(),
+    };
+  }
+
+  Widget _buildEmployeePersonalStep() {
+    return Column(
+      children: [
+        _SectionCard(
+          title: 'Employment details',
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _roles.isEmpty
+                      ? Text(
+                          'No roles available. Check your connection and try again.',
+                          style: AppTextStyles.body(context).copyWith(
+                            color: Colors.red.shade700,
+                          ),
+                        )
+                      : AppDropdownFormField<int>(
+                          value: _selectedRoleId,
+                          decoration: AppDropdownDecoration.formField(
+                            context,
+                            labelText: 'Role',
+                          ).copyWith(errorText: _apiError('role')),
+                          validator: (_) => _apiError('role'),
+                          items: _roles
+                              .map(
+                                (role) => DropdownMenuItem(
+                                  value: role.id,
+                                  child: Text(
+                                    '${role.name} (${role.code})',
+                                    style: AppTextStyles.body(context),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            _clearFieldError('role');
+                            setState(() => _selectedRoleId = value);
+                          },
+                        ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _branches.isEmpty
+                      ? Text(
+                          'No branches available for assignment.',
+                          style: AppTextStyles.body(context).copyWith(
+                            color: Colors.red.shade700,
+                          ),
+                        )
+                      : AppDropdownFormField<int>(
+                          value: _selectedBranchId,
+                          decoration: AppDropdownDecoration.formField(
+                            context,
+                            labelText: 'Branch',
+                          ).copyWith(errorText: _apiError('branch')),
+                          validator: (_) => _apiError('branch'),
+                          items: _branches
+                              .map(
+                                (branch) => DropdownMenuItem(
+                                  value: branch.id,
+                                  child: Text(
+                                    branch.label,
+                                    style: AppTextStyles.body(context),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            _clearFieldError('branch');
+                            setState(() => _selectedBranchId = value);
+                          },
+                        ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _employeeCodeController,
+              label: 'Employee code',
+              hint: 'e.g. JAIPUR-EMP001',
+              textInputAction: TextInputAction.next,
+              autocorrect: false,
+              enableSuggestions: false,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: const [UpperCaseTextInputFormatter()],
+              externalError: _apiError('employee_code'),
+              validator: (value) {
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) {
+                  return 'Employee code is required';
+                }
+                if (!RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(trimmed)) {
+                  return 'Use letters, numbers, hyphen, or underscore';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _SectionCard(
+          title: 'Personal details',
+          children: [
+            AppPhotoPicker(
+              label: 'Employee photo',
+              hint: 'Upload a profile photo (optional).',
+              placeholderIcon: Icons.person_outline,
+              image: _employeePhoto,
+              errorText: _apiError('employee_photo'),
+              onPick: _pickEmployeePhoto,
+              onClear:
+                  _employeePhoto?.isNotEmpty == true ? _clearEmployeePhoto : null,
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _firstNameController,
+              label: 'First name',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('first_name'),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'First name is required' : null,
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _lastNameController,
+              label: 'Last name',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('last_name'),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Last name is required' : null,
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _fatherNameController,
+              label: 'Father name',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('father_name'),
+              validator: (v) => CustomerValidators.requiredText(v, 'Father name'),
+            ),
+            const SizedBox(height: 16),
+            _DateField(
+              label: 'Date of birth',
+              value: _dateOfBirth,
+              errorText: _apiError('date_of_birth'),
+              onTap: () => _pickDate(
+                initial: _dateOfBirth,
+                onPicked: (date) {
+                  _clearFieldError('date_of_birth');
+                  setState(() => _dateOfBirth = date);
+                },
+              ),
+              onClear: _dateOfBirth == null
+                  ? null
+                  : () {
+                      _clearFieldError('date_of_birth');
+                      setState(() => _dateOfBirth = null);
+                    },
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _placeOfBirthController,
+              label: 'Place of birth',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('place_of_birth'),
+              validator: (v) =>
+                  CustomerValidators.requiredText(v, 'Place of birth'),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: AppDropdownFormField<String>(
+                    value: _gender,
+                    decoration: AppDropdownDecoration.formField(
+                      context,
+                      labelText: 'Gender',
+                    ).copyWith(errorText: _apiError('gender')),
+                    validator: (_) => _apiError('gender'),
+                    items: _genderOptions
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: AppTextStyles.body(context),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        _clearFieldError('gender');
+                        setState(() => _gender = value);
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppDropdownFormField<String>(
+                    value: _maritalStatus,
+                    decoration: AppDropdownDecoration.formField(
+                      context,
+                      labelText: 'Marital status',
+                    ).copyWith(errorText: _apiError('marital_status')),
+                    validator: (_) => _apiError('marital_status'),
+                    items: _maritalOptions
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: AppTextStyles.body(context),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        _clearFieldError('marital_status');
+                        setState(() => _maritalStatus = value);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _nationalityController,
+              label: 'Nationality',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('nationality'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _languagesController,
+              label: 'Languages known',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('languages_known'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _membersInFamilyController,
+              label: 'Members in family',
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('members_in_family'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAssessmentStep() {
+    return _SectionCard(
+      title: 'Assignment & assessment',
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _DateField(
+                label: 'Date of appointment',
+                value: _appointmentDate,
+                errorText: _apiError('date_of_appointment'),
+                compact: true,
+                onTap: () => _pickDate(
+                  initial: _appointmentDate ?? _joiningDate,
+                  onPicked: (date) {
+                    _clearFieldError('date_of_appointment');
+                    setState(() => _appointmentDate = date);
+                  },
+                ),
+                onClear: _appointmentDate == null
+                    ? null
+                    : () {
+                        _clearFieldError('date_of_appointment');
+                        setState(() => _appointmentDate = null);
+                      },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _DateField(
+                label: 'Date of joining',
+                value: _joiningDate,
+                errorText: _apiError('date_of_joining'),
+                compact: true,
+                onTap: () => _pickDate(
+                  initial: _joiningDate,
+                  onPicked: (date) {
+                    _clearFieldError('date_of_joining');
+                    setState(() => _joiningDate = date);
+                  },
+                ),
+                onClear: _joiningDate == null
+                    ? null
+                    : () {
+                        _clearFieldError('date_of_joining');
+                        setState(() => _joiningDate = null);
+                      },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _DateField(
+                label: 'Date of confirmation',
+                value: _confirmationDate,
+                errorText: _apiError('date_of_confirmation'),
+                compact: true,
+                onTap: () => _pickDate(
+                  initial: _confirmationDate ?? _joiningDate,
+                  onPicked: (date) {
+                    _clearFieldError('date_of_confirmation');
+                    setState(() => _confirmationDate = date);
+                  },
+                ),
+                onClear: _confirmationDate == null
+                    ? null
+                    : () {
+                        _clearFieldError('date_of_confirmation');
+                        setState(() => _confirmationDate = null);
+                      },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _DateField(
+                label: 'Payable from date',
+                value: _payableFromDate,
+                errorText: _apiError('payable_from_date'),
+                compact: true,
+                onTap: () => _pickDate(
+                  initial: _payableFromDate ?? _joiningDate,
+                  onPicked: (date) {
+                    _clearFieldError('payable_from_date');
+                    setState(() => _payableFromDate = date);
+                  },
+                ),
+                onClear: _payableFromDate == null
+                    ? null
+                    : () {
+                        _clearFieldError('payable_from_date');
+                        setState(() => _payableFromDate = null);
+                      },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        AppTextField(
+          controller: _performanceAppraisalController,
+          label: 'Performance appraisal',
+          textInputAction: TextInputAction.next,
+          externalError: _apiError('performance_appraisal'),
+        ),
+        const SizedBox(height: 16),
+        AppTextField(
+          controller: _warningNotesController,
+          label: 'Warning notes',
+          textInputAction: TextInputAction.next,
+          externalError: _apiError('warning_notes'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIdentityLoginStep() {
+    return Column(
+      children: [
+        _SectionCard(
+          title: 'Identity & contact',
+          children: [
+            AppTextField(
+              controller: _aadhaarController,
+              label: 'Aadhaar number',
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('aadhaar_card_no'),
+              validator: (v) => CustomerValidators.aadhaar(v, required: true),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _panController,
+              label: 'PAN',
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: const [UpperCaseTextInputFormatter()],
+              externalError: _apiError('pan_card_no'),
+              validator: (v) => CustomerValidators.pan(v, required: true),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _mobileController,
+              label: 'Primary mobile',
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('primary_mobile_number'),
+              validator: (v) => CustomerValidators.mobile(v, required: true),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _secondaryMobileController,
+              label: 'Secondary mobile',
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('secondary_mobile_number'),
+              validator: (v) {
+                final trimmed = v?.trim() ?? '';
+                if (trimmed.isEmpty) return null;
+                if (!RegExp(r'^\d{10}$').hasMatch(trimmed)) {
+                  return 'Mobile number must be exactly 10 digits';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _SectionCard(
+          title: 'Login credentials',
+          children: [
+            AppTextField(
+              controller: _emailController,
+              label: 'Email',
+              keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
+              enableSuggestions: false,
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('email'),
+              validator: (v) => CustomerValidators.email(v, required: true),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _passwordController,
+              label: 'Password',
+              obscureText: _obscurePassword,
+              autocorrect: false,
+              enableSuggestions: false,
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('password'),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: context.appColors.textSecondary,
+                ),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+              ),
+              validator: (v) {
+                if (v == null || v.isEmpty) {
+                  return 'Password is required';
+                }
+                if (v.length < 8) {
+                  return 'Password must be at least 8 characters';
+                }
+                if (!RegExp(r'[A-Z]').hasMatch(v)) {
+                  return 'Password must contain at least one uppercase letter';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _confirmPasswordController,
+              label: 'Confirm password',
+              obscureText: _obscureConfirmPassword,
+              autocorrect: false,
+              enableSuggestions: false,
+              textInputAction: TextInputAction.next,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: context.appColors.textSecondary,
+                ),
+                onPressed: () => setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                ),
+              ),
+              validator: (v) {
+                final trimmed = v?.trim() ?? '';
+                if (trimmed.isEmpty) {
+                  return 'Confirm password is required';
+                }
+                if (trimmed != _passwordController.text) {
+                  return 'Passwords do not match';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileStep() {
+    return Column(
+      children: [
+        _SectionCard(
+          title: 'Address',
+          children: [
+            AppTextField(
+              controller: _presentAddressController,
+              label: 'Present address',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('present_address'),
+              validator: (v) => CustomerValidators.requiredText(v, 'Present address'),
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                'Permanent address same as present',
+                style: AppTextStyles.body(context),
+              ),
+              value: _sameAsPresentAddress,
+              onChanged: (value) =>
+                  setState(() => _sameAsPresentAddress = value),
+            ),
+            if (!_sameAsPresentAddress) ...[
+              const SizedBox(height: 8),
+              AppTextField(
+                controller: _permanentAddressController,
+                label: 'Permanent address',
+                textInputAction: TextInputAction.next,
+                externalError: _apiError('permanent_address'),
+                validator: (v) =>
+                    CustomerValidators.requiredText(v, 'Permanent address'),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 16),
+        _SectionCard(
+          title: 'Health & qualifications',
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: AppTextField(
+                    controller: _heightController,
+                    label: 'Height (cm)',
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    externalError: _apiError('height_cm'),
+                    validator: (v) {
+                      final trimmed = v?.trim() ?? '';
+                      if (trimmed.isEmpty) return null;
+                      final height = double.tryParse(trimmed);
+                      if (height == null || height < 30) {
+                        return 'Height must be at least 30 cm';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppTextField(
+                    controller: _weightController,
+                    label: 'Weight (kg)',
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    externalError: _apiError('weight_kg'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _bloodGroupController,
+              label: 'Blood group',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('blood_group'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _educationController,
+              label: 'Educational qualifications',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('educational_qualifications'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _professionalController,
+              label: 'Professional qualifications',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('professional_qualifications'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _remarksController,
+              label: 'Remarks',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('remarks'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _SectionCard(
+          title: 'Emergency contact',
+          children: [
+            AppTextField(
+              controller: _emergencyNameController,
+              label: 'Contact name',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('emergency_contact_name'),
+              validator: (v) => CustomerValidators.requiredText(v, 'Contact name'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _emergencyRelationController,
+              label: 'Relation',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('emergency_contact_relation'),
+              validator: (v) => CustomerValidators.requiredText(v, 'Relation'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _emergencyMobileController,
+              label: 'Contact number',
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.done,
+              externalError: _apiError('emergency_contact_number'),
+              validator: (v) => CustomerValidators.mobile(v, required: true),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmploymentHistoryStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_savedHistories.isNotEmpty) ...[
+          Text(
+            'Saved records',
+            style: AppTextStyles.label(context),
+          ),
+          const SizedBox(height: 12),
+          for (final history in _savedHistories)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: context.appColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: context.appColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    history.organizationName,
+                    style: AppTextStyles.subtitle(context),
+                  ),
+                  if (history.designation != null &&
+                      history.designation!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
                     Text(
-                      'Register a staff member with login credentials and HR profile.',
+                      history.designation!,
                       style: AppTextStyles.body(context).copyWith(
                         color: context.appColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    _SectionCard(
-                      title: 'Personal details',
-                      children: [
-                        AppPhotoPicker(
-                          label: 'Employee photo',
-                          hint: 'Upload a profile photo (optional).',
-                          placeholderIcon: Icons.person_outline,
-                          image: _employeePhoto,
-                          errorText: _apiError('employee_photo'),
-                          onPick: _pickEmployeePhoto,
-                          onClear: _employeePhoto?.isNotEmpty == true
-                              ? _clearEmployeePhoto
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _firstNameController,
-                          label: 'First name',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('first_name'),
-                          validator: (v) => v == null || v.trim().isEmpty
-                              ? 'First name is required'
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _lastNameController,
-                          label: 'Last name',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('last_name'),
-                          validator: (v) => v == null || v.trim().isEmpty
-                              ? 'Last name is required'
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _fatherNameController,
-                          label: 'Father name',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('father_name'),
-                        ),
-                        const SizedBox(height: 16),
-                        _DateField(
-                          label: 'Date of birth',
-                          value: _dateOfBirth,
-                          errorText: _apiError('date_of_birth'),
-                          onTap: () => _pickDate(
-                            initial: _dateOfBirth,
-                            onPicked: (date) {
-                              _clearFieldError('date_of_birth');
-                              setState(() => _dateOfBirth = date);
-                            },
-                          ),
-                          onClear: _dateOfBirth == null
-                              ? null
-                              : () {
-                                  _clearFieldError('date_of_birth');
-                                  setState(() => _dateOfBirth = null);
-                                },
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _placeOfBirthController,
-                          label: 'Place of birth',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('place_of_birth'),
-                        ),
-                        const SizedBox(height: 16),
-                        _DropdownField<String>(
-                          label: 'Gender',
-                          value: _gender,
-                          errorText: _apiError('gender'),
-                          items: _genderOptions
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(value, style: AppTextStyles.body(context)),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              _clearFieldError('gender');
-                              setState(() => _gender = value);
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _DropdownField<String>(
-                          label: 'Marital status',
-                          value: _maritalStatus,
-                          errorText: _apiError('marital_status'),
-                          items: _maritalOptions
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(value, style: AppTextStyles.body(context)),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              _clearFieldError('marital_status');
-                              setState(() => _maritalStatus = value);
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _nationalityController,
-                          label: 'Nationality',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('nationality'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _languagesController,
-                          label: 'Languages known',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('languages_known'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Identity & contact',
-                      children: [
-                        AppTextField(
-                          controller: _aadhaarController,
-                          label: 'Aadhaar number',
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('aadhaar_card_no'),
-                          validator: (v) {
-                            final trimmed = v?.trim() ?? '';
-                            if (trimmed.isEmpty) return null;
-                            if (!RegExp(r'^\d{12}$').hasMatch(trimmed)) {
-                              return 'Aadhaar number must be exactly 12 digits';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _panController,
-                          label: 'PAN',
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.characters,
-                          inputFormatters: const [UpperCaseTextInputFormatter()],
-                          externalError: _apiError('pan_card_no'),
-                          validator: CustomerValidators.pan,
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _mobileController,
-                          label: 'Primary mobile',
-                          keyboardType: TextInputType.phone,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('primary_mobile_number'),
-                          validator: (v) {
-                            final trimmed = v?.trim() ?? '';
-                            if (trimmed.isEmpty) return null;
-                            if (!RegExp(r'^\d{10}$').hasMatch(trimmed)) {
-                              return 'Mobile number must be exactly 10 digits';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _secondaryMobileController,
-                          label: 'Secondary mobile',
-                          keyboardType: TextInputType.phone,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('secondary_mobile_number'),
-                          validator: (v) {
-                            final trimmed = v?.trim() ?? '';
-                            if (trimmed.isEmpty) return null;
-                            if (!RegExp(r'^\d{10}$').hasMatch(trimmed)) {
-                              return 'Mobile number must be exactly 10 digits';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Login credentials',
-                      children: [
-                        AppTextField(
-                          controller: _emailController,
-                          label: 'Email',
-                          keyboardType: TextInputType.emailAddress,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('email'),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Email is required';
-                            }
-                            if (!v.contains('@')) return 'Enter a valid email';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _passwordController,
-                          label: 'Password',
-                          obscureText: _obscurePassword,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('password'),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              color: context.appColors.textSecondary,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Password is required';
-                            }
-                            if (v.length < 8) {
-                              return 'Password must be at least 8 characters';
-                            }
-                            if (!RegExp(r'[A-Z]').hasMatch(v)) {
-                              return 'Password must contain at least one uppercase letter';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _confirmPasswordController,
-                          label: 'Confirm password',
-                          obscureText: _obscureConfirmPassword,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          textInputAction: TextInputAction.next,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirmPassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              color: context.appColors.textSecondary,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscureConfirmPassword =
-                                  !_obscureConfirmPassword,
-                            ),
-                          ),
-                          validator: (v) {
-                            final trimmed = v?.trim() ?? '';
-                            if (trimmed.isEmpty) {
-                              return 'Confirm password is required';
-                            }
-                            if (trimmed != _passwordController.text) {
-                              return 'Passwords do not match';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Assignment',
-                      children: [
-                        if (_roles.isEmpty)
-                          Text(
-                            'No roles available. Check your connection and try again.',
-                            style: AppTextStyles.body(context).copyWith(
-                              color: Colors.red.shade700,
-                            ),
-                          )
-                        else
-                          _DropdownField<int>(
-                            label: 'Role',
-                            value: _selectedRoleId,
-                            errorText: _apiError('role'),
-                            items: _roles
-                                .map(
-                                  (role) => DropdownMenuItem(
-                                    value: role.id,
-                                    child: Text(
-                                      '${role.name} (${role.code})',
-                                      style: AppTextStyles.body(context),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) {
-                              _clearFieldError('role');
-                              setState(() => _selectedRoleId = value);
-                            },
-                          ),
-                        const SizedBox(height: 16),
-                        if (_branches.isEmpty)
-                          Text(
-                            'No branches available for assignment.',
-                            style: AppTextStyles.body(context).copyWith(
-                              color: Colors.red.shade700,
-                            ),
-                          )
-                        else
-                          _DropdownField<int>(
-                            label: 'Branch',
-                            value: _selectedBranchId,
-                            errorText: _apiError('branch'),
-                            items: _branches
-                                .map(
-                                  (branch) => DropdownMenuItem(
-                                    value: branch.id,
-                                    child: Text(
-                                      branch.label,
-                                      style: AppTextStyles.body(context),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) {
-                              _clearFieldError('branch');
-                              setState(() => _selectedBranchId = value);
-                            },
-                          ),
-                        const SizedBox(height: 16),
-                        _DateField(
-                          label: 'Date of appointment',
-                          value: _appointmentDate,
-                          errorText: _apiError('date_of_appointment'),
-                          onTap: () => _pickDate(
-                            initial: _appointmentDate ?? _joiningDate,
-                            onPicked: (date) {
-                              _clearFieldError('date_of_appointment');
-                              setState(() => _appointmentDate = date);
-                            },
-                          ),
-                          onClear: _appointmentDate == null
-                              ? null
-                              : () {
-                                  _clearFieldError('date_of_appointment');
-                                  setState(() => _appointmentDate = null);
-                                },
-                        ),
-                        const SizedBox(height: 16),
-                        _DateField(
-                          label: 'Date of joining',
-                          value: _joiningDate,
-                          errorText: _apiError('date_of_joining'),
-                          onTap: () => _pickDate(
-                            initial: _joiningDate,
-                            onPicked: (date) {
-                              _clearFieldError('date_of_joining');
-                              setState(() => _joiningDate = date);
-                            },
-                          ),
-                          onClear: _joiningDate == null
-                              ? null
-                              : () {
-                                  _clearFieldError('date_of_joining');
-                                  setState(() => _joiningDate = null);
-                                },
-                        ),
-                        const SizedBox(height: 16),
-                        _DateField(
-                          label: 'Date of confirmation',
-                          value: _confirmationDate,
-                          errorText: _apiError('date_of_confirmation'),
-                          onTap: () => _pickDate(
-                            initial: _confirmationDate ?? _joiningDate,
-                            onPicked: (date) {
-                              _clearFieldError('date_of_confirmation');
-                              setState(() => _confirmationDate = date);
-                            },
-                          ),
-                          onClear: _confirmationDate == null
-                              ? null
-                              : () {
-                                  _clearFieldError('date_of_confirmation');
-                                  setState(() => _confirmationDate = null);
-                                },
-                        ),
-                        const SizedBox(height: 16),
-                        _DateField(
-                          label: 'Payable from date',
-                          value: _payableFromDate,
-                          errorText: _apiError('payable_from_date'),
-                          onTap: () => _pickDate(
-                            initial: _payableFromDate ?? _joiningDate,
-                            onPicked: (date) {
-                              _clearFieldError('payable_from_date');
-                              setState(() => _payableFromDate = date);
-                            },
-                          ),
-                          onClear: _payableFromDate == null
-                              ? null
-                              : () {
-                                  _clearFieldError('payable_from_date');
-                                  setState(() => _payableFromDate = null);
-                                },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Address',
-                      children: [
-                        AppTextField(
-                          controller: _presentAddressController,
-                          label: 'Present address',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('present_address'),
-                        ),
-                        const SizedBox(height: 12),
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            'Permanent address same as present',
-                            style: AppTextStyles.body(context),
-                          ),
-                          value: _sameAsPresentAddress,
-                          onChanged: (value) =>
-                              setState(() => _sameAsPresentAddress = value),
-                        ),
-                        if (!_sameAsPresentAddress) ...[
-                          const SizedBox(height: 8),
-                          AppTextField(
-                            controller: _permanentAddressController,
-                            label: 'Permanent address',
-                            textInputAction: TextInputAction.next,
-                            externalError: _apiError('permanent_address'),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Health & qualifications',
-                      children: [
-                        AppTextField(
-                          controller: _heightController,
-                          label: 'Height (cm)',
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('height_cm'),
-                          validator: (v) {
-                            final trimmed = v?.trim() ?? '';
-                            if (trimmed.isEmpty) return null;
-                            final height = double.tryParse(trimmed);
-                            if (height == null || height < 30) {
-                              return 'Height must be at least 30 cm';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _weightController,
-                          label: 'Weight (kg)',
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('weight_kg'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _bloodGroupController,
-                          label: 'Blood group',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('blood_group'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _educationController,
-                          label: 'Educational qualifications',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('educational_qualifications'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _professionalController,
-                          label: 'Professional qualifications',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('professional_qualifications'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _membersInFamilyController,
-                          label: 'Members in family',
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('members_in_family'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _remarksController,
-                          label: 'Remarks',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('remarks'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Emergency contact',
-                      children: [
-                        AppTextField(
-                          controller: _emergencyNameController,
-                          label: 'Contact name',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('emergency_contact_name'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _emergencyRelationController,
-                          label: 'Relation',
-                          textInputAction: TextInputAction.next,
-                          externalError: _apiError('emergency_contact_relation'),
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          controller: _emergencyMobileController,
-                          label: 'Contact number',
-                          keyboardType: TextInputType.phone,
-                          textInputAction: TextInputAction.done,
-                          externalError: _apiError('emergency_contact_number'),
-                          validator: (v) {
-                            final trimmed = v?.trim() ?? '';
-                            if (trimmed.isEmpty) return null;
-                            if (!RegExp(r'^\d{10}$').hasMatch(trimmed)) {
-                              return 'Mobile number must be exactly 10 digits';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                    if (_generalError != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        _generalError!,
-                        style: AppTextStyles.body(context).copyWith(
-                          color: Colors.red.shade700,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
                   ],
-                ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${_formatDisplayDate(history.serviceFrom)} — ${_formatDisplayDate(history.serviceTo)}',
+                    style: AppTextStyles.body(context),
+                  ),
+                  if (history.annualCtc != null &&
+                      history.annualCtc!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'CTC: ${history.annualCtc}',
+                      style: AppTextStyles.body(context).copyWith(
+                        color: context.appColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-      bottomNavigationBar: isReady
-          ? SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: AppPrimaryButton(
-                  label: 'Register employee',
-                  isLoading: _isSaving,
-                  onPressed: _submit,
+          const SizedBox(height: 8),
+        ],
+        _SectionCard(
+          title: 'Previous employment',
+          children: [
+            AppTextField(
+              controller: _historyOrganizationController,
+              label: 'Organization name',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('organization_name'),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _historyDesignationController,
+              label: 'Designation',
+              textInputAction: TextInputAction.next,
+              externalError: _apiError('designation'),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _DateField(
+                    label: 'Service from',
+                    value: _historyServiceFrom,
+                    errorText: _apiError('service_from'),
+                    compact: true,
+                    onTap: () => _pickDate(
+                      initial: _historyServiceFrom,
+                      onPicked: (date) {
+                        _clearFieldError('service_from');
+                        setState(() => _historyServiceFrom = date);
+                      },
+                    ),
+                    onClear: _historyServiceFrom == null
+                        ? null
+                        : () {
+                            _clearFieldError('service_from');
+                            setState(() => _historyServiceFrom = null);
+                          },
+                  ),
                 ),
-              ),
-            )
-          : null,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _DateField(
+                    label: 'Service to',
+                    value: _historyServiceTo,
+                    errorText: _apiError('service_to'),
+                    compact: true,
+                    onTap: () => _pickDate(
+                      initial: _historyServiceTo ?? _historyServiceFrom,
+                      onPicked: (date) {
+                        _clearFieldError('service_to');
+                        setState(() => _historyServiceTo = date);
+                      },
+                    ),
+                    onClear: _historyServiceTo == null
+                        ? null
+                        : () {
+                            _clearFieldError('service_to');
+                            setState(() => _historyServiceTo = null);
+                          },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _historyAnnualCtcController,
+              label: 'Annual CTC',
+              hint: 'e.g. 180000.00',
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              textInputAction: TextInputAction.done,
+              externalError: _apiError('annual_ctc'),
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  String _formatDisplayDate(DateTime? date) {
+    if (date == null) return '—';
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }
 
@@ -1078,69 +1695,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _DropdownField<T> extends StatelessWidget {
-  const _DropdownField({
-    required this.label,
-    required this.value,
-    required this.items,
-    required this.onChanged,
-    this.errorText,
-  });
-
-  final String label;
-  final T? value;
-  final List<DropdownMenuItem<T>> items;
-  final ValueChanged<T?> onChanged;
-  final String? errorText;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.label(context)),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<T>(
-          value: value,
-          items: items,
-          onChanged: onChanged,
-          style: AppTextStyles.body(context),
-          dropdownColor: context.appColors.card,
-          validator: (_) => errorText,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: context.appColors.inputFill,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: context.appColors.progressTrack),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: context.appColors.progressTrack),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: context.appColors.gold, width: 1.5),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.red.shade300),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _DateField extends StatelessWidget {
   const _DateField({
     required this.label,
@@ -1148,6 +1702,7 @@ class _DateField extends StatelessWidget {
     required this.onTap,
     this.onClear,
     this.errorText,
+    this.compact = false,
   });
 
   final String label;
@@ -1155,6 +1710,7 @@ class _DateField extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onClear;
   final String? errorText;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -1166,7 +1722,12 @@ class _DateField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.label(context)),
+        Text(
+          label,
+          style: AppTextStyles.label(context),
+          maxLines: compact ? 2 : 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: 8),
         Material(
           color: context.appColors.inputFill,
@@ -1175,7 +1736,10 @@ class _DateField extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(12),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: EdgeInsets.symmetric(
+                horizontal: compact ? 10 : 16,
+                vertical: compact ? 12 : 14,
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
@@ -1188,10 +1752,10 @@ class _DateField extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.calendar_today_outlined,
-                    size: 18,
+                    size: compact ? 16 : 18,
                     color: context.appColors.shinyGold.withValues(alpha: 0.8),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: compact ? 8 : 12),
                   Expanded(
                     child: Text(
                       formatted,
@@ -1199,13 +1763,22 @@ class _DateField extends StatelessWidget {
                         color: value == null
                             ? context.appColors.textSecondary
                             : context.appColors.textPrimary,
+                        fontSize: compact ? 14 : null,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                   if (onClear != null)
                     IconButton(
                       icon: const Icon(Icons.close, size: 18),
                       color: context.appColors.textSecondary,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
                       onPressed: onClear,
                     ),
                 ],

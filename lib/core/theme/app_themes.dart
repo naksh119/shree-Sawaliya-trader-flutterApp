@@ -80,6 +80,32 @@ abstract final class AppThemes {
         backgroundColor: colors.gold,
         foregroundColor: AppColors.navy,
       ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return colors.textSecondary.withValues(alpha: 0.5);
+          }
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.navy;
+          }
+          return colors.textSecondary;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return colors.progressTrack.withValues(alpha: 0.5);
+          }
+          if (states.contains(WidgetState.selected)) {
+            return colors.gold;
+          }
+          return colors.progressTrack;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.transparent;
+          }
+          return colors.border;
+        }),
+      ),
     );
   }
 }

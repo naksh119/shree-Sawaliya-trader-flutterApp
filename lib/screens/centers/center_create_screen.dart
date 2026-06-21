@@ -18,7 +18,6 @@ import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 
 class CenterCreateScreen extends StatefulWidget {
   const CenterCreateScreen({super.key});
@@ -297,8 +296,17 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
                   value == null || value.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
-            _ProductTypeDropdown(
+            AppContainerDropdown<CenterProductType>(
+              label: 'Product type',
               value: _productType,
+              items: CenterProductType.options
+                  .map(
+                    (type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type.label),
+                    ),
+                  )
+                  .toList(),
               onChanged: (value) {
                 if (value != null) setState(() => _productType = value);
               },
@@ -613,45 +621,6 @@ class _SectionCard extends StatelessWidget {
           ...children,
         ],
       ),
-    );
-  }
-}
-
-class _ProductTypeDropdown extends StatelessWidget {
-  const _ProductTypeDropdown({
-    required this.value,
-    required this.onChanged,
-  });
-
-  final CenterProductType value;
-  final ValueChanged<CenterProductType?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Product type', style: AppTextStyles.subtitle(context)),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: AppDropdownDecoration.container(context),
-          child: AppInlineDropdown<CenterProductType>(
-            value: value,
-            isExpanded: true,
-            style: AppTextStyles.body(context),
-            items: CenterProductType.options
-                .map(
-                  (type) => DropdownMenuItem(
-                    value: type,
-                    child: Text(type.label),
-                  ),
-                )
-                .toList(),
-            onChanged: onChanged,
-          ),
-        ),
-      ],
     );
   }
 }
