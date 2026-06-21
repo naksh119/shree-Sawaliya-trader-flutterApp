@@ -13,6 +13,7 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/active_status_filter.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
@@ -21,8 +22,6 @@ import 'package:sawaliyatrader/screens/employees/employee_delete_helper.dart';
 import 'package:sawaliyatrader/screens/employees/widgets/employee_list_tile.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
-
-enum _StatusFilter { all, active, inactive }
 
 const _kAllBranchesFilterId = 0;
 
@@ -44,7 +43,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   List<BranchOption> _branches = [];
   int? _roleFilter;
   int _branchFilterId = _kAllBranchesFilterId;
-  _StatusFilter _statusFilter = _StatusFilter.all;
+  ActiveStatusFilter _statusFilter = ActiveStatusFilter.all;
   String _searchQuery = '';
   int _page = 1;
   int _total = 0;
@@ -115,12 +114,6 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     if (_items.length >= _total) return;
     _loadEmployees();
   }
-
-  bool? get _isActiveParam => switch (_statusFilter) {
-    _StatusFilter.all => null,
-    _StatusFilter.active => true,
-    _StatusFilter.inactive => false,
-  };
 
   bool _canFilterByBranch(LoginResponse session) {
     final permissions = PermissionService(session);
@@ -202,7 +195,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
         page: reset ? 1 : _page,
         pageSize: _usesClientSideFiltering ? 200 : 20,
         search: _searchQuery.isEmpty ? null : _searchQuery,
-        isActive: _isActiveParam,
+        isActive: _statusFilter.isActiveParam,
         role: _roleFilter,
         roleCode: selectedRole?.code,
         branch: _branchFilterFor(session),
@@ -337,7 +330,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
         .toList();
   }
 
-  void _onStatusSelected(_StatusFilter? status) {
+  void _onStatusSelected(ActiveStatusFilter? status) {
     if (status == null) return;
     setState(() => _statusFilter = status);
     _loadEmployees(reset: true);
@@ -347,20 +340,6 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     if (branchId == null) return;
     setState(() => _branchFilterId = branchId);
     _loadEmployees(reset: true);
-  }
-
-  List<DropdownMenuItem<_StatusFilter>> _statusFilterItems(BuildContext context) {
-    Widget label(String text) => Text(
-          text,
-          style: AppTextStyles.body(context),
-          overflow: TextOverflow.ellipsis,
-        );
-
-    return [
-      DropdownMenuItem(value: _StatusFilter.all, child: label('All employees')),
-      DropdownMenuItem(value: _StatusFilter.active, child: label('Active employees')),
-      DropdownMenuItem(value: _StatusFilter.inactive, child: label('Inactive employees')),
-    ];
   }
 
   List<DropdownMenuItem<int>> _branchFilterItems(BuildContext context) {
@@ -430,40 +409,32 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: AppSearchField(
-                hintText: 'Search by name, code, or email',
-                onSearch: _onSearch,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Flexible(
-                    flex: 2,
-                    child: AppDropdownFormField<_StatusFilter>(
-                      value: _statusFilter,
-                      decoration: AppDropdownDecoration.formField(context),
-                      items: _statusFilterItems(context),
-                      onChanged: _onStatusSelected,
+                  Expanded(
+                    child: AppSearchField(
+                      hintText: 'Search by name, code, or email',
+                      onSearch: _onSearch,
                     ),
                   ),
-                  if (_canFilterByBranch(session)) ...[
-                    const SizedBox(width: 8),
-                    Flexible(
-                      flex: 3,
-                      child: AppDropdownFormField<int>(
-                        value: _branchFilterId,
-                        decoration: AppDropdownDecoration.formField(context),
-                        items: _branchFilterItems(context),
-                        onChanged: _onBranchSelected,
-                      ),
-                    ),
-                  ],
+                  const SizedBox(width: 8),
+                  ActiveStatusFilterButton(
+                    value: _statusFilter,
+                    onSelected: _onStatusSelected,
+                  ),
                 ],
               ),
             ),
+            if (_canFilterByBranch(session))
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: AppDropdownFormField<int>(
+                  value: _branchFilterId,
+                  decoration: AppDropdownDecoration.formField(context),
+                  items: _branchFilterItems(context),
+                  onChanged: _onBranchSelected,
+                ),
+              ),
             SizedBox(
               height: 44,
               child: ListView(
@@ -587,11 +558,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   }
 
   String get _emptyMessage {
-    final status = switch (_statusFilter) {
-      _StatusFilter.all => '',
-      _StatusFilter.active => ' active',
-      _StatusFilter.inactive => ' inactive',
-    };
+    final status = _statusFilter.emptyMessageSuffix;
     final role = _selectedRole;
     final rolePart = role != null ? ' ${role.name}' : '';
     final branch = _selectedBranch;

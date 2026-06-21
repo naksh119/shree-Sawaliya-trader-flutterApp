@@ -11,7 +11,7 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/active_status_filter.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
@@ -19,8 +19,6 @@ import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/screens/branches/branch_delete_helper.dart';
-
-enum _StatusFilter { all, active, inactive }
 
 class BranchesListScreen extends StatefulWidget {
   const BranchesListScreen({super.key});
@@ -36,7 +34,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
 
   LoginResponse? _session;
   final List<BranchDto> _items = [];
-  _StatusFilter _statusFilter = _StatusFilter.all;
+  ActiveStatusFilter _statusFilter = ActiveStatusFilter.all;
   String _searchQuery = '';
   int _page = 1;
   int _total = 0;
@@ -101,12 +99,6 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
     _loadBranches();
   }
 
-  bool? get _isActiveParam => switch (_statusFilter) {
-        _StatusFilter.all => null,
-        _StatusFilter.active => true,
-        _StatusFilter.inactive => false,
-      };
-
   Future<void> _loadBranches({bool reset = false}) async {
     final session = _session;
     if (session == null) {
@@ -132,7 +124,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
         page: reset ? 1 : _page,
         pageSize: 50,
         search: _searchQuery.isEmpty ? null : _searchQuery,
-        isActive: _isActiveParam,
+        isActive: _statusFilter.isActiveParam,
       );
       final response = await fetchBranches;
 
@@ -170,7 +162,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
     _loadBranches(reset: true);
   }
 
-  void _onStatusSelected(_StatusFilter? status) {
+  void _onStatusSelected(ActiveStatusFilter? status) {
     if (status == null || status == _statusFilter) return;
     setState(() => _statusFilter = status);
     _loadBranches(reset: true);
@@ -261,26 +253,9 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  AppFilterIconButton<_StatusFilter>(
-                    tooltip: 'Filter by status',
+                  ActiveStatusFilterButton(
                     value: _statusFilter,
-                    isActive: _statusFilter != _StatusFilter.all,
-                    icon: Icons.filter_list_rounded,
                     onSelected: _onStatusSelected,
-                    items: const [
-                      DropdownMenuItem(
-                        value: _StatusFilter.all,
-                        child: Text('All'),
-                      ),
-                      DropdownMenuItem(
-                        value: _StatusFilter.active,
-                        child: Text('Active'),
-                      ),
-                      DropdownMenuItem(
-                        value: _StatusFilter.inactive,
-                        child: Text('Inactive'),
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -386,11 +361,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
   }
 
   String get _emptyMessage {
-    final status = switch (_statusFilter) {
-      _StatusFilter.all => '',
-      _StatusFilter.active => ' active',
-      _StatusFilter.inactive => ' inactive',
-    };
+    final status = _statusFilter.emptyMessageSuffix;
     if (_searchQuery.isNotEmpty) {
       return 'No$status branches found for "$_searchQuery".';
     }
