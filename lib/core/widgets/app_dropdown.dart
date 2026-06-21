@@ -574,6 +574,33 @@ class AppFilterIconButton<T> extends StatefulWidget {
 class _AppFilterIconButtonState<T> extends State<AppFilterIconButton<T>> {
   final _anchorKey = GlobalKey();
 
+  List<String> get _allLabels => widget.items
+      .map((item) => _dropdownItemLabel(item.child) ?? '')
+      .where((label) => label.isNotEmpty)
+      .toList();
+
+  double _menuWidthFor(BuildContext context, RenderBox button) {
+    final style = AppDropdownMetrics.filterTextStyle(context);
+    final painter = TextPainter(
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    );
+
+    var maxTextWidth = 0.0;
+    for (final label in _allLabels) {
+      painter.text = TextSpan(text: label, style: style);
+      painter.layout();
+      maxTextWidth = math.max(maxTextWidth, painter.width);
+    }
+
+    final contentWidth = maxTextWidth + AppDropdownMetrics.menuExtraWidth;
+    return contentWidth.clamp(
+      button.size.width,
+      MediaQuery.sizeOf(context).width * 0.72,
+    );
+  }
+
   Future<void> _openMenu() async {
     final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || widget.items.isEmpty) return;
@@ -582,7 +609,7 @@ class _AppFilterIconButtonState<T> extends State<AppFilterIconButton<T>> {
       context: context,
       button: box,
       items: widget.items,
-      menuWidth: box.size.width,
+      menuWidth: _menuWidthFor(context, box),
       menuMaxHeight: AppDropdownMetrics.scrollableMenuMaxHeight(
         widget.items.length,
       ),

@@ -350,9 +350,11 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   }
 
   List<DropdownMenuItem<_StatusFilter>> _statusFilterItems(BuildContext context) {
-    final textStyle = AppDropdownMetrics.filterTextStyle(context);
-    Widget label(String text) =>
-        Text(text, style: textStyle, overflow: TextOverflow.ellipsis);
+    Widget label(String text) => Text(
+          text,
+          style: AppTextStyles.body(context),
+          overflow: TextOverflow.ellipsis,
+        );
 
     return [
       DropdownMenuItem(value: _StatusFilter.all, child: label('All employees')),
@@ -362,9 +364,11 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   }
 
   List<DropdownMenuItem<int>> _branchFilterItems(BuildContext context) {
-    final textStyle = AppDropdownMetrics.filterTextStyle(context);
-    Widget label(String text) =>
-        Text(text, style: textStyle, overflow: TextOverflow.ellipsis);
+    Widget label(String text) => Text(
+          text,
+          style: AppTextStyles.body(context),
+          overflow: TextOverflow.ellipsis,
+        );
 
     return [
       DropdownMenuItem(
@@ -434,21 +438,24 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Flexible(
                     flex: 2,
-                    child: AppFilterDropdown<_StatusFilter>(
+                    child: AppDropdownFormField<_StatusFilter>(
                       value: _statusFilter,
+                      decoration: AppDropdownDecoration.formField(context),
                       items: _statusFilterItems(context),
                       onChanged: _onStatusSelected,
                     ),
                   ),
                   if (_canFilterByBranch(session)) ...[
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Flexible(
                       flex: 3,
-                      child: AppScrollableFilterDropdown<int>(
+                      child: AppDropdownFormField<int>(
                         value: _branchFilterId,
+                        decoration: AppDropdownDecoration.formField(context),
                         items: _branchFilterItems(context),
                         onChanged: _onBranchSelected,
                       ),

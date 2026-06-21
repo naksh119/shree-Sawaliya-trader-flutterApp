@@ -296,14 +296,20 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
                   value == null || value.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
-            AppContainerDropdown<CenterProductType>(
-              label: 'Product type',
+            AppDropdownFormField<CenterProductType>(
               value: _productType,
+              decoration: AppDropdownDecoration.formField(
+                context,
+                labelText: 'Product type',
+              ),
               items: CenterProductType.options
                   .map(
                     (type) => DropdownMenuItem(
                       value: type,
-                      child: Text(type.label),
+                      child: Text(
+                        type.label,
+                        style: AppTextStyles.body(context),
+                      ),
                     ),
                   )
                   .toList(),

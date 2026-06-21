@@ -270,15 +270,15 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
                     items: const [
                       DropdownMenuItem(
                         value: _StatusFilter.all,
-                        child: Text('All branches'),
+                        child: Text('All'),
                       ),
                       DropdownMenuItem(
                         value: _StatusFilter.active,
-                        child: Text('Active branches'),
+                        child: Text('Active'),
                       ),
                       DropdownMenuItem(
                         value: _StatusFilter.inactive,
-                        child: Text('Inactive branches'),
+                        child: Text('Inactive'),
                       ),
                     ],
                   ),
