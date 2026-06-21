@@ -83,6 +83,10 @@ abstract final class AppDropdownDecoration {
         borderRadius: borderRadius,
         borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
       ),
+      errorStyle: AppTextStyles.subtitle(context).copyWith(
+        color: Colors.red.shade700,
+      ),
+      errorMaxLines: 3,
     );
   }
 
