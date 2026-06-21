@@ -926,6 +926,12 @@ abstract class AppLocalizations {
   /// **'Gender'**
   String get gender;
 
+  /// No description provided for @selectGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Select gender'**
+  String get selectGender;
+
   /// No description provided for @occupation.
   ///
   /// In en, this message translates to:
@@ -2773,6 +2779,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'e.g. 180000.00'**
   String get annualCtcHint;
+
+  /// No description provided for @genderMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get genderMale;
+
+  /// No description provided for @genderFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get genderFemale;
+
+  /// No description provided for @genderOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get genderOther;
+
+  /// No description provided for @maritalSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Single'**
+  String get maritalSingle;
+
+  /// No description provided for @maritalMarried.
+  ///
+  /// In en, this message translates to:
+  /// **'Married'**
+  String get maritalMarried;
+
+  /// No description provided for @maritalDivorced.
+  ///
+  /// In en, this message translates to:
+  /// **'Divorced'**
+  String get maritalDivorced;
+
+  /// No description provided for @maritalWidowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Widowed'**
+  String get maritalWidowed;
+
+  /// No description provided for @employeePhotoRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee photo is required'**
+  String get employeePhotoRequired;
+
+  /// No description provided for @dateOfConfirmationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of confirmation is required'**
+  String get dateOfConfirmationRequired;
+
+  /// No description provided for @payableFromDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Payable from date is required'**
+  String get payableFromDateRequired;
+
+  /// No description provided for @locationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is required'**
+  String get locationRequired;
+
+  /// No description provided for @paymentQrRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment QR code is required'**
+  String get paymentQrRequired;
+
+  /// No description provided for @startDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date is required'**
+  String get startDateRequired;
+
+  /// No description provided for @designationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Designation is required'**
+  String get designationRequired;
+
+  /// No description provided for @annualCtcRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual CTC is required'**
+  String get annualCtcRequired;
+
+  /// No description provided for @invalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number'**
+  String get invalidNumber;
+
+  /// No description provided for @fieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required'**
+  String fieldRequired(String field);
+
+  /// No description provided for @fullNameMaxLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name must be 200 characters or fewer'**
+  String get fullNameMaxLength;
+
+  /// No description provided for @mobileRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number is required'**
+  String get mobileRequired;
+
+  /// No description provided for @emailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required'**
+  String get emailRequired;
+
+  /// No description provided for @aadhaarRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Aadhaar number is required'**
+  String get aadhaarRequired;
+
+  /// No description provided for @aadhaarTwelveDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Aadhaar number must be exactly 12 digits'**
+  String get aadhaarTwelveDigits;
+
+  /// No description provided for @panRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'PAN is required'**
+  String get panRequired;
+
+  /// No description provided for @panFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'PAN must be in format ABCDE1234F'**
+  String get panFormat;
+
+  /// No description provided for @pincodeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Pincode is required'**
+  String get pincodeRequired;
+
+  /// No description provided for @pincodeSixDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Pincode must be exactly 6 digits'**
+  String get pincodeSixDigits;
+
+  /// No description provided for @fieldValidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be a valid number'**
+  String fieldValidNumber(String field);
+
+  /// No description provided for @fieldCannotBeNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} cannot be negative'**
+  String fieldCannotBeNegative(String field);
+
+  /// No description provided for @genderRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender is required'**
+  String get genderRequired;
+
+  /// No description provided for @selectValidGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a valid gender'**
+  String get selectValidGender;
+
+  /// No description provided for @maritalStatusRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Marital status is required'**
+  String get maritalStatusRequired;
+
+  /// No description provided for @selectValidMaritalStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a valid marital status'**
+  String get selectValidMaritalStatus;
+
+  /// No description provided for @ageRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Age is required'**
+  String get ageRequired;
+
+  /// No description provided for @ageWholeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Age must be a whole number'**
+  String get ageWholeNumber;
+
+  /// No description provided for @ageRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Age must be between 0 and 150'**
+  String get ageRange;
+
+  /// No description provided for @nameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get nameRequired;
+
+  /// No description provided for @nameMaxLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Name must be 200 characters or fewer'**
+  String get nameMaxLength;
 }
 
 class _AppLocalizationsDelegate

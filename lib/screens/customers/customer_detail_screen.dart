@@ -232,7 +232,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   label: context.l10n.dateOfBirth,
                   value: _formatDate(customer.dateOfBirth),
                 ),
-                CustomerInfoRow(label: context.l10n.gender, value: customer.gender ?? ''),
+                CustomerInfoRow(
+                  label: context.l10n.gender,
+                  value: localizedGenderLabel(
+                    context.l10n,
+                    customer.gender,
+                  ),
+                ),
                 CustomerInfoRow(
                   label: context.l10n.occupation,
                   value: customer.occupation ?? '',

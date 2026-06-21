@@ -5,6 +5,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
@@ -116,6 +117,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
 
   String _formatEnum(String? value) {
     if (value == null || value.isEmpty) return '';
+    final l10n = context.l10n;
+    final gender = localizedGenderLabel(l10n, value);
+    if (gender != value) return gender;
+    final marital = localizedMaritalStatusLabel(l10n, value);
+    if (marital != value) return marital;
     return value
         .toLowerCase()
         .split('_')

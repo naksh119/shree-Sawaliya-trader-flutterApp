@@ -10,6 +10,7 @@ import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_put_request.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
@@ -17,6 +18,7 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_date_form_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
@@ -103,8 +105,8 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
   final _emergencyRelationController = TextEditingController();
   final _emergencyMobileController = TextEditingController();
 
-  static const _genderOptions = ['MALE', 'FEMALE', 'OTHER'];
-  static const _maritalOptions = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'];
+  static const _genderOptions = kGenderOptions;
+  static const _maritalOptions = kMaritalStatusOptions;
 
   @override
   void initState() {
@@ -303,6 +305,31 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
 
   String? _apiError(String field) => _fieldErrors[field];
 
+  void _setFieldError(String field, String message) {
+    setState(() {
+      _fieldErrors = Map<String, String>.from(_fieldErrors)..[field] = message;
+      _generalError = null;
+      _autoValidate = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _formKey.currentState?.validate();
+    });
+  }
+
+  bool _validateNonFormFields() {
+    final l10n = context.l10n;
+    var valid = true;
+
+    final hasPhoto = (_employeePhoto?.isNotEmpty ?? false) ||
+        (_existingPhotoUrl != null && _existingPhotoUrl!.isNotEmpty);
+    if (!hasPhoto) {
+      _setFieldError('employee_photo', l10n.employeePhotoRequired);
+      valid = false;
+    }
+
+    return valid;
+  }
+
   void _applyApiErrors(ApiException error) {
     setState(() {
       _fieldErrors = error.fieldErrors;
@@ -345,7 +372,11 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
   Future<void> _pickEmployeePhoto() async {
     final picked = await PickedImage.pick();
     if (picked == null) return;
-    setState(() => _employeePhoto = picked);
+    setState(() {
+      _employeePhoto = picked;
+      _fieldErrors = Map<String, String>.from(_fieldErrors)
+        ..remove('employee_photo');
+    });
   }
 
   void _clearEmployeePhoto() {
@@ -365,14 +396,21 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
     if (!_autoValidate) {
       setState(() => _autoValidate = true);
     }
-    if (!_formKey.currentState!.validate()) return;
+    final formValid = _formKey.currentState!.validate();
+    final extraValid = _validateNonFormFields();
+    if (!formValid || !extraValid) return;
 
     if (_selectedRoleId == null) {
-      setState(() => _generalError = context.l10n.pleaseSelectRole);
+      _setFieldError('role', context.l10n.pleaseSelectRole);
       return;
     }
     if (_selectedBranchId == null) {
-      setState(() => _generalError = context.l10n.pleaseSelectBranch);
+      _setFieldError('branch', context.l10n.pleaseSelectBranch);
+      return;
+    }
+    if (!_sameAsPresentAddress &&
+        _permanentAddressController.text.trim().isEmpty) {
+      _setFieldError('permanent_address', context.l10n.permanentAddressRequired);
       return;
     }
 
@@ -522,7 +560,11 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                                         context,
                                         labelText: l10n.role,
                                       ).copyWith(errorText: _apiError('role')),
-                                      validator: (_) => _apiError('role'),
+                                      validator: (value) =>
+                                          _apiError('role') ??
+                                          (value == null
+                                              ? l10n.pleaseSelectRole
+                                              : null),
                                       items: _roles
                                           .map(
                                             (role) => DropdownMenuItem(
@@ -557,7 +599,11 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                                         context,
                                         labelText: l10n.branchLabel,
                                       ).copyWith(errorText: _apiError('branch')),
-                                      validator: (_) => _apiError('branch'),
+                                      validator: (value) =>
+                                          _apiError('branch') ??
+                                          (value == null
+                                              ? l10n.pleaseSelectBranch
+                                              : null),
                                       items: _branches
                                           .map(
                                             (branch) => DropdownMenuItem(
@@ -591,6 +637,7 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           hint: l10n.chooseNewPhotoHint,
                           placeholderIcon: Icons.person_outline,
                           image: _employeePhoto,
+                          errorText: _apiError('employee_photo'),
                           onPick: _pickEmployeePhoto,
                           onClear: _employeePhoto?.isNotEmpty == true
                               ? _clearEmployeePhoto
@@ -622,15 +669,25 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.fatherName,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('father_name'),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? l10n.fatherNameRequired
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         _DateField(
                           label: l10n.dateOfBirth,
                           value: _dateOfBirth,
                           errorText: _apiError('date_of_birth'),
+                          validator: (value) =>
+                              value == null ? l10n.dateOfBirthRequired : null,
                           onTap: () => _pickDate(
                             initial: _dateOfBirth,
-                            onPicked: (date) => setState(() => _dateOfBirth = date),
+                            onPicked: (date) => setState(() {
+                              _dateOfBirth = date;
+                              _fieldErrors =
+                                  Map<String, String>.from(_fieldErrors)
+                                    ..remove('date_of_birth');
+                            }),
                           ),
                           onClear: _dateOfBirth == null
                               ? null
@@ -642,6 +699,9 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.placeOfBirth,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('place_of_birth'),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? l10n.placeOfBirthRequired
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -653,18 +713,28 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                                 decoration: AppDropdownDecoration.formField(
                                   context,
                                   labelText: l10n.gender,
-                                ),
+                                ).copyWith(errorText: _apiError('gender')),
+                                validator: (value) =>
+                                    _apiError('gender') ??
+                                    CustomerValidators.gender(l10n, value),
                                 items: _genderOptions
                                     .map(
                                       (value) => DropdownMenuItem(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(
+                                          localizedGenderLabel(l10n, value),
+                                        ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: (value) {
                                   if (value != null) {
-                                    setState(() => _gender = value);
+                                    setState(() {
+                                      _gender = value;
+                                      _fieldErrors =
+                                          Map<String, String>.from(_fieldErrors)
+                                            ..remove('gender');
+                                    });
                                   }
                                 },
                               ),
@@ -676,18 +746,31 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                                 decoration: AppDropdownDecoration.formField(
                                   context,
                                   labelText: l10n.maritalStatus,
-                                ),
+                                ).copyWith(errorText: _apiError('marital_status')),
+                                validator: (value) =>
+                                    _apiError('marital_status') ??
+                                    CustomerValidators.maritalStatus(l10n, value),
                                 items: _maritalOptions
                                     .map(
                                       (value) => DropdownMenuItem(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(
+                                          localizedMaritalStatusLabel(
+                                            l10n,
+                                            value,
+                                          ),
+                                        ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: (value) {
                                   if (value != null) {
-                                    setState(() => _maritalStatus = value);
+                                    setState(() {
+                                      _maritalStatus = value;
+                                      _fieldErrors =
+                                          Map<String, String>.from(_fieldErrors)
+                                            ..remove('marital_status');
+                                    });
                                   }
                                 },
                               ),
@@ -700,6 +783,8 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.nationality,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('nationality'),
+                          validator: (v) =>
+                              CustomerValidators.requiredText(l10n, v, l10n.nationality),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -707,6 +792,11 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.languagesKnown,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('languages_known'),
+                          validator: (v) => CustomerValidators.requiredText(
+                            l10n,
+                            v,
+                            l10n.languagesKnown,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -715,6 +805,14 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('members_in_family'),
+                          validator: (v) {
+                            final trimmed = v?.trim() ?? '';
+                            if (trimmed.isEmpty) return l10n.required;
+                            if (int.tryParse(trimmed) == null) {
+                              return l10n.invalidNumber;
+                            }
+                            return null;
+                          },
                         ),
                       ],
                     ),
@@ -729,6 +827,10 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                               child: _DateField(
                                 label: l10n.dateOfAppointment,
                                 value: _appointmentDate,
+                                errorText: _apiError('date_of_appointment'),
+                                validator: (value) => value == null
+                                    ? l10n.dateOfAppointmentRequired
+                                    : null,
                                 compact: true,
                                 onTap: () => _pickDate(
                                   initial: _appointmentDate ?? _joiningDate,
@@ -745,6 +847,9 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                               child: _DateField(
                                 label: l10n.dateOfJoining,
                                 value: _joiningDate,
+                                errorText: _apiError('date_of_joining'),
+                                validator: (value) =>
+                                    value == null ? l10n.dateOfJoiningRequired : null,
                                 compact: true,
                                 onTap: () => _pickDate(
                                   initial: _joiningDate,
@@ -766,6 +871,10 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                               child: _DateField(
                                 label: l10n.dateOfConfirmation,
                                 value: _confirmationDate,
+                                errorText: _apiError('date_of_confirmation'),
+                                validator: (value) => value == null
+                                    ? l10n.dateOfConfirmationRequired
+                                    : null,
                                 compact: true,
                                 onTap: () => _pickDate(
                                   initial: _confirmationDate ?? _joiningDate,
@@ -783,6 +892,10 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                               child: _DateField(
                                 label: l10n.payableFromDate,
                                 value: _payableFromDate,
+                                errorText: _apiError('payable_from_date'),
+                                validator: (value) => value == null
+                                    ? l10n.payableFromDateRequired
+                                    : null,
                                 compact: true,
                                 onTap: () => _pickDate(
                                   initial: _payableFromDate ?? _joiningDate,
@@ -802,6 +915,11 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.performanceAppraisal,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('performance_appraisal'),
+                          validator: (v) => CustomerValidators.requiredText(
+                            l10n,
+                            v,
+                            l10n.performanceAppraisal,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -809,6 +927,8 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.warningNotes,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('warning_notes'),
+                          validator: (v) =>
+                              CustomerValidators.requiredText(l10n, v, l10n.warningNotes),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -816,6 +936,8 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.remarks,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('remarks'),
+                          validator: (v) =>
+                              CustomerValidators.requiredText(l10n, v, l10n.remarks),
                         ),
                       ],
                     ),
@@ -829,7 +951,7 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('aadhaar_card_no'),
-                          validator: (v) => CustomerValidators.aadhaar(v),
+                          validator: (v) => CustomerValidators.aadhaar(l10n, v, required: true),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -839,7 +961,7 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           textCapitalization: TextCapitalization.characters,
                           inputFormatters: const [UpperCaseTextInputFormatter()],
                           externalError: _apiError('pan_card_no'),
-                          validator: (v) => CustomerValidators.pan(v),
+                          validator: (v) => CustomerValidators.pan(l10n, v, required: true),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -848,7 +970,7 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           keyboardType: TextInputType.phone,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('primary_mobile_number'),
-                          validator: (v) => CustomerValidators.mobile(v),
+                          validator: (v) => CustomerValidators.mobile(l10n, v, required: true),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -857,6 +979,7 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           keyboardType: TextInputType.phone,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('secondary_mobile_number'),
+                          validator: (v) => CustomerValidators.mobile(l10n, v, required: true),
                         ),
                       ],
                     ),
@@ -872,7 +995,7 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           enableSuggestions: false,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('email'),
-                          validator: (v) => CustomerValidators.email(v, required: true),
+                          validator: (v) => CustomerValidators.email(l10n, v, required: true),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -918,6 +1041,9 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.presentAddress,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('present_address'),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? l10n.presentAddressRequired
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         SwitchListTile(
@@ -937,6 +1063,9 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                             label: l10n.permanentAddress,
                             textInputAction: TextInputAction.next,
                             externalError: _apiError('permanent_address'),
+                            validator: (v) => v == null || v.trim().isEmpty
+                                ? l10n.permanentAddressRequired
+                                : null,
                           ),
                         ],
                       ],
@@ -955,6 +1084,15 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                                 keyboardType: TextInputType.number,
                                 textInputAction: TextInputAction.next,
                                 externalError: _apiError('height_cm'),
+                                validator: (v) {
+                                  final trimmed = v?.trim() ?? '';
+                                  if (trimmed.isEmpty) return l10n.required;
+                                  final height = double.tryParse(trimmed);
+                                  if (height == null || height < 30) {
+                                    return l10n.heightMin;
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -965,6 +1103,14 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                                 keyboardType: TextInputType.number,
                                 textInputAction: TextInputAction.next,
                                 externalError: _apiError('weight_kg'),
+                                validator: (v) {
+                                  final trimmed = v?.trim() ?? '';
+                                  if (trimmed.isEmpty) return l10n.required;
+                                  if (double.tryParse(trimmed) == null) {
+                                    return l10n.invalidNumber;
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
                           ],
@@ -975,6 +1121,8 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.bloodGroup,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('blood_group'),
+                          validator: (v) =>
+                              CustomerValidators.requiredText(l10n, v, l10n.bloodGroup),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -982,6 +1130,11 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.educationalQualifications,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('educational_qualifications'),
+                          validator: (v) => CustomerValidators.requiredText(
+                            l10n,
+                            v,
+                            l10n.educationalQualifications,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -989,6 +1142,11 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.professionalQualifications,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('professional_qualifications'),
+                          validator: (v) => CustomerValidators.requiredText(
+                            l10n,
+                            v,
+                            l10n.professionalQualifications,
+                          ),
                         ),
                       ],
                     ),
@@ -1001,6 +1159,9 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.contactName,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('emergency_contact_name'),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? l10n.contactNameRequired
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -1008,6 +1169,9 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           label: l10n.relation,
                           textInputAction: TextInputAction.next,
                           externalError: _apiError('emergency_contact_relation'),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? l10n.relationRequired
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -1016,6 +1180,7 @@ class _EmployeePutEditScreenState extends State<EmployeePutEditScreen> {
                           keyboardType: TextInputType.phone,
                           textInputAction: TextInputAction.done,
                           externalError: _apiError('emergency_contact_number'),
+                          validator: (v) => CustomerValidators.mobile(l10n, v, required: true),
                         ),
                       ],
                     ),
@@ -1073,10 +1238,14 @@ class _DropdownLoadingField extends StatelessWidget {
             children: [
               const AppLoader(size: AppLoaderSize.small),
               const SizedBox(width: 12),
-              Text(
-                context.l10n.loading,
-                style: AppTextStyles.body(context).copyWith(
-                  color: context.appColors.textSecondary,
+              Expanded(
+                child: Text(
+                  context.l10n.loading,
+                  style: AppTextStyles.body(context).copyWith(
+                    color: context.appColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -1124,6 +1293,7 @@ class _DateField extends StatelessWidget {
     required this.onTap,
     this.onClear,
     this.errorText,
+    this.validator,
     this.compact = false,
   });
 
@@ -1132,93 +1302,19 @@ class _DateField extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onClear;
   final String? errorText;
+  final FormFieldValidator<DateTime?>? validator;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final formatted = value == null
-        ? context.l10n.selectDate
-        : '${value!.year}-${value!.month.toString().padLeft(2, '0')}-${value!.day.toString().padLeft(2, '0')}';
-    final hasError = errorText != null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.label(context),
-          maxLines: compact ? 2 : 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 8),
-        Material(
-          color: context.appColors.inputFill,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: compact ? 10 : 16,
-                vertical: compact ? 12 : 14,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: hasError
-                      ? Colors.red.shade300
-                      : context.appColors.progressTrack,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: compact ? 16 : 18,
-                    color: context.appColors.shinyGold.withValues(alpha: 0.8),
-                  ),
-                  SizedBox(width: compact ? 8 : 12),
-                  Expanded(
-                    child: Text(
-                      formatted,
-                      style: AppTextStyles.body(context).copyWith(
-                        color: value == null
-                            ? context.appColors.textSecondary
-                            : context.appColors.textPrimary,
-                        fontSize: compact ? 14 : null,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  if (onClear != null)
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      color: context.appColors.textSecondary,
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                      onPressed: onClear,
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        if (hasError) ...[
-          const SizedBox(height: 6),
-          Text(
-            errorText!,
-            style: AppTextStyles.subtitle(context).copyWith(
-              color: Colors.red.shade700,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ],
+    return AppDateFormField(
+      label: label,
+      value: value,
+      onTap: onTap,
+      onClear: onClear,
+      errorText: errorText,
+      validator: validator,
+      compact: compact,
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/customers/customer_validators.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
@@ -16,6 +16,7 @@ import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_date_form_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
@@ -27,19 +28,21 @@ import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
-class EmployeeCreateScreen extends StatefulWidget {
-  const EmployeeCreateScreen({super.key});
+class EmployeeCreateScreen extends StatefulWidget implements HasInitialSession {
+  const EmployeeCreateScreen({super.key, this.initialSession});
+
+  @override
+  final LoginResponse? initialSession;
 
   @override
   State<EmployeeCreateScreen> createState() => _EmployeeCreateScreenState();
 }
 
-class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
-  final _authService = AuthService();
+class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
+    with SessionBootstrapMixin {
   final _employeeService = EmployeeService();
   final _formKey = GlobalKey<FormState>();
 
-  LoginResponse? _session;
   bool _isLoadingOptions = true;
   bool _isSaving = false;
   int _step = 0;
@@ -102,8 +105,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   DateTime? _historyServiceTo;
   final List<EmployeeEmploymentHistory> _savedHistories = [];
 
-  static const _genderOptions = ['MALE', 'FEMALE', 'OTHER'];
-  static const _maritalOptions = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'];
+  static const _genderOptions = kGenderOptions;
+  static const _maritalOptions = kMaritalStatusOptions;
 
   static const _fieldStepMap = <String, int>{
     'employee_code': 0,
@@ -149,7 +152,23 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   void initState() {
     super.initState();
     _bindFieldErrorClearing();
-    _bootstrap();
+    initSessionBootstrap();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    resolveSessionFromContext();
+  }
+
+  @override
+  void onSessionReady(LoginResponse activeSession) {
+    _bootstrapOptions(activeSession);
+  }
+
+  @override
+  void onSessionMissing() {
+    setState(() => _isLoadingOptions = false);
   }
 
   void _bindFieldErrorClearing() {
@@ -235,28 +254,13 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     super.dispose();
   }
 
-  Future<void> _bootstrap() async {
-    await _bootstrapWork();
-  }
-
-  Future<void> _bootstrapWork() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-
-    if (session == null) {
-      setState(() {
-        _session = null;
-        _isLoadingOptions = false;
-      });
-      return;
-    }
-
-    final permissions = PermissionService(session);
+  Future<void> _bootstrapOptions(LoginResponse activeSession) async {
+    final permissions = PermissionService(activeSession);
 
     try {
-      final rolesFuture = _employeeService.fetchRoles(session: session);
+      final rolesFuture = _employeeService.fetchRoles(session: activeSession);
       final branchesFuture = permissions.canManageBranches
-          ? _employeeService.fetchBranches(session: session)
+          ? _employeeService.fetchBranches(session: activeSession)
           : Future<List<BranchOption>>.value(const []);
 
       final results = await Future.wait([rolesFuture, branchesFuture]);
@@ -269,7 +273,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
 
       if (!mounted) return;
       setState(() {
-        _session = session;
         _roles = roles;
         _branches = branches;
         _selectedRoleId = roles.isNotEmpty ? roles.first.id : null;
@@ -279,7 +282,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _session = session;
         _isLoadingOptions = false;
         _generalError = error.toString();
       });
@@ -311,11 +313,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       case 'password':
         return trimmed.length >= 8 && RegExp(r'[A-Z]').hasMatch(trimmed);
       case 'primary_mobile_number':
-        return CustomerValidators.mobile(trimmed, required: true) == null;
+        return CustomerValidators.mobileLooksValid(trimmed, required: true);
       case 'secondary_mobile_number':
-        return trimmed.isEmpty || RegExp(r'^\d{10}$').hasMatch(trimmed);
+        return CustomerValidators.mobileLooksValid(trimmed, required: true);
       case 'emergency_contact_number':
-        return CustomerValidators.mobile(trimmed, required: true) == null;
+        return CustomerValidators.mobileLooksValid(trimmed, required: true);
       case 'father_name':
       case 'place_of_birth':
       case 'present_address':
@@ -324,7 +326,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       case 'emergency_contact_relation':
         return trimmed.isNotEmpty;
       case 'aadhaar_card_no':
-        return CustomerValidators.aadhaar(trimmed, required: true) == null;
+        return CustomerValidators.aadhaarLooksValid(trimmed, required: true);
       case 'height_cm':
         if (trimmed.isEmpty) return false;
         final height = double.tryParse(trimmed);
@@ -335,7 +337,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       case 'last_name':
         return trimmed.isNotEmpty;
       case 'pan_card_no':
-        return CustomerValidators.pan(trimmed, required: true) == null;
+        return CustomerValidators.panLooksValid(trimmed, required: true);
       default:
         return trimmed.isNotEmpty;
     }
@@ -373,8 +375,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     final l10n = context.l10n;
     var valid = true;
 
-    if (_dateOfBirth == null) {
-      _setFieldError('date_of_birth', l10n.dateOfBirthRequired);
+    if (_employeePhoto == null || _employeePhoto!.isEmpty) {
+      _setFieldError('employee_photo', l10n.employeePhotoRequired);
       valid = false;
     }
     if (_fatherNameController.text.trim().isEmpty) {
@@ -385,6 +387,42 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       _setFieldError('place_of_birth', l10n.placeOfBirthRequired);
       valid = false;
     }
+    final genderError = CustomerValidators.gender(l10n, _gender);
+    if (genderError != null) {
+      _setFieldError('gender', genderError);
+      valid = false;
+    }
+    final maritalError = CustomerValidators.maritalStatus(l10n, _maritalStatus);
+    if (maritalError != null) {
+      _setFieldError('marital_status', maritalError);
+      valid = false;
+    }
+    final nationalityError = CustomerValidators.requiredText(
+      l10n,
+      _nationalityController.text,
+      l10n.nationality,
+    );
+    if (nationalityError != null) {
+      _setFieldError('nationality', nationalityError);
+      valid = false;
+    }
+    final languagesError = CustomerValidators.requiredText(
+      l10n,
+      _languagesController.text,
+      l10n.languagesKnown,
+    );
+    if (languagesError != null) {
+      _setFieldError('languages_known', languagesError);
+      valid = false;
+    }
+    final membersText = _membersInFamilyController.text.trim();
+    if (membersText.isEmpty) {
+      _setFieldError('members_in_family', l10n.required);
+      valid = false;
+    } else if (int.tryParse(membersText) == null) {
+      _setFieldError('members_in_family', l10n.invalidNumber);
+      valid = false;
+    }
 
     return valid;
   }
@@ -393,12 +431,22 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     final l10n = context.l10n;
     var valid = true;
 
-    if (_appointmentDate == null) {
-      _setFieldError('date_of_appointment', l10n.dateOfAppointmentRequired);
+    final appraisalError = CustomerValidators.requiredText(
+      l10n,
+      _performanceAppraisalController.text,
+      l10n.performanceAppraisal,
+    );
+    if (appraisalError != null) {
+      _setFieldError('performance_appraisal', appraisalError);
       valid = false;
     }
-    if (_joiningDate == null) {
-      _setFieldError('date_of_joining', l10n.dateOfJoiningRequired);
+    final warningError = CustomerValidators.requiredText(
+      l10n,
+      _warningNotesController.text,
+      l10n.warningNotes,
+    );
+    if (warningError != null) {
+      _setFieldError('warning_notes', warningError);
       valid = false;
     }
 
@@ -418,6 +466,61 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       _setFieldError('permanent_address', l10n.permanentAddressRequired);
       valid = false;
     }
+    final heightText = _heightController.text.trim();
+    if (heightText.isEmpty) {
+      _setFieldError('height_cm', l10n.required);
+      valid = false;
+    } else {
+      final height = double.tryParse(heightText);
+      if (height == null || height < 30) {
+        _setFieldError('height_cm', l10n.heightMin);
+        valid = false;
+      }
+    }
+    final weightText = _weightController.text.trim();
+    if (weightText.isEmpty) {
+      _setFieldError('weight_kg', l10n.required);
+      valid = false;
+    } else if (double.tryParse(weightText) == null) {
+      _setFieldError('weight_kg', l10n.invalidNumber);
+      valid = false;
+    }
+    final bloodGroupError = CustomerValidators.requiredText(
+      l10n,
+      _bloodGroupController.text,
+      l10n.bloodGroup,
+    );
+    if (bloodGroupError != null) {
+      _setFieldError('blood_group', bloodGroupError);
+      valid = false;
+    }
+    final educationError = CustomerValidators.requiredText(
+      l10n,
+      _educationController.text,
+      l10n.educationalQualifications,
+    );
+    if (educationError != null) {
+      _setFieldError('educational_qualifications', educationError);
+      valid = false;
+    }
+    final professionalError = CustomerValidators.requiredText(
+      l10n,
+      _professionalController.text,
+      l10n.professionalQualifications,
+    );
+    if (professionalError != null) {
+      _setFieldError('professional_qualifications', professionalError);
+      valid = false;
+    }
+    final remarksError = CustomerValidators.requiredText(
+      l10n,
+      _remarksController.text,
+      l10n.remarks,
+    );
+    if (remarksError != null) {
+      _setFieldError('remarks', remarksError);
+      valid = false;
+    }
     if (_emergencyNameController.text.trim().isEmpty) {
       _setFieldError('emergency_contact_name', l10n.contactNameRequired);
       valid = false;
@@ -427,6 +530,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       valid = false;
     }
     final emergencyMobileError = CustomerValidators.mobile(
+      l10n,
       _emergencyMobileController.text,
       required: true,
     );
@@ -488,19 +592,28 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     }
 
     if (_step <= 2) {
-      if (!_formKey.currentState!.validate()) return;
       if (_step == 0) {
         if (_selectedRoleId == null) {
           _setFieldError('role', context.l10n.pleaseSelectRole);
-          return;
         }
         if (_selectedBranchId == null) {
           _setFieldError('branch', context.l10n.pleaseSelectBranch);
+        }
+        final stepValid = _validateEmployeePersonalStep();
+        final formValid = _formKey.currentState!.validate();
+        if (_selectedRoleId == null ||
+            _selectedBranchId == null ||
+            !stepValid ||
+            !formValid) {
           return;
         }
-        if (!_validateEmployeePersonalStep()) return;
+      } else if (_step == 1) {
+        final stepValid = _validateAssessmentStep();
+        final formValid = _formKey.currentState!.validate();
+        if (!stepValid || !formValid) return;
+      } else if (!_formKey.currentState!.validate()) {
+        return;
       }
-      if (_step == 1 && !_validateAssessmentStep()) return;
       setState(() {
         _step += 1;
         _generalError = null;
@@ -552,6 +665,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       _setFieldError('organization_name', l10n.organizationNameRequired);
       valid = false;
     }
+    if (_historyDesignationController.text.trim().isEmpty) {
+      _setFieldError('designation', l10n.designationRequired);
+      valid = false;
+    }
     if (_historyServiceFrom == null) {
       _setFieldError('service_from', l10n.serviceFromRequired);
       valid = false;
@@ -567,7 +684,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       valid = false;
     }
     final ctc = _historyAnnualCtcController.text.trim();
-    if (ctc.isNotEmpty && double.tryParse(ctc) == null) {
+    if (ctc.isEmpty) {
+      _setFieldError('annual_ctc', l10n.annualCtcRequired);
+      valid = false;
+    } else if (double.tryParse(ctc) == null) {
       _setFieldError('annual_ctc', l10n.enterValidAmount);
       valid = false;
     }
@@ -603,10 +723,12 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Future<void> _saveEmploymentHistoryEntry({required bool clearAfterSave}) async {
-    final session = _session;
+    final activeSession = session;
     final employeeId = _employeeId;
-    if (session == null || employeeId == null || _isSaving) return;
+    if (activeSession == null || employeeId == null || _isSaving) return;
 
+    if (!_autoValidate) setState(() => _autoValidate = true);
+    if (!_formKey.currentState!.validate()) return;
     if (!_validateEmploymentHistoryForm()) return;
 
     setState(() {
@@ -616,7 +738,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
 
     try {
       final saved = await _employeeService.addEmploymentHistory(
-        session: session,
+        session: activeSession,
         employeeId: employeeId,
         payload: _buildEmploymentHistoryPayload(id: 0).toPayload(),
       );
@@ -640,8 +762,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Future<void> _registerEmployeeStep() async {
-    final session = _session;
-    if (session == null || _isSaving) return;
+    final activeSession = session;
+    if (activeSession == null || _isSaving) return;
 
     setState(() {
       _isSaving = true;
@@ -695,7 +817,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       );
 
       final created = await _employeeService.registerEmployee(
-        session: session,
+        session: activeSession,
         request: request,
         employeePhoto: _employeePhoto,
       );
@@ -722,7 +844,15 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   Future<void> _finishWizard() async {
     if (_isSaving) return;
 
-    if (_employmentHistoryFormHasData()) {
+    if (_savedHistories.isEmpty) {
+      if (!_autoValidate) setState(() => _autoValidate = true);
+      if (!_formKey.currentState!.validate()) return;
+      if (!_validateEmploymentHistoryForm()) return;
+      await _saveEmploymentHistoryEntry(clearAfterSave: false);
+      if (!mounted || _generalError != null || _fieldErrors.isNotEmpty) {
+        return;
+      }
+    } else if (_employmentHistoryFormHasData()) {
       if (!_validateEmploymentHistoryForm()) return;
       await _saveEmploymentHistoryEntry(clearAfterSave: false);
       if (!mounted || _generalError != null || _fieldErrors.isNotEmpty) {
@@ -749,7 +879,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final session = _session;
     final isReady = session != null && !_isLoadingOptions;
     final l10n = context.l10n;
     final steps = employeeWizardSteps(l10n);
@@ -765,7 +894,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       body: !isReady
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
           : SessionScope(
-              session: session,
+              session: session!,
               child: Column(
                 children: [
                   WizardStepIndicator(steps: steps, currentStep: _step),
@@ -899,7 +1028,9 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                             context,
                             labelText: l10n.role,
                           ).copyWith(errorText: _apiError('role')),
-                          validator: (_) => _apiError('role'),
+                          validator: (value) =>
+                              _apiError('role') ??
+                              (value == null ? l10n.pleaseSelectRole : null),
                           items: _roles
                               .map(
                                 (role) => DropdownMenuItem(
@@ -933,7 +1064,9 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                             context,
                             labelText: l10n.branchLabel,
                           ).copyWith(errorText: _apiError('branch')),
-                          validator: (_) => _apiError('branch'),
+                          validator: (value) =>
+                              _apiError('branch') ??
+                              (value == null ? l10n.pleaseSelectBranch : null),
                           items: _branches
                               .map(
                                 (branch) => DropdownMenuItem(
@@ -1025,6 +1158,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: l10n.dateOfBirth,
               value: _dateOfBirth,
               errorText: _apiError('date_of_birth'),
+              validator: (value) =>
+                  value == null ? l10n.dateOfBirthRequired : null,
               onTap: () => _pickDate(
                 initial: _dateOfBirth,
                 onPicked: (date) {
@@ -1060,13 +1195,15 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                       context,
                       labelText: l10n.gender,
                     ).copyWith(errorText: _apiError('gender')),
-                    validator: (_) => _apiError('gender'),
+                    validator: (value) =>
+                        _apiError('gender') ??
+                        CustomerValidators.gender(l10n, value),
                     items: _genderOptions
                         .map(
                           (value) => DropdownMenuItem(
                             value: value,
                             child: Text(
-                              value,
+                              localizedGenderLabel(l10n, value),
                               style: AppTextStyles.body(context),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1089,13 +1226,15 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                       context,
                       labelText: l10n.maritalStatus,
                     ).copyWith(errorText: _apiError('marital_status')),
-                    validator: (_) => _apiError('marital_status'),
+                    validator: (value) =>
+                        _apiError('marital_status') ??
+                        CustomerValidators.maritalStatus(l10n, value),
                     items: _maritalOptions
                         .map(
                           (value) => DropdownMenuItem(
                             value: value,
                             child: Text(
-                              value,
+                              localizedMaritalStatusLabel(l10n, value),
                               style: AppTextStyles.body(context),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1118,6 +1257,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: l10n.nationality,
               textInputAction: TextInputAction.next,
               externalError: _apiError('nationality'),
+              validator: (v) =>
+                  CustomerValidators.requiredText(l10n, v, l10n.nationality),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1125,6 +1266,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: l10n.languagesKnown,
               textInputAction: TextInputAction.next,
               externalError: _apiError('languages_known'),
+              validator: (v) =>
+                  CustomerValidators.requiredText(l10n, v, l10n.languagesKnown),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1133,6 +1276,12 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
               externalError: _apiError('members_in_family'),
+              validator: (v) {
+                final trimmed = v?.trim() ?? '';
+                if (trimmed.isEmpty) return l10n.required;
+                if (int.tryParse(trimmed) == null) return l10n.invalidNumber;
+                return null;
+              },
             ),
           ],
         ),
@@ -1153,6 +1302,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 label: l10n.dateOfAppointment,
                 value: _appointmentDate,
                 errorText: _apiError('date_of_appointment'),
+                validator: (value) =>
+                    value == null ? l10n.dateOfAppointmentRequired : null,
                 compact: true,
                 onTap: () => _pickDate(
                   initial: _appointmentDate ?? _joiningDate,
@@ -1175,6 +1326,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 label: l10n.dateOfJoining,
                 value: _joiningDate,
                 errorText: _apiError('date_of_joining'),
+                validator: (value) =>
+                    value == null ? l10n.dateOfJoiningRequired : null,
                 compact: true,
                 onTap: () => _pickDate(
                   initial: _joiningDate,
@@ -1202,6 +1355,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 label: l10n.dateOfConfirmation,
                 value: _confirmationDate,
                 errorText: _apiError('date_of_confirmation'),
+                validator: (value) =>
+                    value == null ? l10n.dateOfConfirmationRequired : null,
                 compact: true,
                 onTap: () => _pickDate(
                   initial: _confirmationDate ?? _joiningDate,
@@ -1224,6 +1379,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 label: l10n.payableFromDate,
                 value: _payableFromDate,
                 errorText: _apiError('payable_from_date'),
+                validator: (value) =>
+                    value == null ? l10n.payableFromDateRequired : null,
                 compact: true,
                 onTap: () => _pickDate(
                   initial: _payableFromDate ?? _joiningDate,
@@ -1248,6 +1405,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
           label: l10n.performanceAppraisal,
           textInputAction: TextInputAction.next,
           externalError: _apiError('performance_appraisal'),
+          validator: (v) =>
+              CustomerValidators.requiredText(l10n, v, l10n.performanceAppraisal),
         ),
         const SizedBox(height: 16),
         AppTextField(
@@ -1255,6 +1414,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
           label: l10n.warningNotes,
           textInputAction: TextInputAction.next,
           externalError: _apiError('warning_notes'),
+          validator: (v) =>
+              CustomerValidators.requiredText(l10n, v, l10n.warningNotes),
         ),
       ],
     );
@@ -1273,7 +1434,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
               externalError: _apiError('aadhaar_card_no'),
-              validator: (v) => CustomerValidators.aadhaar(v, required: true),
+              validator: (v) => CustomerValidators.aadhaar(l10n, v, required: true),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1283,7 +1444,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               textCapitalization: TextCapitalization.characters,
               inputFormatters: const [UpperCaseTextInputFormatter()],
               externalError: _apiError('pan_card_no'),
-              validator: (v) => CustomerValidators.pan(v, required: true),
+              validator: (v) => CustomerValidators.pan(l10n, v, required: true),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1292,7 +1453,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               externalError: _apiError('primary_mobile_number'),
-              validator: (v) => CustomerValidators.mobile(v, required: true),
+              validator: (v) => CustomerValidators.mobile(l10n, v, required: true),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1301,14 +1462,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               externalError: _apiError('secondary_mobile_number'),
-              validator: (v) {
-                final trimmed = v?.trim() ?? '';
-                if (trimmed.isEmpty) return null;
-                if (!RegExp(r'^\d{10}$').hasMatch(trimmed)) {
-                  return l10n.mobileTenDigits;
-                }
-                return null;
-              },
+              validator: (v) => CustomerValidators.mobile(l10n, v, required: true),
             ),
           ],
         ),
@@ -1324,7 +1478,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               enableSuggestions: false,
               textInputAction: TextInputAction.next,
               externalError: _apiError('email'),
-              validator: (v) => CustomerValidators.email(v, required: true),
+              validator: (v) => CustomerValidators.email(l10n, v, required: true),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1451,7 +1605,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     externalError: _apiError('height_cm'),
                     validator: (v) {
                       final trimmed = v?.trim() ?? '';
-                      if (trimmed.isEmpty) return null;
+                      if (trimmed.isEmpty) return l10n.required;
                       final height = double.tryParse(trimmed);
                       if (height == null || height < 30) {
                         return l10n.heightMin;
@@ -1468,6 +1622,14 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
                     externalError: _apiError('weight_kg'),
+                    validator: (v) {
+                      final trimmed = v?.trim() ?? '';
+                      if (trimmed.isEmpty) return l10n.required;
+                      if (double.tryParse(trimmed) == null) {
+                        return l10n.invalidNumber;
+                      }
+                      return null;
+                    },
                   ),
                 ),
               ],
@@ -1478,6 +1640,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: l10n.bloodGroup,
               textInputAction: TextInputAction.next,
               externalError: _apiError('blood_group'),
+              validator: (v) =>
+                  CustomerValidators.requiredText(l10n, v, l10n.bloodGroup),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1485,6 +1649,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: l10n.educationalQualifications,
               textInputAction: TextInputAction.next,
               externalError: _apiError('educational_qualifications'),
+              validator: (v) => CustomerValidators.requiredText(
+                l10n,
+                v,
+                l10n.educationalQualifications,
+              ),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1492,6 +1661,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: l10n.professionalQualifications,
               textInputAction: TextInputAction.next,
               externalError: _apiError('professional_qualifications'),
+              validator: (v) => CustomerValidators.requiredText(
+                l10n,
+                v,
+                l10n.professionalQualifications,
+              ),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1499,6 +1673,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: l10n.remarks,
               textInputAction: TextInputAction.next,
               externalError: _apiError('remarks'),
+              validator: (v) => CustomerValidators.requiredText(l10n, v, l10n.remarks),
             ),
           ],
         ),
@@ -1532,7 +1707,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.done,
               externalError: _apiError('emergency_contact_number'),
-              validator: (v) => CustomerValidators.mobile(v, required: true),
+              validator: (v) => CustomerValidators.mobile(l10n, v, required: true),
             ),
           ],
         ),
@@ -1606,6 +1781,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: context.l10n.organizationName,
               textInputAction: TextInputAction.next,
               externalError: _apiError('organization_name'),
+              validator: (v) => CustomerValidators.requiredText(
+                context.l10n,
+                v,
+                context.l10n.organizationName,
+              ),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1613,6 +1793,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               label: context.l10n.designation,
               textInputAction: TextInputAction.next,
               externalError: _apiError('designation'),
+              validator: (v) => CustomerValidators.requiredText(
+                context.l10n,
+                v,
+                context.l10n.designation,
+              ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -1623,6 +1808,9 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     label: context.l10n.serviceFrom,
                     value: _historyServiceFrom,
                     errorText: _apiError('service_from'),
+                    validator: (value) => value == null
+                        ? context.l10n.serviceFromRequired
+                        : null,
                     compact: true,
                     onTap: () => _pickDate(
                       initial: _historyServiceFrom,
@@ -1645,6 +1833,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     label: context.l10n.serviceTo,
                     value: _historyServiceTo,
                     errorText: _apiError('service_to'),
+                    validator: (value) =>
+                        value == null ? context.l10n.serviceToRequired : null,
                     compact: true,
                     onTap: () => _pickDate(
                       initial: _historyServiceTo ?? _historyServiceFrom,
@@ -1671,6 +1861,14 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.done,
               externalError: _apiError('annual_ctc'),
+              validator: (v) {
+                final trimmed = v?.trim() ?? '';
+                if (trimmed.isEmpty) return context.l10n.annualCtcRequired;
+                if (double.tryParse(trimmed) == null) {
+                  return context.l10n.enterValidAmount;
+                }
+                return null;
+              },
             ),
           ],
         ),
@@ -1721,6 +1919,7 @@ class _DateField extends StatelessWidget {
     required this.onTap,
     this.onClear,
     this.errorText,
+    this.validator,
     this.compact = false,
   });
 
@@ -1729,93 +1928,19 @@ class _DateField extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onClear;
   final String? errorText;
+  final FormFieldValidator<DateTime?>? validator;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final formatted = value == null
-        ? context.l10n.selectDate
-        : '${value!.year}-${value!.month.toString().padLeft(2, '0')}-${value!.day.toString().padLeft(2, '0')}';
-    final hasError = errorText != null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.label(context),
-          maxLines: compact ? 2 : 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 8),
-        Material(
-          color: context.appColors.inputFill,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: compact ? 10 : 16,
-                vertical: compact ? 12 : 14,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: hasError
-                      ? Colors.red.shade300
-                      : context.appColors.progressTrack,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: compact ? 16 : 18,
-                    color: context.appColors.shinyGold.withValues(alpha: 0.8),
-                  ),
-                  SizedBox(width: compact ? 8 : 12),
-                  Expanded(
-                    child: Text(
-                      formatted,
-                      style: AppTextStyles.body(context).copyWith(
-                        color: value == null
-                            ? context.appColors.textSecondary
-                            : context.appColors.textPrimary,
-                        fontSize: compact ? 14 : null,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  if (onClear != null)
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      color: context.appColors.textSecondary,
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                      onPressed: onClear,
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        if (hasError) ...[
-          const SizedBox(height: 8),
-          Text(
-            errorText!,
-            style: AppTextStyles.body(context).copyWith(
-              color: Colors.red.shade700,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ],
+    return AppDateFormField(
+      label: label,
+      value: value,
+      onTap: onTap,
+      onClear: onClear,
+      errorText: errorText,
+      validator: validator,
+      compact: compact,
     );
   }
 }

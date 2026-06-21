@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
@@ -28,12 +28,13 @@ class BranchesListScreen extends StatefulWidget {
   State<BranchesListScreen> createState() => _BranchesListScreenState();
 }
 
-class _BranchesListScreenState extends State<BranchesListScreen> {
-  final _authService = AuthService();
+class _BranchesListScreenState extends State<BranchesListScreen>
+    with ListSessionBootstrapMixin {
   final _branchService = BranchService();
   final _scrollController = ScrollController();
 
-  LoginResponse? _session;
+  LoginResponse? get _session => session;
+
   final List<BranchDto> _items = [];
   ActiveStatusFilter _statusFilter = ActiveStatusFilter.all;
   String _searchQuery = '';
@@ -44,8 +45,6 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
   String? _error;
   int _loadGeneration = 0;
 
-  bool _sessionInitialized = false;
-
   @override
   void initState() {
     super.initState();
@@ -55,39 +54,16 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_sessionInitialized) return;
-
-    final inherited = SessionScope.maybeOf(context)?.session;
-    if (inherited != null) {
-      _sessionInitialized = true;
-      _session = inherited;
-      _loadBranches(reset: true);
-      return;
-    }
-
-    _sessionInitialized = true;
-    _bootstrap();
+    bootstrapListSession(
+      (_) => _loadBranches(reset: true),
+      onMissing: () => setState(() => _isLoading = false),
+    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _bootstrap() async {
-    await _bootstrapWork();
-  }
-
-  Future<void> _bootstrapWork() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-    setState(() => _session = session);
-    if (session != null) {
-      await _loadBranches(reset: true);
-    } else {
-      setState(() => _isLoading = false);
-    }
   }
 
   void _onScroll() {
@@ -231,8 +207,10 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
         floatingActionButton: permissions.canManageBranches
             ? CreateFabButton(
                 onTap: () async {
-                  final created =
-                      await context.push<bool>(AppRoutes.branchNew);
+                  final created = await context.push<bool>(
+                    AppRoutes.branchNew,
+                    extra: session,
+                  );
                   if (created == true && mounted) {
                     _loadBranches(reset: true);
                   }

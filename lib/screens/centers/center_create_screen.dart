@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/centers/center_service.dart';
 import 'package:sawaliyatrader/core/centers/models/center_create_request.dart';
 import 'package:sawaliyatrader/core/centers/models/center_product_type.dart';
@@ -22,25 +22,27 @@ import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 
-class CenterCreateScreen extends StatefulWidget {
-  const CenterCreateScreen({super.key});
+class CenterCreateScreen extends StatefulWidget implements HasInitialSession {
+  const CenterCreateScreen({super.key, this.initialSession});
+
+  @override
+  final LoginResponse? initialSession;
 
   @override
   State<CenterCreateScreen> createState() => _CenterCreateScreenState();
 }
 
-class _CenterCreateScreenState extends State<CenterCreateScreen> {
-  final _authService = AuthService();
+class _CenterCreateScreenState extends State<CenterCreateScreen>
+    with SessionBootstrapMixin {
   final _centerService = CenterService();
   final _customerService = CustomerService();
   final _formKey = GlobalKey<FormState>();
 
-  LoginResponse? _session;
-  bool _isLoadingSession = true;
   bool _isSaving = false;
   bool _isLoadingCustomers = false;
   int _step = 0;
   String? _error;
+  String? _startDateError;
 
   final _nameController = TextEditingController();
   final _loanAmountController = TextEditingController();
@@ -60,7 +62,13 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   @override
   void initState() {
     super.initState();
-    _bootstrap();
+    initSessionBootstrap();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    resolveSessionFromContext();
   }
 
   @override
@@ -76,31 +84,18 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
     super.dispose();
   }
 
-  Future<void> _bootstrap() async {
-    await _bootstrapWork();
-  }
-
-  Future<void> _bootstrapWork() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-    setState(() {
-      _session = session;
-      _isLoadingSession = false;
-    });
-  }
-
   Future<void> _loadApprovedCustomers() async {
-    final session = _session;
-    if (session == null || _isLoadingCustomers) return;
+    final activeSession = session;
+    if (activeSession == null || _isLoadingCustomers) return;
 
     setState(() => _isLoadingCustomers = true);
     try {
       final response = await _customerService.fetchCustomers(
-        session: session,
+        session: activeSession,
         page: 1,
         pageSize: 100,
         status: CustomerStatus.approved,
-        branch: session.employee?.branch,
+        branch: activeSession.employee?.branch,
         search: _memberSearch.isEmpty ? null : _memberSearch,
       );
       if (!mounted) return;
@@ -124,9 +119,14 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   Future<void> _onNext() async {
     if (_step == 0) {
       if (!_formKey.currentState!.validate()) return;
+      if (_startDate == null) {
+        setState(() => _startDateError = context.l10n.startDateRequired);
+        return;
+      }
       setState(() {
         _step = 1;
         _error = null;
+        _startDateError = null;
       });
       await _loadApprovedCustomers();
       return;
@@ -141,8 +141,8 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   }
 
   Future<void> _submit() async {
-    final session = _session;
-    if (session == null || _isSaving) return;
+    final activeSession = session;
+    if (activeSession == null || _isSaving) return;
 
     setState(() {
       _isSaving = true;
@@ -158,7 +158,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
         tenureMonths: int.parse(_tenureController.text.trim()),
         emiAmount: double.parse(_emiAmountController.text.trim()),
         memberIds: _selectedMemberIds.toList(),
-        branch: session.employee?.branch,
+        branch: activeSession.employee?.branch,
         weight: _emptyToDouble(_weightController.text),
         purity: _emptyToNull(_purityController.text),
         startDate: _startDate,
@@ -166,7 +166,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
       );
 
       final created = await _centerService.createCenter(
-        session: session,
+        session: activeSession,
         request: request,
       );
 
@@ -203,12 +203,16 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null) setState(() => _startDate = picked);
+    if (picked != null) {
+      setState(() {
+        _startDate = picked;
+        _startDateError = null;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final session = _session;
     final l10n = AppLocalizations.of(context)!;
     final steps = centerWizardSteps(l10n);
 
@@ -220,15 +224,16 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
         ),
         title: l10n.newCenter,
       ),
-      body: session == null || _isLoadingSession
+      body: session == null
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
           : SessionScope(
-              session: session,
+              session: session!,
               child: Column(
                 children: [
                   _StepIndicator(steps: steps, currentStep: _step),
                   Expanded(
                     child: SingleChildScrollView(
+                      key: ValueKey(_step),
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                       child: Form(
                         key: _formKey,
@@ -306,6 +311,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
                 context,
                 labelText: l10n.productType,
               ),
+              validator: (value) => value == null ? l10n.required : null,
               items: CenterProductType.options
                   .map(
                     (type) => DropdownMenuItem(
@@ -328,6 +334,11 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
               hint: l10n.weightHint,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) return l10n.required;
+                if (double.tryParse(value.trim()) == null) return l10n.invalidAmount;
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -337,6 +348,8 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
                   ? l10n.purityGoldHint
                   : l10n.puritySilverHint,
               textInputAction: TextInputAction.next,
+              validator: (value) =>
+                  value == null || value.trim().isEmpty ? l10n.required : null,
             ),
           ],
         ),
@@ -399,13 +412,16 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
             _DateField(
               label: l10n.startDate,
               value: _startDate,
+              errorText: _startDateError,
               onTap: _pickStartDate,
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _remarksController,
-              label: l10n.remarksOptional,
+              label: l10n.remarks,
               hint: l10n.centerRemarksHint,
+              validator: (value) =>
+                  value == null || value.trim().isEmpty ? l10n.required : null,
             ),
           ],
         ),
@@ -643,11 +659,13 @@ class _DateField extends StatelessWidget {
     required this.label,
     required this.value,
     required this.onTap,
+    this.errorText,
   });
 
   final String label;
   final DateTime? value;
   final VoidCallback onTap;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -657,6 +675,7 @@ class _DateField extends StatelessWidget {
         : '${value!.day.toString().padLeft(2, '0')}/'
             '${value!.month.toString().padLeft(2, '0')}/'
             '${value!.year}';
+    final hasError = errorText != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,7 +691,11 @@ class _DateField extends StatelessWidget {
             decoration: BoxDecoration(
               color: context.appColors.inputFill,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: context.appColors.border),
+              border: Border.all(
+                color: hasError
+                    ? Colors.red.shade300
+                    : context.appColors.border,
+              ),
             ),
             child: Row(
               children: [
@@ -695,6 +718,16 @@ class _DateField extends StatelessWidget {
             ),
           ),
         ),
+        if (hasError) ...[
+          const SizedBox(height: 8),
+          Text(
+            errorText!,
+            style: AppTextStyles.body(context).copyWith(
+              color: Colors.red.shade700,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ],
     );
   }

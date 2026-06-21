@@ -447,6 +447,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get gender => 'लिंग';
 
   @override
+  String get selectGender => 'लिंग चुनें';
+
+  @override
   String get occupation => 'व्यवसाय';
 
   @override
@@ -1430,4 +1433,121 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get annualCtcHint => 'उदा. 180000.00';
+
+  @override
+  String get genderMale => 'पुरुष';
+
+  @override
+  String get genderFemale => 'महिला';
+
+  @override
+  String get genderOther => 'अन्य';
+
+  @override
+  String get maritalSingle => 'अविवाहित';
+
+  @override
+  String get maritalMarried => 'विवाहित';
+
+  @override
+  String get maritalDivorced => 'तलाकशुदा';
+
+  @override
+  String get maritalWidowed => 'विधवा/विधुर';
+
+  @override
+  String get employeePhotoRequired => 'कर्मचारी फ़ोटो आवश्यक है';
+
+  @override
+  String get dateOfConfirmationRequired => 'पुष्टि तिथि आवश्यक है';
+
+  @override
+  String get payableFromDateRequired => 'भुगतान प्रारंभ तिथि आवश्यक है';
+
+  @override
+  String get locationRequired => 'स्थान आवश्यक है';
+
+  @override
+  String get paymentQrRequired => 'भुगतान QR कोड आवश्यक है';
+
+  @override
+  String get startDateRequired => 'प्रारंभ तिथि आवश्यक है';
+
+  @override
+  String get designationRequired => 'पद आवश्यक है';
+
+  @override
+  String get annualCtcRequired => 'वार्षिक CTC आवश्यक है';
+
+  @override
+  String get invalidNumber => 'मान्य संख्या दर्ज करें';
+
+  @override
+  String fieldRequired(String field) {
+    return '$field आवश्यक है';
+  }
+
+  @override
+  String get fullNameMaxLength => 'पूरा नाम 200 अक्षर या उससे कम होना चाहिए';
+
+  @override
+  String get mobileRequired => 'मोबाइल नंबर आवश्यक है';
+
+  @override
+  String get emailRequired => 'ईमेल आवश्यक है';
+
+  @override
+  String get aadhaarRequired => 'आधार नंबर आवश्यक है';
+
+  @override
+  String get aadhaarTwelveDigits => 'आधार नंबर ठीक 12 अंकों का होना चाहिए';
+
+  @override
+  String get panRequired => 'PAN आवश्यक है';
+
+  @override
+  String get panFormat => 'PAN ABCDE1234F प्रारूप में होना चाहिए';
+
+  @override
+  String get pincodeRequired => 'पिनकोड आवश्यक है';
+
+  @override
+  String get pincodeSixDigits => 'पिनकोड ठीक 6 अंकों का होना चाहिए';
+
+  @override
+  String fieldValidNumber(String field) {
+    return '$field मान्य संख्या होनी चाहिए';
+  }
+
+  @override
+  String fieldCannotBeNegative(String field) {
+    return '$field ऋणात्मक नहीं हो सकता';
+  }
+
+  @override
+  String get genderRequired => 'लिंग आवश्यक है';
+
+  @override
+  String get selectValidGender => 'मान्य लिंग चुनें';
+
+  @override
+  String get maritalStatusRequired => 'वैवाहिक स्थिति आवश्यक है';
+
+  @override
+  String get selectValidMaritalStatus => 'मान्य वैवाहिक स्थिति चुनें';
+
+  @override
+  String get ageRequired => 'आयु आवश्यक है';
+
+  @override
+  String get ageWholeNumber => 'आयु पूर्ण संख्या होनी चाहिए';
+
+  @override
+  String get ageRange => 'आयु 0 से 150 के बीच होनी चाहिए';
+
+  @override
+  String get nameRequired => 'नाम आवश्यक है';
+
+  @override
+  String get nameMaxLength => 'नाम 200 अक्षर या उससे कम होना चाहिए';
 }

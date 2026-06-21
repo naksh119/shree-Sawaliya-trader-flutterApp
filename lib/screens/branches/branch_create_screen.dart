@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
@@ -16,22 +16,24 @@ import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 
-class BranchCreateScreen extends StatefulWidget {
-  const BranchCreateScreen({super.key});
+class BranchCreateScreen extends StatefulWidget implements HasInitialSession {
+  const BranchCreateScreen({super.key, this.initialSession});
+
+  @override
+  final LoginResponse? initialSession;
 
   @override
   State<BranchCreateScreen> createState() => _BranchCreateScreenState();
 }
 
-class _BranchCreateScreenState extends State<BranchCreateScreen> {
-  final _authService = AuthService();
+class _BranchCreateScreenState extends State<BranchCreateScreen>
+    with SessionBootstrapMixin {
   final _branchService = BranchService();
   final _formKey = GlobalKey<FormState>();
 
-  LoginResponse? _session;
-  bool _isLoadingSession = true;
   bool _isSaving = false;
   String? _error;
+  String? _paymentQrError;
 
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
@@ -43,7 +45,13 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
   @override
   void initState() {
     super.initState();
-    _bootstrap();
+    initSessionBootstrap();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    resolveSessionFromContext();
   }
 
   @override
@@ -55,27 +63,19 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
     super.dispose();
   }
 
-  Future<void> _bootstrap() async {
-    await _bootstrapWork();
-  }
-
-  Future<void> _bootstrapWork() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-    setState(() {
-      _session = session;
-      _isLoadingSession = false;
-    });
-  }
-
   Future<void> _submit() async {
-    final session = _session;
-    if (session == null || _isSaving) return;
+    final activeSession = session;
+    if (activeSession == null || _isSaving) return;
     if (!_formKey.currentState!.validate()) return;
+    if (_paymentQrCode == null || _paymentQrCode!.isEmpty) {
+      setState(() => _paymentQrError = context.l10n.paymentQrRequired);
+      return;
+    }
 
     setState(() {
       _isSaving = true;
       _error = null;
+      _paymentQrError = null;
     });
 
     try {
@@ -87,7 +87,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
       );
 
       final created = await _branchService.createBranch(
-        session: session,
+        session: activeSession,
         request: request,
         paymentQrCode: _paymentQrCode,
       );
@@ -118,6 +118,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
     final picked = await PickedImage.pick();
     if (picked == null) return;
     setState(() => _paymentQrCode = picked);
+    if (_paymentQrError != null) setState(() => _paymentQrError = null);
   }
 
   void _clearPaymentQr() {
@@ -126,15 +127,13 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final session = _session;
-
     return Scaffold(
       appBar: ThemedAppBar(title: context.l10n.newBranch,
       ),
-      body: session == null || _isLoadingSession
+      body: session == null
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
           : SessionScope(
-              session: session,
+              session: session!,
               child: Form(
                 key: _formKey,
                 child: ListView(
@@ -199,6 +198,10 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
                           hint: context.l10n.addressHint,
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.streetAddress,
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                                  ? context.l10n.locationRequired
+                                  : null,
                         ),
                       ],
                     ),
@@ -211,6 +214,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
                           hint: context.l10n.branchQrUploadHint,
                           placeholderIcon: Icons.qr_code_2_rounded,
                           image: _paymentQrCode,
+                          errorText: _paymentQrError,
                           onPick: _pickPaymentQr,
                           onClear: _paymentQrCode?.isNotEmpty == true
                               ? _clearPaymentQr

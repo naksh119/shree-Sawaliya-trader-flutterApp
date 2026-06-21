@@ -102,3 +102,30 @@ List<String> employeeWizardSteps(AppLocalizations l10n) => [
       l10n.employeeStepProfile,
       l10n.employeeStepEmploymentHistory,
     ];
+
+/// API gender values sent to the backend.
+const kGenderOptions = ['MALE', 'FEMALE', 'OTHER'];
+
+/// API marital status values sent to the backend.
+const kMaritalStatusOptions = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'];
+
+String localizedGenderLabel(AppLocalizations l10n, String? value) {
+  if (value == null || value.isEmpty) return '';
+  return switch (value.toUpperCase()) {
+    'MALE' => l10n.genderMale,
+    'FEMALE' => l10n.genderFemale,
+    'OTHER' => l10n.genderOther,
+    _ => value,
+  };
+}
+
+String localizedMaritalStatusLabel(AppLocalizations l10n, String? value) {
+  if (value == null || value.isEmpty) return '';
+  return switch (value.toUpperCase()) {
+    'SINGLE' => l10n.maritalSingle,
+    'MARRIED' => l10n.maritalMarried,
+    'DIVORCED' => l10n.maritalDivorced,
+    'WIDOWED' => l10n.maritalWidowed,
+    _ => value,
+  };
+}

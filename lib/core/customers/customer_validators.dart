@@ -1,3 +1,6 @@
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/l10n/app_localizations.dart';
+
 /// Client-side validation aligned with Django customer API serializers.
 class CustomerValidators {
   CustomerValidators._();
@@ -7,132 +10,194 @@ class CustomerValidators {
   static final _panPattern = RegExp(r'^[A-Za-z]{5}\d{4}[A-Za-z]$');
   static final _pincodePattern = RegExp(r'^\d{6}$');
   static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-  static const genderOptions = ['MALE', 'FEMALE', 'OTHER'];
+  static const genderOptions = kGenderOptions;
+  static const maritalOptions = kMaritalStatusOptions;
 
-  static String? requiredText(String? value, String label) {
+  static String? requiredText(
+    AppLocalizations l10n,
+    String? value,
+    String label,
+  ) {
     if (value == null || value.trim().isEmpty) {
-      return '$label is required';
+      return l10n.fieldRequired(label);
     }
     return null;
   }
 
-  static String? fullName(String? value) {
-    final requiredError = requiredText(value, 'Full name');
+  static String? fullName(AppLocalizations l10n, String? value) {
+    final requiredError = requiredText(l10n, value, l10n.fullName);
     if (requiredError != null) return requiredError;
     if (value!.trim().length > 200) {
-      return 'Full name must be 200 characters or fewer';
+      return l10n.fullNameMaxLength;
     }
     return null;
   }
 
-  static String? mobile(String? value, {bool required = false}) {
+  static String? mobile(
+    AppLocalizations l10n,
+    String? value, {
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? 'Mobile number is required' : null;
+      return required ? l10n.mobileRequired : null;
     }
     if (!_mobilePattern.hasMatch(trimmed)) {
-      return 'Mobile number must be exactly 10 digits';
+      return l10n.mobileTenDigits;
     }
     return null;
   }
 
-  static String? email(String? value, {bool required = false}) {
+  static String? email(
+    AppLocalizations l10n,
+    String? value, {
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? 'Email is required' : null;
+      return required ? l10n.emailRequired : null;
     }
     if (!_emailPattern.hasMatch(trimmed)) {
-      return 'Enter a valid email address';
+      return l10n.enterValidEmail;
     }
     return null;
   }
 
-  static String? aadhaar(String? value, {bool required = false}) {
+  static String? aadhaar(
+    AppLocalizations l10n,
+    String? value, {
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? 'Aadhaar number is required' : null;
+      return required ? l10n.aadhaarRequired : null;
     }
     if (!_aadhaarPattern.hasMatch(trimmed)) {
-      return 'Aadhaar number must be exactly 12 digits';
+      return l10n.aadhaarTwelveDigits;
     }
     return null;
   }
 
-  static String? pan(String? value, {bool required = false}) {
+  static String? pan(
+    AppLocalizations l10n,
+    String? value, {
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? 'PAN is required' : null;
+      return required ? l10n.panRequired : null;
     }
     if (!_panPattern.hasMatch(trimmed)) {
-      return 'PAN must be in format ABCDE1234F';
+      return l10n.panFormat;
     }
     return null;
   }
 
-  static String? pincode(String? value, {bool required = false}) {
+  static String? pincode(
+    AppLocalizations l10n,
+    String? value, {
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? 'Pincode is required' : null;
+      return required ? l10n.pincodeRequired : null;
     }
     if (!_pincodePattern.hasMatch(trimmed)) {
-      return 'Pincode must be exactly 6 digits';
+      return l10n.pincodeSixDigits;
     }
     return null;
   }
 
   static String? decimalAmount(
+    AppLocalizations l10n,
     String? value, {
-    String label = 'Amount',
+    required String label,
     bool required = false,
   }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? '$label is required' : null;
+      return required ? l10n.fieldRequired(label) : null;
     }
     final parsed = double.tryParse(trimmed);
     if (parsed == null) {
-      return '$label must be a valid number';
+      return l10n.fieldValidNumber(label);
     }
     if (parsed < 0) {
-      return '$label cannot be negative';
+      return l10n.fieldCannotBeNegative(label);
     }
     return null;
   }
 
-  static String? gender(String? value) {
+  static String? gender(AppLocalizations l10n, String? value) {
     if (value == null || value.isEmpty) {
-      return 'Gender is required';
+      return l10n.genderRequired;
     }
     if (!genderOptions.contains(value)) {
-      return 'Select a valid gender';
+      return l10n.selectValidGender;
     }
     return null;
   }
 
-  static String? age(String? value, {bool required = false}) {
+  static String? maritalStatus(AppLocalizations l10n, String? value) {
+    if (value == null || value.isEmpty) {
+      return l10n.maritalStatusRequired;
+    }
+    if (!maritalOptions.contains(value)) {
+      return l10n.selectValidMaritalStatus;
+    }
+    return null;
+  }
+
+  static String? age(
+    AppLocalizations l10n,
+    String? value, {
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? 'Age is required' : null;
+      return required ? l10n.ageRequired : null;
     }
     final parsed = int.tryParse(trimmed);
     if (parsed == null) {
-      return 'Age must be a whole number';
+      return l10n.ageWholeNumber;
     }
     if (parsed < 0 || parsed > 150) {
-      return 'Age must be between 0 and 150';
+      return l10n.ageRange;
     }
     return null;
   }
 
-  static String? name(String? value, {bool required = false}) {
+  static String? name(
+    AppLocalizations l10n,
+    String? value, {
+    bool required = false,
+  }) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return required ? 'Name is required' : null;
+      return required ? l10n.nameRequired : null;
     }
     if (trimmed.length > 200) {
-      return 'Name must be 200 characters or fewer';
+      return l10n.nameMaxLength;
     }
     return null;
+  }
+
+  static bool mobileLooksValid(String value, {bool required = false}) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return !required;
+    return _mobilePattern.hasMatch(trimmed);
+  }
+
+  static bool aadhaarLooksValid(String value, {bool required = false}) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return !required;
+    return _aadhaarPattern.hasMatch(trimmed);
+  }
+
+  static bool panLooksValid(String value, {bool required = false}) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return !required;
+    return _panPattern.hasMatch(trimmed);
   }
 
   /// Used to clear API field errors once the user fixes the input.
@@ -141,32 +206,31 @@ class CustomerValidators {
 
     switch (field) {
       case 'full_name':
-        return fullName(trimmed) == null;
+        return trimmed.isNotEmpty && trimmed.length <= 200;
       case 'mobile':
       case 'contact_mobile':
-        if (trimmed.isEmpty) return true;
-        return mobile(trimmed) == null;
+        return mobileLooksValid(trimmed, required: true);
       case 'email':
-        return email(trimmed) == null;
+        return emailLooksValid(trimmed, required: true);
       case 'aadhaar_number':
-        if (trimmed.isEmpty) return true;
-        return aadhaar(trimmed) == null;
+        return aadhaarLooksValid(trimmed, required: true);
       case 'pan_number':
-        return pan(trimmed) == null;
+        return panLooksValid(trimmed, required: true);
       case 'pincode':
-        if (trimmed.isEmpty) return true;
-        return pincode(trimmed) == null;
+        return pincodeLooksValid(trimmed, required: true);
       case 'monthly_income':
       case 'loan_amount':
       case 'emi_amount':
       case 'outstanding_amount':
-        if (trimmed.isEmpty) return true;
-        return decimalAmount(trimmed) == null;
+        return decimalLooksValid(trimmed, required: true);
       case 'gender':
-        return trimmed.isEmpty || genderOptions.contains(trimmed);
+        return trimmed.isNotEmpty && genderOptions.contains(trimmed);
+      case 'marital_status':
+        return trimmed.isNotEmpty && maritalOptions.contains(trimmed);
+      case 'document_type':
+        return trimmed.isNotEmpty;
       case 'age':
-        if (trimmed.isEmpty) return true;
-        return age(trimmed) == null;
+        return ageLooksValid(trimmed, required: true);
       case 'address_line1':
       case 'address_line2':
       case 'city':
@@ -181,5 +245,31 @@ class CustomerValidators {
       default:
         return trimmed.isNotEmpty;
     }
+  }
+
+  static bool emailLooksValid(String value, {bool required = false}) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return !required;
+    return _emailPattern.hasMatch(trimmed);
+  }
+
+  static bool pincodeLooksValid(String value, {bool required = false}) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return !required;
+    return _pincodePattern.hasMatch(trimmed);
+  }
+
+  static bool decimalLooksValid(String value, {bool required = false}) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return !required;
+    final parsed = double.tryParse(trimmed);
+    return parsed != null && parsed >= 0;
+  }
+
+  static bool ageLooksValid(String value, {bool required = false}) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return !required;
+    final parsed = int.tryParse(trimmed);
+    return parsed != null && parsed >= 0 && parsed <= 150;
   }
 }

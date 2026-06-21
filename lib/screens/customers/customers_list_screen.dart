@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/customers/customer_service.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_dto.dart';
@@ -28,12 +28,13 @@ class CustomersListScreen extends StatefulWidget {
   State<CustomersListScreen> createState() => _CustomersListScreenState();
 }
 
-class _CustomersListScreenState extends State<CustomersListScreen> {
-  final _authService = AuthService();
+class _CustomersListScreenState extends State<CustomersListScreen>
+    with ListSessionBootstrapMixin {
   final _customerService = CustomerService();
   final _scrollController = ScrollController();
 
-  LoginResponse? _session;
+  LoginResponse? get _session => session;
+
   final List<CustomerDto> _items = [];
   CustomerStatus? _statusFilter;
   String _searchQuery = '';
@@ -47,24 +48,21 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _bootstrap();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    bootstrapListSession(
+      (_) => _loadCustomers(reset: true),
+      onMissing: () => setState(() => _isLoading = false),
+    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _bootstrap() async {
-    await _bootstrapWork();
-  }
-
-  Future<void> _bootstrapWork() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-    setState(() => _session = session);
-    if (session != null) await _loadCustomers(reset: true);
   }
 
   void _onScroll() {
@@ -161,7 +159,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         ),
         floatingActionButton: permissions.canCreateCustomer
             ? CreateFabButton(
-                onTap: () => context.push(AppRoutes.customerNew),
+                onTap: () => context.push(AppRoutes.customerNew, extra: session),
               )
             : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

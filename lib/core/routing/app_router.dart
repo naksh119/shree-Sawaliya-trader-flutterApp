@@ -3,6 +3,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/session_notifier.dart';
 import 'package:sawaliyatrader/core/permissions/route_access.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
+import 'package:sawaliyatrader/core/routing/route_session.dart';
 import 'package:sawaliyatrader/core/routing/app_shell_scaffold.dart';
 import 'package:sawaliyatrader/screens/access_denied/access_denied_screen.dart';
 import 'package:sawaliyatrader/screens/auth/login_screen.dart';
@@ -141,7 +142,9 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
       ),
       GoRoute(
         path: AppRoutes.branchNew,
-        builder: (context, state) => const BranchCreateScreen(),
+        builder: (context, state) => BranchCreateScreen(
+          initialSession: loginResponseFromRouteExtra(state),
+        ),
       ),
       GoRoute(
         path: '/branches/:id/edit',
@@ -183,11 +186,15 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
       ),
       GoRoute(
         path: AppRoutes.customerNew,
-        builder: (context, state) => const CustomerWizardScreen(),
+        builder: (context, state) => CustomerWizardScreen(
+          initialSession: loginResponseFromRouteExtra(state),
+        ),
       ),
       GoRoute(
         path: AppRoutes.employeeNew,
-        builder: (context, state) => const EmployeeCreateScreen(),
+        builder: (context, state) => EmployeeCreateScreen(
+          initialSession: loginResponseFromRouteExtra(state),
+        ),
       ),
       GoRoute(
         path: '/employees/:id/put-edit',
@@ -239,7 +246,9 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
       ),
       GoRoute(
         path: AppRoutes.centerNew,
-        builder: (context, state) => const CenterCreateScreen(),
+        builder: (context, state) => CenterCreateScreen(
+          initialSession: loginResponseFromRouteExtra(state),
+        ),
       ),
       GoRoute(
         path: '/centers/:id',

@@ -448,6 +448,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gender => 'Gender';
 
   @override
+  String get selectGender => 'Select gender';
+
+  @override
   String get occupation => 'Occupation';
 
   @override
@@ -1432,4 +1435,121 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get annualCtcHint => 'e.g. 180000.00';
+
+  @override
+  String get genderMale => 'Male';
+
+  @override
+  String get genderFemale => 'Female';
+
+  @override
+  String get genderOther => 'Other';
+
+  @override
+  String get maritalSingle => 'Single';
+
+  @override
+  String get maritalMarried => 'Married';
+
+  @override
+  String get maritalDivorced => 'Divorced';
+
+  @override
+  String get maritalWidowed => 'Widowed';
+
+  @override
+  String get employeePhotoRequired => 'Employee photo is required';
+
+  @override
+  String get dateOfConfirmationRequired => 'Date of confirmation is required';
+
+  @override
+  String get payableFromDateRequired => 'Payable from date is required';
+
+  @override
+  String get locationRequired => 'Location is required';
+
+  @override
+  String get paymentQrRequired => 'Payment QR code is required';
+
+  @override
+  String get startDateRequired => 'Start date is required';
+
+  @override
+  String get designationRequired => 'Designation is required';
+
+  @override
+  String get annualCtcRequired => 'Annual CTC is required';
+
+  @override
+  String get invalidNumber => 'Enter a valid number';
+
+  @override
+  String fieldRequired(String field) {
+    return '$field is required';
+  }
+
+  @override
+  String get fullNameMaxLength => 'Full name must be 200 characters or fewer';
+
+  @override
+  String get mobileRequired => 'Mobile number is required';
+
+  @override
+  String get emailRequired => 'Email is required';
+
+  @override
+  String get aadhaarRequired => 'Aadhaar number is required';
+
+  @override
+  String get aadhaarTwelveDigits => 'Aadhaar number must be exactly 12 digits';
+
+  @override
+  String get panRequired => 'PAN is required';
+
+  @override
+  String get panFormat => 'PAN must be in format ABCDE1234F';
+
+  @override
+  String get pincodeRequired => 'Pincode is required';
+
+  @override
+  String get pincodeSixDigits => 'Pincode must be exactly 6 digits';
+
+  @override
+  String fieldValidNumber(String field) {
+    return '$field must be a valid number';
+  }
+
+  @override
+  String fieldCannotBeNegative(String field) {
+    return '$field cannot be negative';
+  }
+
+  @override
+  String get genderRequired => 'Gender is required';
+
+  @override
+  String get selectValidGender => 'Select a valid gender';
+
+  @override
+  String get maritalStatusRequired => 'Marital status is required';
+
+  @override
+  String get selectValidMaritalStatus => 'Select a valid marital status';
+
+  @override
+  String get ageRequired => 'Age is required';
+
+  @override
+  String get ageWholeNumber => 'Age must be a whole number';
+
+  @override
+  String get ageRange => 'Age must be between 0 and 150';
+
+  @override
+  String get nameRequired => 'Name is required';
+
+  @override
+  String get nameMaxLength => 'Name must be 200 characters or fewer';
 }

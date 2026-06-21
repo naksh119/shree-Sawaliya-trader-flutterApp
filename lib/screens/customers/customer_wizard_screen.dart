@@ -2,8 +2,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/customers/customer_service.dart';
 import 'package:sawaliyatrader/core/customers/customer_validators.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_detail.dart';
@@ -13,44 +13,38 @@ import 'package:sawaliyatrader/core/customers/models/guarantor.dart';
 import 'package:sawaliyatrader/core/customers/models/maternal_house.dart';
 import 'package:sawaliyatrader/core/customers/models/other_loan.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
-import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
-import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
-import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
-import 'package:sawaliyatrader/core/widgets/upper_case_text_input_formatter.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_customer_step.dart';
+import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_documents_step.dart';
+import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_family_step.dart';
+import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_guarantor_step.dart';
+import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_maternal_house_step.dart';
+import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_other_loan_step.dart';
 
-class CustomerWizardScreen extends StatefulWidget {
-  const CustomerWizardScreen({super.key});
+class CustomerWizardScreen extends StatefulWidget implements HasInitialSession {
+  const CustomerWizardScreen({super.key, this.initialSession});
+
+  @override
+  final LoginResponse? initialSession;
 
   @override
   State<CustomerWizardScreen> createState() => _CustomerWizardScreenState();
 }
 
-class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
-  List<String> _stepLabels(BuildContext context) => [
-    context.l10n.wizardStepCustomer,
-    context.l10n.wizardStepFamily,
-    context.l10n.wizardStepMaternalHouse,
-    context.l10n.wizardStepOtherLoans,
-    context.l10n.wizardStepGuarantor,
-    context.l10n.wizardStepDocuments,
-  ];
-
-  final _authService = AuthService();
+class _CustomerWizardScreenState extends State<CustomerWizardScreen>
+    with SessionBootstrapMixin {
   final _customerService = CustomerService();
   final _formKey = GlobalKey<FormState>();
 
-  LoginResponse? _session;
   int _step = 0;
   int? _customerId;
   bool _isSaving = false;
@@ -115,8 +109,14 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   @override
   void initState() {
     super.initState();
+    initSessionBootstrap();
     _bindFieldErrorClearing();
-    _loadSession();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    resolveSessionFromContext();
   }
 
   void _bindFieldErrorClearing() {
@@ -268,12 +268,6 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         _fieldErrors = Map<String, String>.from(_fieldErrors)..remove('house_photo');
       });
 
-  Future<void> _loadSession() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-    setState(() => _session = session);
-  }
-
   Future<void> _pickDateOfBirth() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -322,8 +316,9 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
     }
 
     if (_step == 0) {
-      if (!_validateCustomerStep()) return;
-      if (!_formKey.currentState!.validate()) return;
+      final formValid = _formKey.currentState!.validate();
+      final stepValid = _validateCustomerStep();
+      if (!formValid || !stepValid) return;
       await _saveCustomerStep();
       return;
     }
@@ -357,11 +352,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
       _setFieldError('house_photo', context.l10n.housePhotoRequired);
       valid = false;
     }
-    if (_dateOfBirth == null) {
-      _setFieldError('date_of_birth', context.l10n.dateOfBirthRequired);
-      valid = false;
-    }
-    final genderError = CustomerValidators.gender(_gender);
+    final genderError = CustomerValidators.gender(context.l10n, _gender);
     if (genderError != null) {
       _setFieldError('gender', genderError);
       valid = false;
@@ -377,8 +368,8 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Future<void> _saveCustomerStep() async {
-    final session = _session;
-    if (session == null || _isSaving) return;
+    final activeSession = session;
+    if (activeSession == null || _isSaving) return;
 
     setState(() {
       _isSaving = true;
@@ -402,13 +393,13 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         city: _emptyToNull(_cityController.text),
         state: _emptyToNull(_stateController.text),
         pincode: _emptyToNull(_pincodeController.text),
-        branch: session.employee?.branch,
+        branch: activeSession.employee?.branch,
         occupation: _emptyToNull(_occupationController.text),
         monthlyIncome: double.tryParse(_incomeController.text.trim()),
       );
 
       final created = await _customerService.createCustomer(
-        session: session,
+        session: activeSession,
         payload: detail.toCreatePayload(),
         livePhoto: _livePhoto,
         housePhoto: _housePhoto,
@@ -434,13 +425,13 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Future<void> _saveFamilyStep() async {
-    final session = _session;
+    final activeSession = session;
     final customerId = _customerId;
-    if (session == null || customerId == null) return;
+    if (activeSession == null || customerId == null) return;
 
     await _runStep(() {
       return _customerService.addFamilyMember(
-        session: session,
+        session: activeSession,
         customerId: customerId,
         payload: FamilyMember(
           id: 0,
@@ -455,9 +446,9 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Future<void> _saveMaternalHouseStep() async {
-    final session = _session;
+    final activeSession = session;
     final customerId = _customerId;
-    if (session == null || customerId == null) return;
+    if (activeSession == null || customerId == null) return;
 
     final maternal = MaternalHouse(
       addressLine1: _emptyToNull(_mhAddressController.text),
@@ -470,7 +461,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
 
     await _runStep(() {
       return _customerService.saveMaternalHouse(
-        session: session,
+        session: activeSession,
         customerId: customerId,
         payload: maternal.toPayload(),
         exists: _maternalHouseExists,
@@ -480,13 +471,13 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Future<void> _saveOtherLoanStep() async {
-    final session = _session;
+    final activeSession = session;
     final customerId = _customerId;
-    if (session == null || customerId == null) return;
+    if (activeSession == null || customerId == null) return;
 
     await _runStep(() {
       return _customerService.addOtherLoan(
-        session: session,
+        session: activeSession,
         customerId: customerId,
         payload: OtherLoan(
           id: 0,
@@ -502,13 +493,13 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Future<void> _saveGuarantorStep() async {
-    final session = _session;
+    final activeSession = session;
     final customerId = _customerId;
-    if (session == null || customerId == null) return;
+    if (activeSession == null || customerId == null) return;
 
     await _runStep(() {
       return _customerService.addGuarantor(
-        session: session,
+        session: activeSession,
         customerId: customerId,
         payload: Guarantor(
           id: 0,
@@ -523,9 +514,9 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Future<void> _finishWizard() async {
-    final session = _session;
+    final activeSession = session;
     final customerId = _customerId;
-    if (session == null || customerId == null || _isSaving) return;
+    if (activeSession == null || customerId == null || _isSaving) return;
 
     setState(() {
       _isSaving = true;
@@ -535,7 +526,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
 
     try {
       await _customerService.uploadDocument(
-        session: session,
+        session: activeSession,
         customerId: customerId,
         documentType: _documentType,
         filePath: _pickedFilePath!,
@@ -568,7 +559,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
     try {
       await action();
       if (!mounted) return;
-      if (_step < _stepLabels(context).length - 1) {
+      if (_step < customerWizardSteps(context.l10n).length - 1) {
         setState(() {
           _step += 1;
           _fieldErrors = const {};
@@ -601,653 +592,157 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final session = _session;
-    if (session == null) {
-      return const Scaffold(
-        body: Center(child: AppLoader(size: kAppPageLoaderSize)),
-      );
-    }
+    final steps = customerWizardSteps(context.l10n);
 
-    return SessionScope(
-      session: session,
-      child: Scaffold(
-        appBar: ThemedAppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
-            onPressed: _onBack,
-          ),
-          title: context.l10n.newCustomer,
+    return Scaffold(
+      appBar: ThemedAppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
+          onPressed: _onBack,
         ),
-        body: Column(
-          children: [
-            WizardStepIndicator(
-              steps: _stepLabels(context),
-              currentStep: _step,
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                child: Form(
-                  key: _formKey,
-                  autovalidateMode: _autoValidate
-                      ? AutovalidateMode.onUserInteraction
-                      : AutovalidateMode.disabled,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(_stepLabels(context)[_step], style: AppTextStyles.label(context)),
-                      const SizedBox(height: 16),
-                      _buildStepContent(),
-                      if (_generalError != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _generalError!,
-                          style: AppTextStyles.body(
-                            context,
-                          ).copyWith(color: const Color(0xFFE57373)),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    AppNextButton(
-                      isLastStep: _step == _stepLabels(context).length - 1,
-                      isLoading: _isSaving,
-                      onPressed: _onNext,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+        title: context.l10n.newCustomer,
       ),
+      body: session == null
+          ? const Center(child: AppLoader(size: kAppPageLoaderSize))
+          : SessionScope(
+              session: session!,
+              child: Column(
+                children: [
+                  WizardStepIndicator(
+                    steps: steps,
+                    currentStep: _step,
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      key: ValueKey(_step),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                      child: Form(
+                        key: _formKey,
+                        autovalidateMode: _autoValidate
+                            ? AutovalidateMode.onUserInteraction
+                            : AutovalidateMode.disabled,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              steps[_step],
+                              style: AppTextStyles.label(context),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildStepContent(),
+                            if (_generalError != null) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                _generalError!,
+                                style: AppTextStyles.body(
+                                  context,
+                                ).copyWith(color: const Color(0xFFE57373)),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: Row(
+                        children: [
+                          const Spacer(),
+                          AppNextButton(
+                            isLastStep: _step == steps.length - 1,
+                            isLoading: _isSaving,
+                            onPressed: _onNext,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 
   Widget _buildStepContent() {
     return switch (_step) {
-      0 => _buildCustomerStep(),
-      1 => _buildFamilyStep(),
-      2 => _buildMaternalHouseStep(),
-      3 => _buildOtherLoanStep(),
-      4 => _buildGuarantorStep(),
-      _ => _buildDocumentsStep(),
-    };
-  }
-
-  Widget _buildCustomerStep() {
-    final l10n = context.l10n;
-    return Column(
-      children: [
-        AppPhotoPicker(
-          label: l10n.customerImage,
-          hint: l10n.uploadCustomerImage,
-          placeholderIcon: Icons.face_outlined,
-          image: _livePhoto,
-          errorText: _apiError('live_photo'),
-          onPick: _pickLivePhoto,
-          onClear: _livePhoto?.isNotEmpty == true ? _clearLivePhoto : null,
-        ),
-        const SizedBox(height: 20),
-        AppTextField(
-          controller: _fullNameController,
-          label: l10n.fullName,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('full_name'),
-          validator: CustomerValidators.fullName,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _mobileController,
-          label: l10n.mobile,
-          keyboardType: TextInputType.phone,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('mobile'),
-          validator: (v) => CustomerValidators.mobile(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _emailController,
-          label: l10n.email,
-          keyboardType: TextInputType.emailAddress,
-          autocorrect: false,
-          enableSuggestions: false,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('email'),
-          validator: (v) => CustomerValidators.email(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _aadhaarController,
-          label: l10n.aadhaarNumber,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('aadhaar_number'),
-          validator: (v) => CustomerValidators.aadhaar(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _panController,
-          label: l10n.pan,
-          textInputAction: TextInputAction.next,
-          autocorrect: false,
-          enableSuggestions: false,
-          textCapitalization: TextCapitalization.characters,
-          inputFormatters: const [UpperCaseTextInputFormatter()],
-          externalError: _apiError('pan_number'),
-          validator: (v) => CustomerValidators.pan(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        _DateField(
-          label: l10n.dateOfBirth,
-          value: _dateOfBirth,
-          errorText: _apiError('date_of_birth'),
-          onTap: _pickDateOfBirth,
-          onClear: _dateOfBirth == null
+      0 => CustomerWizardCustomerStep(
+          fullNameController: _fullNameController,
+          mobileController: _mobileController,
+          emailController: _emailController,
+          aadhaarController: _aadhaarController,
+          panController: _panController,
+          addressController: _addressController,
+          addressLine2Controller: _addressLine2Controller,
+          cityController: _cityController,
+          stateController: _stateController,
+          pincodeController: _pincodeController,
+          occupationController: _occupationController,
+          incomeController: _incomeController,
+          dateOfBirth: _dateOfBirth,
+          gender: _gender,
+          livePhoto: _livePhoto,
+          housePhoto: _housePhoto,
+          apiError: _apiError,
+          onPickLivePhoto: _pickLivePhoto,
+          onClearLivePhoto: _clearLivePhoto,
+          onPickHousePhoto: _pickHousePhoto,
+          onClearHousePhoto: _clearHousePhoto,
+          onPickDateOfBirth: _pickDateOfBirth,
+          onClearDateOfBirth: _dateOfBirth == null
               ? null
               : () {
                   _clearFieldError('date_of_birth');
                   setState(() => _dateOfBirth = null);
                 },
-        ),
-        const SizedBox(height: 16),
-        AppDropdownFormField<String>(
-          value: _gender,
-          decoration: AppDropdownDecoration.formField(
-            context,
-            labelText: l10n.gender,
-          ).copyWith(errorText: _apiError('gender')),
-          validator: (v) => _apiError('gender') ?? CustomerValidators.gender(v),
-          items: CustomerValidators.genderOptions
-              .map(
-                (value) => DropdownMenuItem(
-                  value: value,
-                  child: Text(value, style: AppTextStyles.body(context)),
-                ),
-              )
-              .toList(),
-          onChanged: (value) {
+          onGenderChanged: (value) {
             _clearFieldError('gender');
             setState(() => _gender = value);
           },
         ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _addressController,
-          label: l10n.addressLine1,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('address_line1'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.address),
+      1 => CustomerWizardFamilyStep(
+          nameController: _familyNameController,
+          relationController: _familyRelationController,
+          ageController: _familyAgeController,
+          mobileController: _familyMobileController,
+          occupationController: _familyOccupationController,
+          apiError: _apiError,
         ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _addressLine2Controller,
-          label: l10n.addressLine2,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('address_line2'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.addressLine2),
+      2 => CustomerWizardMaternalHouseStep(
+          contactNameController: _mhContactNameController,
+          contactMobileController: _mhContactMobileController,
+          addressController: _mhAddressController,
+          cityController: _mhCityController,
+          stateController: _mhStateController,
+          pincodeController: _mhPincodeController,
+          apiError: _apiError,
         ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _cityController,
-          label: l10n.city,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('city'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.city),
+      3 => CustomerWizardOtherLoanStep(
+          lenderController: _loanLenderController,
+          amountController: _loanAmountController,
+          emiController: _loanEmiController,
+          outstandingController: _loanOutstandingController,
+          apiError: _apiError,
         ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _stateController,
-          label: l10n.state,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('state'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.state),
+      4 => CustomerWizardGuarantorStep(
+          nameController: _guarantorNameController,
+          mobileController: _guarantorMobileController,
+          aadhaarController: _guarantorAadhaarController,
+          relationController: _guarantorRelationController,
+          addressController: _guarantorAddressController,
+          apiError: _apiError,
         ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _pincodeController,
-          label: l10n.pincode,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('pincode'),
-          validator: (v) => CustomerValidators.pincode(v, required: true),
+      _ => CustomerWizardDocumentsStep(
+          documentType: _documentType,
+          pickedFilePath: _pickedFilePath,
+          pickedFileName: _pickedFileName,
+          apiError: _apiError,
+          onPickDocument: _pickDocument,
+          onDocumentTypeChanged: (value) =>
+              setState(() => _documentType = value),
         ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _occupationController,
-          label: l10n.occupation,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('occupation'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.occupation),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _incomeController,
-          label: l10n.monthlyIncomeWithSymbol,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.done,
-          externalError: _apiError('monthly_income'),
-          validator: (v) => CustomerValidators.decimalAmount(
-            v,
-            label: l10n.monthlyIncome,
-            required: true,
-          ),
-        ),
-        const SizedBox(height: 20),
-        AppPhotoPicker(
-          label: l10n.housePhoto,
-          hint: l10n.uploadHousePhoto,
-          placeholderIcon: Icons.home_outlined,
-          image: _housePhoto,
-          errorText: _apiError('house_photo'),
-          onPick: _pickHousePhoto,
-          onClear: _housePhoto?.isNotEmpty == true ? _clearHousePhoto : null,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFamilyStep() {
-    final l10n = context.l10n;
-    return Column(
-      children: [
-        Text(
-          l10n.addFamilyMember,
-          style: AppTextStyles.subtitle(context),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _familyNameController,
-          label: l10n.name,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('name'),
-          validator: (v) => CustomerValidators.name(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _familyRelationController,
-          label: l10n.relationship,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('relationship'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.relationship),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _familyAgeController,
-          label: l10n.age,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('age'),
-          validator: (v) => CustomerValidators.age(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _familyMobileController,
-          label: l10n.mobile,
-          keyboardType: TextInputType.phone,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('mobile'),
-          validator: (v) => CustomerValidators.mobile(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _familyOccupationController,
-          label: l10n.occupation,
-          textInputAction: TextInputAction.done,
-          externalError: _apiError('occupation'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.occupation),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMaternalHouseStep() {
-    final l10n = context.l10n;
-    return Column(
-      children: [
-        Text(
-          l10n.maternalHouseContactHint,
-          style: AppTextStyles.subtitle(context),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _mhContactNameController,
-          label: l10n.contactName,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('contact_name'),
-          validator: (v) => CustomerValidators.name(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _mhContactMobileController,
-          label: l10n.contactMobile,
-          keyboardType: TextInputType.phone,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('contact_mobile'),
-          validator: (v) => CustomerValidators.mobile(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _mhAddressController,
-          label: l10n.address,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('address_line1'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.address),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _mhCityController,
-          label: l10n.city,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('city'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.city),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _mhStateController,
-          label: l10n.state,
-          textInputAction: TextInputAction.next,
-          externalError: _apiError('state'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.state),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _mhPincodeController,
-          label: l10n.pincode,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.done,
-          externalError: _apiError('pincode'),
-          validator: (v) => CustomerValidators.pincode(v, required: true),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOtherLoanStep() {
-    final l10n = context.l10n;
-    return Column(
-      children: [
-        Text(
-          l10n.recordExistingLoans,
-          style: AppTextStyles.subtitle(context),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _loanLenderController,
-          label: l10n.lenderName,
-          externalError: _apiError('lender_name'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.lenderName),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _loanAmountController,
-          label: l10n.loanAmountWithSymbol,
-          keyboardType: TextInputType.number,
-          externalError: _apiError('loan_amount'),
-          validator: (v) => CustomerValidators.decimalAmount(
-            v,
-            label: l10n.loanAmount,
-            required: true,
-          ),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _loanEmiController,
-          label: l10n.emiAmountWithSymbol,
-          keyboardType: TextInputType.number,
-          externalError: _apiError('emi_amount'),
-          validator: (v) => CustomerValidators.decimalAmount(
-            v,
-            label: l10n.emiAmount,
-            required: true,
-          ),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _loanOutstandingController,
-          label: l10n.outstandingWithSymbol,
-          keyboardType: TextInputType.number,
-          externalError: _apiError('outstanding_amount'),
-          validator: (v) => CustomerValidators.decimalAmount(
-            v,
-            label: l10n.outstandingAmount,
-            required: true,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGuarantorStep() {
-    final l10n = context.l10n;
-    return Column(
-      children: [
-        Text(
-          l10n.addGuarantor,
-          style: AppTextStyles.subtitle(context),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _guarantorNameController,
-          label: l10n.name,
-          externalError: _apiError('name'),
-          validator: (v) => CustomerValidators.name(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _guarantorMobileController,
-          label: l10n.mobile,
-          keyboardType: TextInputType.phone,
-          externalError: _apiError('mobile'),
-          validator: (v) => CustomerValidators.mobile(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _guarantorAadhaarController,
-          label: l10n.aadhaar,
-          keyboardType: TextInputType.number,
-          externalError: _apiError('aadhaar_number'),
-          validator: (v) => CustomerValidators.aadhaar(v, required: true),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _guarantorRelationController,
-          label: l10n.relationship,
-          externalError: _apiError('relationship'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.relationship),
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: _guarantorAddressController,
-          label: l10n.address,
-          externalError: _apiError('address'),
-          validator: (v) => CustomerValidators.requiredText(v, l10n.address),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDocumentsStep() {
-    final l10n = context.l10n;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.uploadKycDocument,
-          style: AppTextStyles.subtitle(context),
-        ),
-        const SizedBox(height: 16),
-        AppDropdownFormField<String>(
-          value: _documentType,
-          decoration: AppDropdownDecoration.formField(
-            context,
-            labelText: l10n.documentType,
-          ),
-          items: [
-            DropdownMenuItem(
-              value: 'AADHAAR',
-              child: Text(l10n.documentTypeAadhaar),
-            ),
-            DropdownMenuItem(value: 'PAN', child: Text(l10n.documentTypePan)),
-            DropdownMenuItem(
-              value: 'PHOTO',
-              child: Text(l10n.documentTypePhoto),
-            ),
-            DropdownMenuItem(
-              value: 'OTHER',
-              child: Text(l10n.documentTypeOther),
-            ),
-          ],
-          onChanged: (value) {
-            if (value != null) setState(() => _documentType = value);
-          },
-        ),
-        const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: _pickDocument,
-          icon: Icon(Icons.upload_file, color: context.appColors.shinyGold),
-          label: Text(
-            _pickedFileName ?? l10n.chooseFile,
-            style: AppTextStyles.body(context),
-          ),
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 48),
-            side: BorderSide(
-              color: _apiError('file') != null
-                  ? Colors.red.shade300
-                  : context.appColors.border,
-            ),
-          ),
-        ),
-        if (_apiError('file') != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            _apiError('file')!,
-            style: AppTextStyles.body(context).copyWith(
-              color: Colors.red.shade700,
-              fontSize: 12,
-            ),
-          ),
-        ],
-        if (_pickedFilePath != null &&
-            appPreviewImageIsLocalImagePath(_pickedFilePath)) ...[
-          const SizedBox(height: 12),
-          Text(
-            l10n.selectedPreview,
-            style: AppTextStyles.subtitle(context).copyWith(
-              color: context.appColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          AppPreviewImage(
-            imagePath: _pickedFilePath,
-            height: 140,
-            width: 140,
-            fit: BoxFit.contain,
-            borderRadius: BorderRadius.circular(12),
-            viewerTitle: l10n.documentPreview,
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _DateField extends StatelessWidget {
-  const _DateField({
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.onClear,
-    this.errorText,
-  });
-
-  final String label;
-  final DateTime? value;
-  final VoidCallback onTap;
-  final VoidCallback? onClear;
-  final String? errorText;
-
-  @override
-  Widget build(BuildContext context) {
-    final formatted = value == null
-        ? context.l10n.selectDate
-        : '${value!.day.toString().padLeft(2, '0')}/'
-            '${value!.month.toString().padLeft(2, '0')}/'
-            '${value!.year}';
-    final hasError = errorText != null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.label(context)),
-        const SizedBox(height: 8),
-        Material(
-          color: context.appColors.inputFill,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: hasError
-                      ? Colors.red.shade300
-                      : context.appColors.progressTrack,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: 18,
-                    color: context.appColors.shinyGold.withValues(alpha: 0.8),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      formatted,
-                      style: AppTextStyles.body(context).copyWith(
-                        color: value == null
-                            ? context.appColors.textSecondary
-                            : context.appColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  if (onClear != null)
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      color: context.appColors.textSecondary,
-                      onPressed: onClear,
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        if (hasError) ...[
-          const SizedBox(height: 8),
-          Text(
-            errorText!,
-            style: AppTextStyles.body(context).copyWith(
-              color: Colors.red.shade700,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ],
-    );
+    };
   }
 }

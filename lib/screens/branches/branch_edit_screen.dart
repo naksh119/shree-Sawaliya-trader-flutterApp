@@ -41,6 +41,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
   bool _isSaving = false;
   bool _isActive = true;
   String? _error;
+  String? _paymentQrError;
 
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
@@ -130,10 +131,17 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
     final session = _session;
     if (session == null || _isSaving) return;
     if (!_formKey.currentState!.validate()) return;
+    final hasQr = (_paymentQrCode?.isNotEmpty ?? false) ||
+        (_existingPaymentQrUrl != null && _existingPaymentQrUrl!.isNotEmpty);
+    if (!hasQr) {
+      setState(() => _paymentQrError = context.l10n.paymentQrRequired);
+      return;
+    }
 
     setState(() {
       _isSaving = true;
       _error = null;
+      _paymentQrError = null;
     });
 
     try {
@@ -178,6 +186,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
     final picked = await PickedImage.pick();
     if (picked == null) return;
     setState(() => _paymentQrCode = picked);
+    if (_paymentQrError != null) setState(() => _paymentQrError = null);
   }
 
   void _clearPaymentQr() {
@@ -262,6 +271,10 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                           hint: context.l10n.addressHint,
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.streetAddress,
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                                  ? context.l10n.locationRequired
+                                  : null,
                         ),
                         const SizedBox(height: 16),
                         SwitchListTile.adaptive(
@@ -296,6 +309,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                               : context.l10n.branchQrUploadHint,
                           placeholderIcon: Icons.qr_code_2_rounded,
                           image: _paymentQrCode,
+                          errorText: _paymentQrError,
                           onPick: _pickPaymentQr,
                           onClear: _paymentQrCode?.isNotEmpty == true
                               ? _clearPaymentQr

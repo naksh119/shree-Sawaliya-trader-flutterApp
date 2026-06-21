@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
@@ -34,12 +34,13 @@ class EmployeesListScreen extends StatefulWidget {
   State<EmployeesListScreen> createState() => _EmployeesListScreenState();
 }
 
-class _EmployeesListScreenState extends State<EmployeesListScreen> {
-  final _authService = AuthService();
+class _EmployeesListScreenState extends State<EmployeesListScreen>
+    with ListSessionBootstrapMixin {
   final _employeeService = EmployeeService();
   final _scrollController = ScrollController();
 
-  LoginResponse? _session;
+  LoginResponse? get _session => session;
+
   final List<EmployeeDto> _items = [];
   List<RoleOption> _roles = [];
   List<BranchOption> _branches = [];
@@ -53,8 +54,6 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   bool _isLoadingMore = false;
   String? _error;
 
-  bool _sessionInitialized = false;
-
   @override
   void initState() {
     super.initState();
@@ -64,46 +63,19 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_sessionInitialized) return;
-
-    final inherited = SessionScope.maybeOf(context)?.session;
-    if (inherited != null) {
-      _sessionInitialized = true;
-      _session = inherited;
-      debugPrint(
-        '[Employees] session from SessionScope userId=${inherited.id} '
-        'role=${inherited.employee?.role} branch=${inherited.employee?.branch}',
-      );
-      _loadFilterOptions().then((_) => _loadEmployees(reset: true));
-      return;
-    }
-
-    debugPrint('[Employees] no SessionScope yet, bootstrapping auth session');
-
-    _sessionInitialized = true;
-    _bootstrap();
+    bootstrapListSession(
+      (_) async {
+        await _loadFilterOptions();
+        await _loadEmployees(reset: true);
+      },
+      onMissing: () => setState(() => _isLoading = false),
+    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _bootstrap() async {
-    await _bootstrapWork();
-  }
-
-  Future<void> _bootstrapWork() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-    setState(() => _session = session);
-    if (session != null) {
-      await _loadFilterOptions();
-      await _loadEmployees(reset: true);
-    } else {
-      setState(() => _isLoading = false);
-    }
   }
 
   void _onScroll() {
@@ -367,7 +339,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final session = _session ?? SessionScope.maybeOf(context)?.session;
+    final session = _session;
     if (session == null && _isLoading) {
       return const Scaffold(
         body: Center(child: AppLoader(size: kAppPageLoaderSize)),
@@ -400,6 +372,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
                 onTap: () async {
                   final created = await context.push<bool>(
                     AppRoutes.employeeNew,
+                    extra: session,
                   );
                   if (created == true) _loadEmployees(reset: true);
                 },

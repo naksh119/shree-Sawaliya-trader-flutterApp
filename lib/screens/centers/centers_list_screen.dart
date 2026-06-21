@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/auth/session_bootstrap.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/centers/center_service.dart';
 import 'package:sawaliyatrader/core/centers/models/center_dto.dart';
@@ -27,12 +27,13 @@ class CentersListScreen extends StatefulWidget {
   State<CentersListScreen> createState() => _CentersListScreenState();
 }
 
-class _CentersListScreenState extends State<CentersListScreen> {
-  final _authService = AuthService();
+class _CentersListScreenState extends State<CentersListScreen>
+    with ListSessionBootstrapMixin {
   final _centerService = CenterService();
   final _scrollController = ScrollController();
 
-  LoginResponse? _session;
+  LoginResponse? get _session => session;
+
   final List<CenterDto> _items = [];
   CenterStatus? _statusFilter;
   String _searchQuery = '';
@@ -46,24 +47,21 @@ class _CentersListScreenState extends State<CentersListScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _bootstrap();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    bootstrapListSession(
+      (_) => _loadCenters(reset: true),
+      onMissing: () => setState(() => _isLoading = false),
+    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _bootstrap() async {
-    await _bootstrapWork();
-  }
-
-  Future<void> _bootstrapWork() async {
-    final session = await _authService.getSession();
-    if (!mounted) return;
-    setState(() => _session = session);
-    if (session != null) await _loadCenters(reset: true);
   }
 
   void _onScroll() {
@@ -162,7 +160,10 @@ class _CentersListScreenState extends State<CentersListScreen> {
         floatingActionButton: permissions.canCreateCenter
             ? CreateFabButton(
                 onTap: () async {
-                  final created = await context.push<bool>(AppRoutes.centerNew);
+                  final created = await context.push<bool>(
+                    AppRoutes.centerNew,
+                    extra: session,
+                  );
                   if (created == true && mounted) {
                     await _loadCenters(reset: true);
                   }
