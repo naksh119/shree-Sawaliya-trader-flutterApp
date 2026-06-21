@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -7,25 +8,30 @@ import 'package:sawaliyatrader/core/widgets/app_message.dart';
 /// Placeholder handlers until edit/delete APIs are wired.
 abstract final class EntityActionPlaceholder {
   static Future<void> onEdit(BuildContext context, String entityName) {
+    final l10n = context.l10n;
     return showAppSuccessMessage(
       context,
-      message: 'Edit $entityName — API coming soon',
+      message: l10n.editEntityComingSoon(entityName),
     );
   }
 
   static Future<void> onDelete(BuildContext context, String entityName) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete $entityName?', style: AppTextStyles.heading(context)),
+        title: Text(
+          l10n.deleteEntityQuestion(entityName),
+          style: AppTextStyles.heading(context),
+        ),
         content: Text(
-          'This action cannot be undone. The delete API will be connected soon.',
+          l10n.deleteCannotUndo,
           style: AppTextStyles.body(context),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel, style: AppTextStyles.link(context)),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -33,7 +39,7 @@ abstract final class EntityActionPlaceholder {
               backgroundColor: context.appColors.gold,
               foregroundColor: AppColors.navy,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -43,7 +49,7 @@ abstract final class EntityActionPlaceholder {
 
     await showAppSuccessMessage(
       context,
-      message: 'Delete $entityName — API coming soon',
+      message: l10n.deleteEntityComingSoon(entityName),
     );
   }
 }
@@ -116,6 +122,7 @@ class EntityEditDeleteIconStack extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!canEdit && !canDelete) return const SizedBox.shrink();
 
+    final l10n = context.l10n;
     final buttonSize = compact ? 34.0 : 38.0;
     final gap = compact ? 6.0 : 8.0;
 
@@ -125,7 +132,7 @@ class EntityEditDeleteIconStack extends StatelessWidget {
         if (canEdit)
           _GoldenIconButton(
             size: buttonSize,
-            tooltip: 'Edit',
+            tooltip: l10n.edit,
             icon: Icons.edit_outlined,
             onPressed: onEdit ??
                 () => EntityActionPlaceholder.onEdit(context, entityName),
@@ -134,7 +141,7 @@ class EntityEditDeleteIconStack extends StatelessWidget {
         if (canDelete)
           _GoldenIconButton(
             size: buttonSize,
-            tooltip: 'Delete',
+            tooltip: l10n.delete,
             icon: Icons.delete_outline,
             onPressed: onDelete ??
                 () => EntityActionPlaceholder.onDelete(context, entityName),
@@ -195,6 +202,8 @@ class EntityEditDeleteBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!canEdit && !canDelete) return const SizedBox.shrink();
 
+    final l10n = context.l10n;
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -210,7 +219,7 @@ class EntityEditDeleteBar extends StatelessWidget {
                   onPressed: onEdit ??
                       () => EntityActionPlaceholder.onEdit(context, entityName),
                   icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Edit'),
+                  label: Text(l10n.edit),
                 ),
               ),
             if (canEdit && canDelete) const SizedBox(width: 12),
@@ -224,7 +233,7 @@ class EntityEditDeleteBar extends StatelessWidget {
                     foregroundColor: AppColors.navy,
                   ),
                   icon: const Icon(Icons.delete_outline, size: 18),
-                  label: const Text('Delete'),
+                  label: Text(l10n.delete),
                 ),
               ),
           ],

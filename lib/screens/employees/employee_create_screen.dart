@@ -9,6 +9,8 @@ import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_employment_history.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_register_request.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
@@ -100,13 +102,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   DateTime? _historyServiceTo;
   final List<EmployeeEmploymentHistory> _savedHistories = [];
 
-  static const _steps = [
-    'Employee & Personal',
-    'Assessment',
-    'Identity & Login',
-    'Profile',
-    'Employment History',
-  ];
   static const _genderOptions = ['MALE', 'FEMALE', 'OTHER'];
   static const _maritalOptions = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'];
 
@@ -375,18 +370,19 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   bool _validateEmployeePersonalStep() {
+    final l10n = context.l10n;
     var valid = true;
 
     if (_dateOfBirth == null) {
-      _setFieldError('date_of_birth', 'Date of birth is required');
+      _setFieldError('date_of_birth', l10n.dateOfBirthRequired);
       valid = false;
     }
     if (_fatherNameController.text.trim().isEmpty) {
-      _setFieldError('father_name', 'Father name is required');
+      _setFieldError('father_name', l10n.fatherNameRequired);
       valid = false;
     }
     if (_placeOfBirthController.text.trim().isEmpty) {
-      _setFieldError('place_of_birth', 'Place of birth is required');
+      _setFieldError('place_of_birth', l10n.placeOfBirthRequired);
       valid = false;
     }
 
@@ -394,14 +390,15 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   bool _validateAssessmentStep() {
+    final l10n = context.l10n;
     var valid = true;
 
     if (_appointmentDate == null) {
-      _setFieldError('date_of_appointment', 'Date of appointment is required');
+      _setFieldError('date_of_appointment', l10n.dateOfAppointmentRequired);
       valid = false;
     }
     if (_joiningDate == null) {
-      _setFieldError('date_of_joining', 'Date of joining is required');
+      _setFieldError('date_of_joining', l10n.dateOfJoiningRequired);
       valid = false;
     }
 
@@ -409,23 +406,24 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   bool _validateProfileStep() {
+    final l10n = context.l10n;
     var valid = true;
 
     if (_presentAddressController.text.trim().isEmpty) {
-      _setFieldError('present_address', 'Present address is required');
+      _setFieldError('present_address', l10n.presentAddressRequired);
       valid = false;
     }
     if (!_sameAsPresentAddress &&
         _permanentAddressController.text.trim().isEmpty) {
-      _setFieldError('permanent_address', 'Permanent address is required');
+      _setFieldError('permanent_address', l10n.permanentAddressRequired);
       valid = false;
     }
     if (_emergencyNameController.text.trim().isEmpty) {
-      _setFieldError('emergency_contact_name', 'Contact name is required');
+      _setFieldError('emergency_contact_name', l10n.contactNameRequired);
       valid = false;
     }
     if (_emergencyRelationController.text.trim().isEmpty) {
-      _setFieldError('emergency_contact_relation', 'Relation is required');
+      _setFieldError('emergency_contact_relation', l10n.relationRequired);
       valid = false;
     }
     final emergencyMobileError = CustomerValidators.mobile(
@@ -493,11 +491,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
       if (!_formKey.currentState!.validate()) return;
       if (_step == 0) {
         if (_selectedRoleId == null) {
-          _setFieldError('role', 'Please select a role.');
+          _setFieldError('role', context.l10n.pleaseSelectRole);
           return;
         }
         if (_selectedBranchId == null) {
-          _setFieldError('branch', 'Please select a branch.');
+          _setFieldError('branch', context.l10n.pleaseSelectBranch);
           return;
         }
         if (!_validateEmployeePersonalStep()) return;
@@ -547,29 +545,30 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   bool _validateEmploymentHistoryForm() {
+    final l10n = context.l10n;
     var valid = true;
 
     if (_historyOrganizationController.text.trim().isEmpty) {
-      _setFieldError('organization_name', 'Organization name is required');
+      _setFieldError('organization_name', l10n.organizationNameRequired);
       valid = false;
     }
     if (_historyServiceFrom == null) {
-      _setFieldError('service_from', 'Service from date is required');
+      _setFieldError('service_from', l10n.serviceFromRequired);
       valid = false;
     }
     if (_historyServiceTo == null) {
-      _setFieldError('service_to', 'Service to date is required');
+      _setFieldError('service_to', l10n.serviceToRequired);
       valid = false;
     }
     if (_historyServiceFrom != null &&
         _historyServiceTo != null &&
         _historyServiceTo!.isBefore(_historyServiceFrom!)) {
-      _setFieldError('service_to', 'Service to must be after service from');
+      _setFieldError('service_to', l10n.serviceToAfterFrom);
       valid = false;
     }
     final ctc = _historyAnnualCtcController.text.trim();
     if (ctc.isNotEmpty && double.tryParse(ctc) == null) {
-      _setFieldError('annual_ctc', 'Enter a valid amount');
+      _setFieldError('annual_ctc', l10n.enterValidAmount);
       valid = false;
     }
 
@@ -732,9 +731,12 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
     }
 
     if (!mounted) return;
+    final l10n = context.l10n;
     await showAppSuccessMessage(
       context,
-      message: 'Employee ${_registeredEmployeeName ?? 'registered'} saved.',
+      message: l10n.employeeSaved(
+        _registeredEmployeeName ?? l10n.employeeRegistered,
+      ),
     );
     if (!mounted) return;
     context.pop(true);
@@ -749,6 +751,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   Widget build(BuildContext context) {
     final session = _session;
     final isReady = session != null && !_isLoadingOptions;
+    final l10n = context.l10n;
+    final steps = employeeWizardSteps(l10n);
 
     return Scaffold(
       appBar: ThemedAppBar(
@@ -756,7 +760,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
           icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
           onPressed: _onBack,
         ),
-        title: 'New Employee',
+        title: l10n.newEmployee,
       ),
       body: !isReady
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
@@ -764,7 +768,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               session: session,
               child: Column(
                 children: [
-                  WizardStepIndicator(steps: _steps, currentStep: _step),
+                  WizardStepIndicator(steps: steps, currentStep: _step),
                   Expanded(
                     child: SingleChildScrollView(
                       key: ValueKey(_step),
@@ -778,13 +782,13 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _steps[_step],
+                              steps[_step],
                               style: AppTextStyles.label(context),
                             ),
                             if (_step == 4) ...[
                               const SizedBox(height: 8),
                               Text(
-                                'Add previous employment records (optional).',
+                                l10n.employmentHistoryOptional,
                                 style: AppTextStyles.body(context).copyWith(
                                   color: context.appColors.textSecondary,
                                 ),
@@ -823,7 +827,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                                 ),
                                 minimumSize: const Size(110, 40),
                               ),
-                              child: const Text('Previous'),
+                              child: Text(l10n.previous),
                             ),
                             const SizedBox(width: 12),
                           ],
@@ -841,13 +845,13 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                                 ),
                                 minimumSize: const Size(120, 40),
                               ),
-                              child: const Text('Add record'),
+                              child: Text(l10n.addRecord),
                             ),
                             const SizedBox(width: 12),
                           ],
                           const Spacer(),
                           AppNextButton(
-                            isLastStep: _step == _steps.length - 1,
+                            isLastStep: _step == steps.length - 1,
                             isLoading: _isSaving,
                             onPressed: _isSaving ? null : _onNext,
                           ),
@@ -872,10 +876,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Widget _buildEmployeePersonalStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         _SectionCard(
-          title: 'Employment details',
+          title: l10n.employmentDetails,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -883,7 +888,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 Expanded(
                   child: _roles.isEmpty
                       ? Text(
-                          'No roles available. Check your connection and try again.',
+                          l10n.noRolesAvailable,
                           style: AppTextStyles.body(context).copyWith(
                             color: Colors.red.shade700,
                           ),
@@ -892,7 +897,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                           value: _selectedRoleId,
                           decoration: AppDropdownDecoration.formField(
                             context,
-                            labelText: 'Role',
+                            labelText: l10n.role,
                           ).copyWith(errorText: _apiError('role')),
                           validator: (_) => _apiError('role'),
                           items: _roles
@@ -917,7 +922,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 Expanded(
                   child: _branches.isEmpty
                       ? Text(
-                          'No branches available for assignment.',
+                          l10n.noBranchesForAssignment,
                           style: AppTextStyles.body(context).copyWith(
                             color: Colors.red.shade700,
                           ),
@@ -926,7 +931,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                           value: _selectedBranchId,
                           decoration: AppDropdownDecoration.formField(
                             context,
-                            labelText: 'Branch',
+                            labelText: l10n.branchLabel,
                           ).copyWith(errorText: _apiError('branch')),
                           validator: (_) => _apiError('branch'),
                           items: _branches
@@ -952,8 +957,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _employeeCodeController,
-              label: 'Employee code',
-              hint: 'e.g. JAIPUR-EMP001',
+              label: l10n.employeeCode,
+              hint: context.l10n.employeeCodeHint,
               textInputAction: TextInputAction.next,
               autocorrect: false,
               enableSuggestions: false,
@@ -963,10 +968,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               validator: (value) {
                 final trimmed = value?.trim() ?? '';
                 if (trimmed.isEmpty) {
-                  return 'Employee code is required';
+                  return l10n.employeeCodeRequired;
                 }
                 if (!RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(trimmed)) {
-                  return 'Use letters, numbers, hyphen, or underscore';
+                  return l10n.employeeCodeFormat;
                 }
                 return null;
               },
@@ -975,11 +980,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
         ),
         const SizedBox(height: 16),
         _SectionCard(
-          title: 'Personal details',
+          title: l10n.personalDetails,
           children: [
             AppPhotoPicker(
-              label: 'Employee photo',
-              hint: 'Upload a profile photo (optional).',
+              label: context.l10n.employeePhoto,
+              hint: l10n.uploadProfilePhoto,
               placeholderIcon: Icons.person_outline,
               image: _employeePhoto,
               errorText: _apiError('employee_photo'),
@@ -990,32 +995,34 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _firstNameController,
-              label: 'First name',
+              label: context.l10n.firstName,
               textInputAction: TextInputAction.next,
               externalError: _apiError('first_name'),
               validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'First name is required' : null,
+                  v == null || v.trim().isEmpty ? l10n.firstNameRequired : null,
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _lastNameController,
-              label: 'Last name',
+              label: context.l10n.lastName,
               textInputAction: TextInputAction.next,
               externalError: _apiError('last_name'),
               validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'Last name is required' : null,
+                  v == null || v.trim().isEmpty ? l10n.lastNameRequired : null,
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _fatherNameController,
-              label: 'Father name',
+              label: l10n.fatherName,
               textInputAction: TextInputAction.next,
               externalError: _apiError('father_name'),
-              validator: (v) => CustomerValidators.requiredText(v, 'Father name'),
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? l10n.fatherNameRequired
+                  : null,
             ),
             const SizedBox(height: 16),
             _DateField(
-              label: 'Date of birth',
+              label: l10n.dateOfBirth,
               value: _dateOfBirth,
               errorText: _apiError('date_of_birth'),
               onTap: () => _pickDate(
@@ -1035,11 +1042,12 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _placeOfBirthController,
-              label: 'Place of birth',
+              label: l10n.placeOfBirth,
               textInputAction: TextInputAction.next,
               externalError: _apiError('place_of_birth'),
-              validator: (v) =>
-                  CustomerValidators.requiredText(v, 'Place of birth'),
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? l10n.placeOfBirthRequired
+                  : null,
             ),
             const SizedBox(height: 16),
             Row(
@@ -1050,7 +1058,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     value: _gender,
                     decoration: AppDropdownDecoration.formField(
                       context,
-                      labelText: 'Gender',
+                      labelText: l10n.gender,
                     ).copyWith(errorText: _apiError('gender')),
                     validator: (_) => _apiError('gender'),
                     items: _genderOptions
@@ -1079,7 +1087,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                     value: _maritalStatus,
                     decoration: AppDropdownDecoration.formField(
                       context,
-                      labelText: 'Marital status',
+                      labelText: l10n.maritalStatus,
                     ).copyWith(errorText: _apiError('marital_status')),
                     validator: (_) => _apiError('marital_status'),
                     items: _maritalOptions
@@ -1107,21 +1115,21 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _nationalityController,
-              label: 'Nationality',
+              label: l10n.nationality,
               textInputAction: TextInputAction.next,
               externalError: _apiError('nationality'),
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _languagesController,
-              label: 'Languages known',
+              label: l10n.languagesKnown,
               textInputAction: TextInputAction.next,
               externalError: _apiError('languages_known'),
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _membersInFamilyController,
-              label: 'Members in family',
+              label: l10n.membersInFamily,
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
               externalError: _apiError('members_in_family'),
@@ -1133,15 +1141,16 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Widget _buildAssessmentStep() {
+    final l10n = context.l10n;
     return _SectionCard(
-      title: 'Assignment & assessment',
+      title: l10n.assignmentAndAssessment,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: _DateField(
-                label: 'Date of appointment',
+                label: l10n.dateOfAppointment,
                 value: _appointmentDate,
                 errorText: _apiError('date_of_appointment'),
                 compact: true,
@@ -1163,7 +1172,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _DateField(
-                label: 'Date of joining',
+                label: l10n.dateOfJoining,
                 value: _joiningDate,
                 errorText: _apiError('date_of_joining'),
                 compact: true,
@@ -1190,7 +1199,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
           children: [
             Expanded(
               child: _DateField(
-                label: 'Date of confirmation',
+                label: l10n.dateOfConfirmation,
                 value: _confirmationDate,
                 errorText: _apiError('date_of_confirmation'),
                 compact: true,
@@ -1212,7 +1221,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _DateField(
-                label: 'Payable from date',
+                label: l10n.payableFromDate,
                 value: _payableFromDate,
                 errorText: _apiError('payable_from_date'),
                 compact: true,
@@ -1236,14 +1245,14 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _performanceAppraisalController,
-          label: 'Performance appraisal',
+          label: l10n.performanceAppraisal,
           textInputAction: TextInputAction.next,
           externalError: _apiError('performance_appraisal'),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _warningNotesController,
-          label: 'Warning notes',
+          label: l10n.warningNotes,
           textInputAction: TextInputAction.next,
           externalError: _apiError('warning_notes'),
         ),
@@ -1252,14 +1261,15 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Widget _buildIdentityLoginStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         _SectionCard(
-          title: 'Identity & contact',
+          title: l10n.identityAndContact,
           children: [
             AppTextField(
               controller: _aadhaarController,
-              label: 'Aadhaar number',
+              label: l10n.aadhaarNumber,
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
               externalError: _apiError('aadhaar_card_no'),
@@ -1268,7 +1278,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _panController,
-              label: 'PAN',
+              label: l10n.pan,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.characters,
               inputFormatters: const [UpperCaseTextInputFormatter()],
@@ -1278,7 +1288,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _mobileController,
-              label: 'Primary mobile',
+              label: l10n.primaryMobile,
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               externalError: _apiError('primary_mobile_number'),
@@ -1287,7 +1297,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _secondaryMobileController,
-              label: 'Secondary mobile',
+              label: l10n.secondaryMobile,
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               externalError: _apiError('secondary_mobile_number'),
@@ -1295,7 +1305,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 final trimmed = v?.trim() ?? '';
                 if (trimmed.isEmpty) return null;
                 if (!RegExp(r'^\d{10}$').hasMatch(trimmed)) {
-                  return 'Mobile number must be exactly 10 digits';
+                  return l10n.mobileTenDigits;
                 }
                 return null;
               },
@@ -1304,11 +1314,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
         ),
         const SizedBox(height: 16),
         _SectionCard(
-          title: 'Login credentials',
+          title: l10n.loginCredentials,
           children: [
             AppTextField(
               controller: _emailController,
-              label: 'Email',
+              label: l10n.email,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
               enableSuggestions: false,
@@ -1319,7 +1329,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _passwordController,
-              label: 'Password',
+              label: l10n.password,
               obscureText: _obscurePassword,
               autocorrect: false,
               enableSuggestions: false,
@@ -1337,13 +1347,13 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) {
-                  return 'Password is required';
+                  return l10n.passwordRequired;
                 }
                 if (v.length < 8) {
-                  return 'Password must be at least 8 characters';
+                  return l10n.passwordMinLength;
                 }
                 if (!RegExp(r'[A-Z]').hasMatch(v)) {
-                  return 'Password must contain at least one uppercase letter';
+                  return l10n.passwordUppercase;
                 }
                 return null;
               },
@@ -1351,7 +1361,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _confirmPasswordController,
-              label: 'Confirm password',
+              label: l10n.confirmPassword,
               obscureText: _obscureConfirmPassword,
               autocorrect: false,
               enableSuggestions: false,
@@ -1370,10 +1380,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               validator: (v) {
                 final trimmed = v?.trim() ?? '';
                 if (trimmed.isEmpty) {
-                  return 'Confirm password is required';
+                  return l10n.confirmPasswordRequired;
                 }
                 if (trimmed != _passwordController.text) {
-                  return 'Passwords do not match';
+                  return l10n.passwordsDoNotMatch;
                 }
                 return null;
               },
@@ -1385,23 +1395,26 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Widget _buildProfileStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         _SectionCard(
-          title: 'Address',
+          title: l10n.address,
           children: [
             AppTextField(
               controller: _presentAddressController,
-              label: 'Present address',
+              label: l10n.presentAddress,
               textInputAction: TextInputAction.next,
               externalError: _apiError('present_address'),
-              validator: (v) => CustomerValidators.requiredText(v, 'Present address'),
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? l10n.presentAddressRequired
+                  : null,
             ),
             const SizedBox(height: 12),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(
-                'Permanent address same as present',
+                l10n.permanentAddressSame,
                 style: AppTextStyles.body(context),
               ),
               value: _sameAsPresentAddress,
@@ -1412,18 +1425,19 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               const SizedBox(height: 8),
               AppTextField(
                 controller: _permanentAddressController,
-                label: 'Permanent address',
+                label: l10n.permanentAddress,
                 textInputAction: TextInputAction.next,
                 externalError: _apiError('permanent_address'),
-                validator: (v) =>
-                    CustomerValidators.requiredText(v, 'Permanent address'),
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? l10n.permanentAddressRequired
+                    : null,
               ),
             ],
           ],
         ),
         const SizedBox(height: 16),
         _SectionCard(
-          title: 'Health & qualifications',
+          title: l10n.healthAndQualifications,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1431,7 +1445,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 Expanded(
                   child: AppTextField(
                     controller: _heightController,
-                    label: 'Height (cm)',
+                    label: l10n.heightCm,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
                     externalError: _apiError('height_cm'),
@@ -1440,7 +1454,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                       if (trimmed.isEmpty) return null;
                       final height = double.tryParse(trimmed);
                       if (height == null || height < 30) {
-                        return 'Height must be at least 30 cm';
+                        return l10n.heightMin;
                       }
                       return null;
                     },
@@ -1450,7 +1464,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 Expanded(
                   child: AppTextField(
                     controller: _weightController,
-                    label: 'Weight (kg)',
+                    label: l10n.weightKg,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
                     externalError: _apiError('weight_kg'),
@@ -1461,28 +1475,28 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _bloodGroupController,
-              label: 'Blood group',
+              label: l10n.bloodGroup,
               textInputAction: TextInputAction.next,
               externalError: _apiError('blood_group'),
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _educationController,
-              label: 'Educational qualifications',
+              label: l10n.educationalQualifications,
               textInputAction: TextInputAction.next,
               externalError: _apiError('educational_qualifications'),
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _professionalController,
-              label: 'Professional qualifications',
+              label: l10n.professionalQualifications,
               textInputAction: TextInputAction.next,
               externalError: _apiError('professional_qualifications'),
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _remarksController,
-              label: 'Remarks',
+              label: l10n.remarks,
               textInputAction: TextInputAction.next,
               externalError: _apiError('remarks'),
             ),
@@ -1490,27 +1504,31 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
         ),
         const SizedBox(height: 16),
         _SectionCard(
-          title: 'Emergency contact',
+          title: l10n.emergencyContact,
           children: [
             AppTextField(
               controller: _emergencyNameController,
-              label: 'Contact name',
+              label: l10n.contactName,
               textInputAction: TextInputAction.next,
               externalError: _apiError('emergency_contact_name'),
-              validator: (v) => CustomerValidators.requiredText(v, 'Contact name'),
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? l10n.contactNameRequired
+                  : null,
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _emergencyRelationController,
-              label: 'Relation',
+              label: l10n.relation,
               textInputAction: TextInputAction.next,
               externalError: _apiError('emergency_contact_relation'),
-              validator: (v) => CustomerValidators.requiredText(v, 'Relation'),
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? l10n.relationRequired
+                  : null,
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _emergencyMobileController,
-              label: 'Contact number',
+              label: l10n.contactNumber,
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.done,
               externalError: _apiError('emergency_contact_number'),
@@ -1523,12 +1541,13 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
   }
 
   Widget _buildEmploymentHistoryStep() {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_savedHistories.isNotEmpty) ...[
           Text(
-            'Saved records',
+            l10n.savedRecords,
             style: AppTextStyles.label(context),
           ),
           const SizedBox(height: 12),
@@ -1568,7 +1587,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                       history.annualCtc!.trim().isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'CTC: ${history.annualCtc}',
+                      l10n.ctcWithValue(history.annualCtc!),
                       style: AppTextStyles.body(context).copyWith(
                         color: context.appColors.textSecondary,
                       ),
@@ -1580,18 +1599,18 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
           const SizedBox(height: 8),
         ],
         _SectionCard(
-          title: 'Previous employment',
+          title: context.l10n.previousEmployment,
           children: [
             AppTextField(
               controller: _historyOrganizationController,
-              label: 'Organization name',
+              label: context.l10n.organizationName,
               textInputAction: TextInputAction.next,
               externalError: _apiError('organization_name'),
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _historyDesignationController,
-              label: 'Designation',
+              label: context.l10n.designation,
               textInputAction: TextInputAction.next,
               externalError: _apiError('designation'),
             ),
@@ -1601,7 +1620,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
               children: [
                 Expanded(
                   child: _DateField(
-                    label: 'Service from',
+                    label: context.l10n.serviceFrom,
                     value: _historyServiceFrom,
                     errorText: _apiError('service_from'),
                     compact: true,
@@ -1623,7 +1642,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _DateField(
-                    label: 'Service to',
+                    label: context.l10n.serviceTo,
                     value: _historyServiceTo,
                     errorText: _apiError('service_to'),
                     compact: true,
@@ -1647,8 +1666,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _historyAnnualCtcController,
-              label: 'Annual CTC',
-              hint: 'e.g. 180000.00',
+              label: context.l10n.annualCtc,
+              hint: context.l10n.annualCtcHint,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.done,
               externalError: _apiError('annual_ctc'),
@@ -1715,7 +1734,7 @@ class _DateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formatted = value == null
-        ? 'Select date'
+        ? context.l10n.selectDate
         : '${value!.year}-${value!.month.toString().padLeft(2, '0')}-${value!.day.toString().padLeft(2, '0')}';
     final hasError = errorText != null;
 

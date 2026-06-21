@@ -7,6 +7,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_background.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -19,13 +20,13 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  static const _titleText = 'SHREE SAWALIYA MULTITRADE';
   static const _typingDelay = Duration(milliseconds: 70);
   static const _typingStartDelay = Duration(milliseconds: 350);
   static const _logoAnimationDuration = Duration(milliseconds: 700);
 
   Timer? _typingTimer;
   String _visibleTitle = '';
+  String _titleText = '';
   late final AnimationController _logoController;
   late final Animation<double> _logoScale;
   late final Animation<double> _logoOpacity;
@@ -47,8 +48,18 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
     _logoController.forward();
-    _startTypewriterAnimation();
     _navigateNext();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final title = context.l10n.splashTitle;
+    if (_titleText == title) return;
+    _titleText = title;
+    _typingTimer?.cancel();
+    _visibleTitle = '';
+    _startTypewriterAnimation();
   }
 
   @override
@@ -69,6 +80,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _startTypewriterAnimation() {
+    final title = _titleText;
+    if (title.isEmpty) return;
+
     Future<void>.delayed(_typingStartDelay, () {
       if (!mounted) return;
 
@@ -80,13 +94,13 @@ class _SplashScreenState extends State<SplashScreen>
         }
 
         index += 1;
-        if (index > _titleText.length) {
+        if (index > title.length) {
           timer.cancel();
           return;
         }
 
         setState(() {
-          _visibleTitle = _titleText.substring(0, index);
+          _visibleTitle = title.substring(0, index);
         });
       });
     });

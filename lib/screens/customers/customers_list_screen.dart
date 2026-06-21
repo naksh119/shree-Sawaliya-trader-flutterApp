@@ -9,12 +9,15 @@ import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_list_tile.dart';
+import 'package:sawaliyatrader/screens/customers/widgets/customer_status_chip.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -148,7 +151,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(title: 'Customers',
+        appBar: ThemedAppBar(title: context.l10n.customers,
           actions: [
             UserHeaderBadge(
               initials: userDisplay.initials,
@@ -167,7 +170,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: AppSearchField(
-                hintText: 'Search by name, mobile, or code',
+                hintText: context.l10n.searchCustomersHint,
                 onSearch: _onSearch,
               ),
             ),
@@ -178,14 +181,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   _FilterChip(
-                    label: 'All',
+                    label: context.l10n.all,
                     selected: _statusFilter == null,
                     onTap: () => _onStatusSelected(null),
                   ),
                   for (final status in CustomerStatus.filterOptions) ...[
                     const SizedBox(width: 8),
                     _FilterChip(
-                      label: status.label,
+                      label: status.localizedLabel(context),
                       selected: _statusFilter == status,
                       color: status.color,
                       onTap: () => _onStatusSelected(status),
@@ -219,7 +222,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               FilledButton(
                 onPressed: () => _loadCustomers(reset: true),
                 style: FilledButton.styleFrom(backgroundColor: context.appColors.gold),
-                child: const Text('Retry'),
+                child: Text(context.l10n.retry),
               ),
             ],
           ),
@@ -236,7 +239,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             const SizedBox(height: 80),
             Center(
               child: Text(
-                'No customers found.',
+                context.l10n.noCustomersFound,
                 style: AppTextStyles.body(context),
               ),
             ),

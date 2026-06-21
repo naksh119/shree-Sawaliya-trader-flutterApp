@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 
 /// Compact primary action for wizard steps and multi-step flows.
@@ -21,8 +22,9 @@ class AppNextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return AppPrimaryButton(
-      label: label ?? (isLastStep ? 'Finish' : 'Next'),
+      label: label ?? (isLastStep ? l10n.finish : l10n.next),
       isLoading: isLoading,
       onPressed: onPressed,
       width: width,

@@ -6,6 +6,8 @@ import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/centers/center_service.dart';
 import 'package:sawaliyatrader/core/centers/models/center_dto.dart';
 import 'package:sawaliyatrader/core/centers/models/center_status.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -149,7 +151,7 @@ class _CentersListScreenState extends State<CentersListScreen> {
       session: session,
       child: Scaffold(
         appBar: ThemedAppBar(
-          title: 'Centers',
+          title: context.l10n.centers,
           actions: [
             UserHeaderBadge(
               initials: userDisplay.initials,
@@ -173,7 +175,7 @@ class _CentersListScreenState extends State<CentersListScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: AppSearchField(
-                hintText: 'Search by name or code',
+                hintText: context.l10n.searchCentersHint,
                 onSearch: _onSearch,
               ),
             ),
@@ -184,14 +186,14 @@ class _CentersListScreenState extends State<CentersListScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   _FilterChip(
-                    label: 'All',
+                    label: context.l10n.all,
                     selected: _statusFilter == null,
                     onTap: () => _onStatusSelected(null),
                   ),
                   for (final status in CenterStatus.filterOptions) ...[
                     const SizedBox(width: 8),
                     _FilterChip(
-                      label: status.label,
+                      label: status.localizedLabel(context),
                       selected: _statusFilter == status,
                       color: status.color,
                       onTap: () => _onStatusSelected(status),
@@ -231,7 +233,7 @@ class _CentersListScreenState extends State<CentersListScreen> {
                 style: FilledButton.styleFrom(
                   backgroundColor: context.appColors.gold,
                 ),
-                child: const Text('Retry'),
+                child: Text(context.l10n.retry),
               ),
             ],
           ),
@@ -248,7 +250,7 @@ class _CentersListScreenState extends State<CentersListScreen> {
             const SizedBox(height: 80),
             Center(
               child: Text(
-                'No centers found.',
+                context.l10n.noCentersFound,
                 style: AppTextStyles.body(context),
               ),
             ),

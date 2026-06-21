@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 
@@ -71,7 +72,7 @@ class CreateFabButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Create',
+                  context.l10n.create,
                   style: AppTextStyles.label(context).copyWith(
                     color: Colors.white,
                     fontSize: 14,

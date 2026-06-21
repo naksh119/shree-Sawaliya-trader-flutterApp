@@ -6,7 +6,9 @@ import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/auth/session_notifier.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/routing/bottom_nav_config.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class AppShellScaffold extends StatefulWidget {
@@ -156,7 +158,7 @@ class _NavIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: item.tooltip,
+      message: item.localizedTooltip(context.l10n),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),

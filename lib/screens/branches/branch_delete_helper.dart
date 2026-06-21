@@ -3,6 +3,7 @@ import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -21,17 +22,17 @@ Future<bool> confirmAndDeleteBranch({
     context: context,
     builder: (dialogContext) => AlertDialog(
       title: Text(
-        'Delete ${branch.name}?',
+        dialogContext.l10n.deleteEntityQuestion(branch.name),
         style: AppTextStyles.heading(dialogContext),
       ),
       content: Text(
-        'This will permanently remove the branch. This action cannot be undone.',
+        dialogContext.l10n.branchDeleteConfirmMessage,
         style: AppTextStyles.body(dialogContext),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Cancel'),
+          child: Text(dialogContext.l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -39,7 +40,7 @@ Future<bool> confirmAndDeleteBranch({
             backgroundColor: dialogContext.appColors.gold,
             foregroundColor: AppColors.navy,
           ),
-          child: const Text('Delete'),
+          child: Text(dialogContext.l10n.delete),
         ),
       ],
     ),
@@ -57,7 +58,7 @@ Future<bool> confirmAndDeleteBranch({
 
     await showAppSuccessMessage(
       context,
-      message: 'Branch ${branch.name} deleted.',
+      message: context.l10n.branchDeleted(branch.name),
     );
     return true;
   } catch (error) {

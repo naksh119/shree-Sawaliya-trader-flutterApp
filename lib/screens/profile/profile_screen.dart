@@ -5,6 +5,7 @@ import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
@@ -32,26 +33,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _onLogout() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Log out?',
+          l10n.logOutQuestion,
           style: AppTextStyles.heading(context).copyWith(fontSize: 22),
         ),
         content: Text(
-          'You will need to sign in again to access your account.',
+          l10n.logOutConfirmMessage,
           style: AppTextStyles.body(context),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel', style: AppTextStyles.link(context)),
+            child: Text(l10n.cancel, style: AppTextStyles.link(context)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
-              'Log out',
+              l10n.logout,
               style: AppTextStyles.link(context).copyWith(color: Colors.red.shade700),
             ),
           ),
@@ -77,9 +79,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
-      appBar: ThemedAppBar(title: 'Profile',
-      ),
+      appBar: ThemedAppBar(title: l10n.profile),
       body: FutureBuilder<LoginResponse?>(
         future: _sessionFuture,
         builder: (context, snapshot) {
@@ -92,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Text(
-                'No session found. Please sign in again.',
+                l10n.noSessionFound,
                 style: AppTextStyles.body(context),
               ),
             );
@@ -106,15 +109,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _ProfileHeader(session: session),
                 const SizedBox(height: 20),
                 _ProfileSection(
-                  title: 'Account',
+                  title: l10n.account,
                   children: [
-                    _ProfileInfoRow(label: 'User ID', value: '${session.id}'),
+                    _ProfileInfoRow(label: l10n.userId, value: '${session.id}'),
                     _ProfileInfoRow(
-                      label: 'Superuser',
-                      value: session.isSuperuser ? 'Yes' : 'No',
+                      label: l10n.superuser,
+                      value: session.isSuperuser ? l10n.yes : l10n.no,
                     ),
                     _ProfileInfoRow(
-                      label: 'Access token',
+                      label: l10n.accessToken,
                       value: _maskToken(session.access),
                     ),
                   ],
@@ -122,23 +125,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (session.employee != null) ...[
                   const SizedBox(height: 16),
                   _ProfileSection(
-                    title: 'Employee',
+                    title: l10n.employee,
                     children: [
                       _ProfileInfoRow(
-                        label: 'Employee ID',
+                        label: l10n.employeeId,
                         value: '${session.employee!.employeeId}',
                       ),
                       _ProfileInfoRow(
-                        label: 'Employee code',
+                        label: l10n.employeeCode,
                         value: session.employee!.employeeCode,
                       ),
                       _ProfileInfoRow(
-                        label: 'Role',
+                        label: l10n.role,
                         value:
                             '${session.employee!.role} (${EmployeeRole.displayNameFor(session.employee!.role)})',
                       ),
                       _ProfileInfoRow(
-                        label: 'Branch',
+                        label: l10n.branchLabel,
                         value: session.employee!.branch,
                       ),
                     ],
@@ -146,22 +149,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ] else ...[
                   const SizedBox(height: 16),
                   _ProfileSection(
-                    title: 'Employee',
-                    children: const [
+                    title: l10n.employee,
+                    children: [
                       _ProfileInfoRow(
-                        label: 'Linked employee',
-                        value: 'None (superuser account)',
+                        label: l10n.linkedEmployee,
+                        value: l10n.noneSuperuserAccount,
                       ),
                     ],
                   ),
                 ],
                 const SizedBox(height: 16),
                 _ProfileSection(
-                  title: 'Permissions (${session.permissions.length})',
+                  title: l10n.permissionsCount(session.permissions.length),
                   children: [
                     if (session.permissions.isEmpty)
                       Text(
-                        'No granular permissions assigned.',
+                        l10n.noGranularPermissions,
                         style: AppTextStyles.subtitle(context),
                       )
                     else
@@ -200,14 +203,17 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final employee = session.employee;
     final title = employee?.employeeCode ??
-        (session.isSuperuser ? 'Administrator' : 'User #${session.id}');
+        (session.isSuperuser
+            ? l10n.administrator
+            : l10n.userNumber(session.id));
     final subtitle = employee != null
         ? '${EmployeeRole.displayNameFor(employee.role)} · ${employee.branch}'
         : session.isSuperuser
-            ? 'Superuser'
-            : 'Signed in';
+            ? l10n.superuser
+            : l10n.signedIn;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -320,6 +326,7 @@ class _LogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final l10n = context.l10n;
 
     return SizedBox(
       width: double.infinity,
@@ -339,7 +346,7 @@ class _LogoutButton extends StatelessWidget {
             ? const AppLoader(size: AppLoaderSize.small)
             : const Icon(Icons.logout),
         label: Text(
-          'Log out',
+          l10n.logout,
           style: GoogleFonts.cormorantGaramond(
             fontSize: 18,
             fontWeight: FontWeight.w600,

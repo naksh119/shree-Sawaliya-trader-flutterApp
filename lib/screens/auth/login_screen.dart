@@ -10,6 +10,7 @@ import 'package:sawaliyatrader/core/widgets/app_background.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/theme_toggle_button.dart';
 
@@ -20,23 +21,6 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-String? _validateEmail(String? value) {
-  if (value == null || value.trim().isEmpty) {
-    return 'Please enter your email';
-  }
-  if (!RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(value.trim())) {
-    return 'Enter a valid email address';
-  }
-  return null;
-}
-
-String? _validatePassword(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'Please enter your password';
-  }
-  return null;
-}
-
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -45,6 +29,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   bool _isSubmitting = false;
+
+  String? _validateEmail(String? value) {
+    final l10n = context.l10n;
+    if (value == null || value.trim().isEmpty) {
+      return l10n.pleaseEnterEmail;
+    }
+    if (!RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(value.trim())) {
+      return l10n.enterValidEmail;
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return context.l10n.pleaseEnterPassword;
+    }
+    return null;
+  }
 
   void _togglePasswordVisibility() {
     final selection = _passwordController.selection;
@@ -87,13 +89,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await showAppErrorMessage(
         context,
-        message: 'Something went wrong. Please try again.',
+        message: context.l10n.somethingWentWrong,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
@@ -133,20 +136,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'Welcome Back',
+                            l10n.welcomeBack,
                             style: AppTextStyles.heading(context),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Sign in to Shree Sawaliya Multitrade',
+                            l10n.signInSubtitle,
                             style: AppTextStyles.subtitle(context),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
                           AppTextField(
                             controller: _emailController,
-                            label: 'Email Address',
-                            hint: 'Enter your email',
+                            label: l10n.emailAddress,
+                            hint: l10n.enterYourEmail,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             autocorrect: false,
@@ -156,8 +159,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 16),
                           AppTextField(
                             controller: _passwordController,
-                            label: 'Password',
-                            hint: 'Enter your password',
+                            label: l10n.password,
+                            hint: l10n.enterYourPassword,
                             obscureText: _obscurePassword,
                             textInputAction: TextInputAction.done,
                             onFieldSubmitted: (_) => _onLogin(),
@@ -177,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 28),
                           AppPrimaryButton(
-                            label: 'Login',
+                            label: l10n.login,
                             onPressed: _isSubmitting ? null : _onLogin,
                           ),
                         ],
@@ -212,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             if (_isSubmitting)
-              const AppLoadingOverlay(message: 'Signing in...'),
+              AppLoadingOverlay(message: l10n.signingIn),
           ],
         ),
       ),

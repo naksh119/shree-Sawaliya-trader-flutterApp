@@ -6,6 +6,8 @@ import 'package:sawaliyatrader/core/customers/customer_service.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_detail.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/permissions/app_permission.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/permission_widgets.dart';
@@ -98,7 +100,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       setState(() => _customer = updated);
       await showAppSuccessMessage(
         context,
-        message: 'Status updated to ${status.label}',
+        message: context.l10n.statusUpdatedTo(status.localizedLabel(context)),
       );
     } catch (error) {
       if (!mounted) return;
@@ -124,7 +126,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     final session = _session;
     if (session == null || _isLoading) {
       return Scaffold(
-        appBar: ThemedAppBar(title: 'Customer',
+        appBar: ThemedAppBar(title: context.l10n.customer,
         ),
         body: const Center(child: AppLoader(size: kAppPageLoaderSize)),
       );
@@ -137,7 +139,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       session: session,
       child: Scaffold(
         appBar: ThemedAppBar(
-          title: customer?.fullName ?? 'Customer',
+          title: customer?.fullName ?? context.l10n.customer,
         ),
         body: _buildBody(customer, permissions),
         bottomNavigationBar: customer == null
@@ -179,7 +181,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               FilledButton(
                 onPressed: _load,
                 style: FilledButton.styleFrom(backgroundColor: context.appColors.gold),
-                child: const Text('Retry'),
+                child: Text(context.l10n.retry),
               ),
             ],
           ),
@@ -188,7 +190,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
 
     if (customer == null) {
-      return Center(child: Text('Customer not found.', style: AppTextStyles.body(context)));
+      return Center(child: Text(context.l10n.customerNotFound, style: AppTextStyles.body(context)));
     }
 
     return RefreshIndicator(
@@ -197,20 +199,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
         children: [
           CustomerSectionCard(
-            title: 'Overview',
+            title: context.l10n.overview,
             trailing: CustomerStatusChip(status: customer.status),
             child: Column(
               children: [
-                CustomerInfoRow(label: 'Code', value: customer.displayCode),
-                CustomerInfoRow(label: 'Mobile', value: customer.mobile ?? ''),
-                CustomerInfoRow(label: 'Email', value: customer.email ?? ''),
-                CustomerInfoRow(label: 'Branch', value: customer.branch ?? ''),
+                CustomerInfoRow(label: context.l10n.code, value: customer.displayCode),
+                CustomerInfoRow(label: context.l10n.mobile, value: customer.mobile ?? ''),
+                CustomerInfoRow(label: context.l10n.email, value: customer.email ?? ''),
+                CustomerInfoRow(label: context.l10n.branchLabel, value: customer.branch ?? ''),
                 CustomerInfoRow(
-                  label: 'Sourced by',
+                  label: context.l10n.sourcedBy,
                   value: customer.sourcedBy ?? '',
                 ),
                 CustomerInfoRow(
-                  label: 'Created',
+                  label: context.l10n.created,
                   value: _formatDate(customer.createdAt),
                 ),
               ],
@@ -218,29 +220,29 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Personal Details',
+            title: context.l10n.personalDetails,
             child: Column(
               children: [
                 CustomerInfoRow(
-                  label: 'Aadhaar',
+                  label: context.l10n.aadhaar,
                   value: customer.aadhaarNumber ?? '',
                 ),
-                CustomerInfoRow(label: 'PAN', value: customer.panNumber ?? ''),
+                CustomerInfoRow(label: context.l10n.pan, value: customer.panNumber ?? ''),
                 CustomerInfoRow(
-                  label: 'Date of birth',
+                  label: context.l10n.dateOfBirth,
                   value: _formatDate(customer.dateOfBirth),
                 ),
-                CustomerInfoRow(label: 'Gender', value: customer.gender ?? ''),
+                CustomerInfoRow(label: context.l10n.gender, value: customer.gender ?? ''),
                 CustomerInfoRow(
-                  label: 'Occupation',
+                  label: context.l10n.occupation,
                   value: customer.occupation ?? '',
                 ),
                 CustomerInfoRow(
-                  label: 'Monthly income',
+                  label: context.l10n.monthlyIncome,
                   value: _formatMoney(customer.monthlyIncome),
                 ),
                 CustomerInfoRow(
-                  label: 'Address',
+                  label: context.l10n.address,
                   value: customer.fullAddress,
                 ),
               ],
@@ -250,12 +252,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               appPreviewImageIsNetworkUrl(customer.housePhoto)) ...[
             const SizedBox(height: 12),
             CustomerSectionCard(
-              title: 'Photos',
+              title: context.l10n.photos,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (appPreviewImageIsNetworkUrl(customer.livePhoto)) ...[
-                    Text('Customer image', style: AppTextStyles.subtitle(context)),
+                    Text(context.l10n.customerImage, style: AppTextStyles.subtitle(context)),
                     const SizedBox(height: 8),
                     AppPreviewImage(
                       imageUrl: customer.livePhoto,
@@ -263,14 +265,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       width: 140,
                       fit: BoxFit.cover,
                       borderRadius: BorderRadius.circular(12),
-                      viewerTitle: 'Customer image',
+                      viewerTitle: context.l10n.customerImage,
                     ),
                   ],
                   if (appPreviewImageIsNetworkUrl(customer.livePhoto) &&
                       appPreviewImageIsNetworkUrl(customer.housePhoto))
                     const SizedBox(height: 16),
                   if (appPreviewImageIsNetworkUrl(customer.housePhoto)) ...[
-                    Text('House photo', style: AppTextStyles.subtitle(context)),
+                    Text(context.l10n.housePhoto, style: AppTextStyles.subtitle(context)),
                     const SizedBox(height: 8),
                     AppPreviewImage(
                       imageUrl: customer.housePhoto,
@@ -278,7 +280,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       width: 140,
                       fit: BoxFit.cover,
                       borderRadius: BorderRadius.circular(12),
-                      viewerTitle: 'House photo',
+                      viewerTitle: context.l10n.housePhoto,
                     ),
                   ],
                 ],
@@ -287,9 +289,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ],
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Family Members',
+            title: context.l10n.familyMembers,
             child: customer.familyMembers.isEmpty
-                ? Text('No family members added.', style: AppTextStyles.subtitle(context))
+                ? Text(context.l10n.noFamilyMembers, style: AppTextStyles.subtitle(context))
                 : Column(
                     children: [
                       for (final member in customer.familyMembers)
@@ -324,11 +326,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Maternal House',
+            title: context.l10n.maternalHouse,
             child: customer.maternalHouse == null ||
                     customer.maternalHouse!.isEmpty
                 ? Text(
-                    'No maternal house details.',
+                    context.l10n.noMaternalHouseDetails,
                     style: AppTextStyles.subtitle(context),
                   )
                 : Column(
@@ -356,9 +358,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Other Loans',
+            title: context.l10n.otherLoans,
             child: customer.otherLoans.isEmpty
-                ? Text('No other loans recorded.', style: AppTextStyles.subtitle(context))
+                ? Text(context.l10n.noOtherLoans, style: AppTextStyles.subtitle(context))
                 : Column(
                     children: [
                       for (final loan in customer.otherLoans)
@@ -368,17 +370,21 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                loan.lenderName ?? 'Loan',
+                                loan.lenderName ?? context.l10n.loan,
                                 style: AppTextStyles.label(context),
                               ),
                               if (loan.loanAmount != null)
                                 Text(
-                                  'Amount: ${_formatMoney(loan.loanAmount)}',
+                                  context.l10n.amountWithValue(
+                                    _formatMoney(loan.loanAmount),
+                                  ),
                                   style: AppTextStyles.body(context),
                                 ),
                               if (loan.outstandingAmount != null)
                                 Text(
-                                  'Outstanding: ${_formatMoney(loan.outstandingAmount)}',
+                                  context.l10n.outstandingWithValue(
+                                    _formatMoney(loan.outstandingAmount),
+                                  ),
                                   style: AppTextStyles.subtitle(context),
                                 ),
                             ],
@@ -389,9 +395,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Guarantors',
+            title: context.l10n.guarantors,
             child: customer.guarantors.isEmpty
-                ? Text('No guarantors added.', style: AppTextStyles.subtitle(context))
+                ? Text(context.l10n.noGuarantors, style: AppTextStyles.subtitle(context))
                 : Column(
                     children: [
                       for (final guarantor in customer.guarantors)
@@ -416,9 +422,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Documents',
+            title: context.l10n.documents,
             child: customer.documents.isEmpty
-                ? Text('No documents uploaded.', style: AppTextStyles.subtitle(context))
+                ? Text(context.l10n.noDocuments, style: AppTextStyles.subtitle(context))
                 : Column(
                     children: [
                       for (final doc in customer.documents)
@@ -482,7 +488,7 @@ class _StatusActionBar extends StatelessWidget {
         Expanded(
           child: OutlinedButton(
             onPressed: isUpdating ? null : onMarkApplied,
-            child: const Text('Mark Applied'),
+            child: Text(context.l10n.markApplied),
           ),
         ),
       );
@@ -493,7 +499,7 @@ class _StatusActionBar extends StatelessWidget {
         Expanded(
           child: OutlinedButton(
             onPressed: isUpdating ? null : onMarkUnderReview,
-            child: const Text('Send for Review'),
+            child: Text(context.l10n.sendForReview),
           ),
         ),
       );
@@ -507,7 +513,7 @@ class _StatusActionBar extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFFE57373),
             ),
-            child: const Text('Reject'),
+            child: Text(context.l10n.reject),
           ),
         ),
         const SizedBox(width: 12),
@@ -515,7 +521,7 @@ class _StatusActionBar extends StatelessWidget {
           child: PermissionButton(
             permission: AppPermission.customerApprove,
             service: permissions,
-            label: isUpdating ? 'Saving…' : 'Approve',
+            label: isUpdating ? context.l10n.saving : context.l10n.approve,
             onPressed: isUpdating ? null : onApprove,
           ),
         ),

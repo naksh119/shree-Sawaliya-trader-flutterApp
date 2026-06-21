@@ -6,6 +6,7 @@ import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -208,8 +209,8 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
     }
 
     if (session == null) {
-      return const Scaffold(
-        body: Center(child: Text('Session unavailable. Please sign in again.')),
+      return Scaffold(
+        body: Center(child: Text(context.l10n.sessionUnavailable)),
       );
     }
 
@@ -219,7 +220,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(title: 'Branches',
+        appBar: ThemedAppBar(title: context.l10n.branches,
           actions: [
             UserHeaderBadge(
               initials: userDisplay.initials,
@@ -248,7 +249,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
                 children: [
                   Expanded(
                     child: AppSearchField(
-                      hintText: 'Search by name, code, or city',
+                      hintText: context.l10n.searchBranchesHint,
                       onSearch: _onSearch,
                     ),
                   ),
@@ -264,7 +265,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
-                  '$_total branches',
+                  context.l10n.branchesCount(_total),
                   style: AppTextStyles.subtitle(context),
                 ),
               ),
@@ -292,7 +293,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
               FilledButton(
                 onPressed: () => _loadBranches(reset: true),
                 style: FilledButton.styleFrom(backgroundColor: context.appColors.gold),
-                child: const Text('Retry'),
+                child: Text(context.l10n.retry),
               ),
             ],
           ),
@@ -309,7 +310,7 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
             const SizedBox(height: 80),
             Center(
               child: Text(
-                _emptyMessage,
+                _emptyMessage(context),
                 style: AppTextStyles.body(context),
                 textAlign: TextAlign.center,
               ),
@@ -360,13 +361,21 @@ class _BranchesListScreenState extends State<BranchesListScreen> {
     );
   }
 
-  String get _emptyMessage {
-    final status = _statusFilter.emptyMessageSuffix;
+  String _emptyMessage(BuildContext context) {
+    final status = _statusFilter.localizedSuffix(context);
     if (_searchQuery.isNotEmpty) {
-      return 'No$status branches found for "$_searchQuery".';
+      return context.l10n.noBranchesFoundForSearch(status, _searchQuery);
     }
-    return 'No$status branches found.';
+    return context.l10n.noBranchesFound(status);
   }
+}
+
+extension _ActiveStatusFilterL10n on ActiveStatusFilter {
+  String localizedSuffix(BuildContext context) => switch (this) {
+        ActiveStatusFilter.all => '',
+        ActiveStatusFilter.active => context.l10n.statusSuffixActive,
+        ActiveStatusFilter.inactive => context.l10n.statusSuffixInactive,
+      };
 }
 
 class _BranchListTile extends StatelessWidget {
@@ -516,7 +525,7 @@ class _BranchActiveChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        isActive ? 'Active' : 'Inactive',
+        isActive ? context.l10n.active : context.l10n.inactive,
         style: AppTextStyles.subtitle(context).copyWith(
           color: color,
           fontWeight: FontWeight.w600,

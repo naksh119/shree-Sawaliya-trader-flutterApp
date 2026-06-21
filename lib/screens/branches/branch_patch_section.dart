@@ -3,6 +3,7 @@ import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/core/branches/branch_patch_service.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
@@ -61,9 +62,9 @@ class _BranchPatchSectionState extends State<BranchPatchSection> {
 
       await showAppSuccessMessage(
         context,
-        message: updated.isActive
-            ? '${updated.name} marked active.'
-            : '${updated.name} marked inactive.',
+        message: context.l10n.statusUpdatedTo(
+          updated.isActive ? context.l10n.active : context.l10n.inactive,
+        ),
       );
     } catch (error) {
       if (!mounted) return;
@@ -90,12 +91,12 @@ class _BranchPatchSectionState extends State<BranchPatchSection> {
       children: [
         const SizedBox(height: 12),
         CustomerSectionCard(
-          title: 'Quick update (PATCH)',
+          title: context.l10n.quickUpdatePatch,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'PATCH /branches/api/{id}/ — partial update; only changed fields are sent.',
+                context.l10n.patchBranchDescription(widget.branchId),
                 style: AppTextStyles.subtitle(context).copyWith(
                   color: context.appColors.textSecondary,
                 ),
@@ -121,8 +122,8 @@ class _BranchPatchSectionState extends State<BranchPatchSection> {
                       ),
                 label: Text(
                   widget.branch.isActive
-                      ? 'Mark inactive'
-                      : 'Mark active',
+                      ? context.l10n.markInactive
+                      : context.l10n.markActive,
                 ),
               ),
             ],

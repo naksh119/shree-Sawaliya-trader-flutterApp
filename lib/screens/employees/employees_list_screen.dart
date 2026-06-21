@@ -7,6 +7,8 @@ import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_dto.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
@@ -352,7 +354,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     return [
       DropdownMenuItem(
         value: _kAllBranchesFilterId,
-        child: label('All branches'),
+        child: label(context.l10n.allBranches),
       ),
       for (final branch in _branches)
         if (branch.id != null)
@@ -373,8 +375,8 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     }
 
     if (session == null) {
-      return const Scaffold(
-        body: Center(child: Text('Session unavailable. Please sign in again.')),
+      return Scaffold(
+        body: Center(child: Text(context.l10n.sessionUnavailable)),
       );
     }
 
@@ -385,7 +387,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
       session: session,
       child: Scaffold(
         appBar: ThemedAppBar(
-          title: 'Employees',
+          title: context.l10n.employees,
           actions: [
             UserHeaderBadge(
               initials: userDisplay.initials,
@@ -413,7 +415,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
                 children: [
                   Expanded(
                     child: AppSearchField(
-                      hintText: 'Search by name, code, or email',
+                      hintText: context.l10n.searchEmployeesHint,
                       onSearch: _onSearch,
                     ),
                   ),
@@ -491,7 +493,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
                 style: FilledButton.styleFrom(
                   backgroundColor: context.appColors.gold,
                 ),
-                child: const Text('Retry'),
+                child: Text(context.l10n.retry),
               ),
             ],
           ),
@@ -500,7 +502,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     }
 
     if (_items.isEmpty) {
-      debugPrint('[Employees] showing empty state: $_emptyMessage');
+      debugPrint('[Employees] showing empty state: ${_emptyMessage(context)}');
       return RefreshIndicator(
         onRefresh: () => _loadEmployees(reset: true),
         child: ListView(
@@ -509,7 +511,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
             const SizedBox(height: 80),
             Center(
               child: Text(
-                _emptyMessage,
+                _emptyMessage(context),
                 style: AppTextStyles.body(context),
                 textAlign: TextAlign.center,
               ),
@@ -557,13 +559,14 @@ class _EmployeesListScreenState extends State<EmployeesListScreen> {
     );
   }
 
-  String get _emptyMessage {
-    final status = _statusFilter.emptyMessageSuffix;
+  String _emptyMessage(BuildContext context) {
+    final l10n = context.l10n;
+    final status = _statusFilter.localizedSuffix(l10n);
     final role = _selectedRole;
     final rolePart = role != null ? ' ${role.name}' : '';
     final branch = _selectedBranch;
     final branchPart = branch != null ? ' ${branch.name}' : '';
-    return 'No$status$rolePart$branchPart employees found.';
+    return l10n.noEmployeesFound(status, rolePart, branchPart);
   }
 }
 

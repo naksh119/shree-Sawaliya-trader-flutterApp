@@ -1,8 +1,11 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/l10n/app_localizations.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_chart_card.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -16,13 +19,14 @@ class CustomerStatusPieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final total = segments.fold<double>(0, (sum, item) => sum + item.value);
 
     return DashboardChartCard(
-      title: 'Customers by Status',
-      subtitle: 'Application pipeline breakdown',
+      title: l10n.customersByStatus,
+      subtitle: l10n.customersByStatusSubtitle,
       child: segments.isEmpty || total == 0
-          ? const _ChartEmptyState(message: 'No customer data yet')
+          ? _ChartEmptyState(message: l10n.noCustomerDataYet)
           : Column(
               children: [
                 SizedBox(
@@ -66,16 +70,17 @@ class EmiStatusBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final maxY = segments.fold<double>(
       0,
       (max, item) => item.value > max ? item.value : max,
     );
 
     return DashboardChartCard(
-      title: 'EMI Status',
-      subtitle: 'Installment collection overview',
+      title: l10n.emiStatus,
+      subtitle: l10n.emiStatusSubtitle,
       child: segments.isEmpty
-          ? const _ChartEmptyState(message: 'No EMI data yet')
+          ? _ChartEmptyState(message: l10n.noEmiDataYet)
           : SizedBox(
               height: 220,
               child: BarChart(
@@ -116,7 +121,10 @@ class EmiStatusBarChart extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
-                              segments[index].label,
+                              localizedChartSegmentLabel(
+                                l10n,
+                                segments[index].label,
+                              ),
                               style: AppTextStyles.subtitle(context).copyWith(fontSize: 10),
                               textAlign: TextAlign.center,
                             ),
@@ -158,16 +166,17 @@ class CollectionTrendChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final maxY = points.fold<double>(
       0,
       (max, item) => item.value > max ? item.value : max,
     );
 
     return DashboardChartCard(
-      title: 'EMI Collection Trend',
-      subtitle: 'Monthly collections (last 6 months)',
+      title: l10n.emiCollectionTrend,
+      subtitle: l10n.emiCollectionTrendSubtitle,
       child: points.isEmpty
-          ? const _ChartEmptyState(message: 'No collection history yet')
+          ? _ChartEmptyState(message: l10n.noCollectionHistoryYet)
           : SizedBox(
               height: 220,
               child: LineChart(
@@ -254,49 +263,55 @@ class ModuleOverviewChart extends StatelessWidget {
   final bool showEmployees;
   final bool showBranches;
 
-  @override
-  Widget build(BuildContext context) {
+  List<ChartSegment> _segments(BuildContext context, AppLocalizations l10n) {
     final segments = <ChartSegment>[];
 
     if (showCustomers) {
       segments.add(ChartSegment(
-        label: 'Customers',
+        label: l10n.customers,
         value: stats.customerTotal.toDouble(),
         colorArgb: AppColors.navy.toARGB32(),
       ));
     }
     if (showCenters) {
       segments.add(ChartSegment(
-        label: 'Centers',
+        label: l10n.centers,
         value: stats.centerTotal.toDouble(),
         colorArgb: context.appColors.gold.toARGB32(),
       ));
     }
     if (showEmployees) {
       segments.add(ChartSegment(
-        label: 'Employees',
+        label: l10n.employees,
         value: stats.employeeTotal.toDouble(),
         colorArgb: context.appColors.textPrimary.toARGB32(),
       ));
     }
     if (showBranches) {
       segments.add(ChartSegment(
-        label: 'Branches',
+        label: l10n.branches,
         value: stats.branchTotal.toDouble(),
         colorArgb: const Color(0xFF8B7355).toARGB32(),
       ));
     }
 
+    return segments;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final segments = _segments(context, l10n);
     final maxY = segments.fold<double>(
       0,
       (max, item) => item.value > max ? item.value : max,
     );
 
     return DashboardChartCard(
-      title: 'Application Overview',
-      subtitle: 'Counts across all modules',
+      title: l10n.applicationOverview,
+      subtitle: l10n.applicationOverviewSubtitle,
       child: segments.isEmpty
-          ? const _ChartEmptyState(message: 'No module data available')
+          ? _ChartEmptyState(message: l10n.noModuleDataAvailable)
           : Column(
               children: [
                 SizedBox(
@@ -380,6 +395,7 @@ class _ChartLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Wrap(
       spacing: 12,
       runSpacing: 8,
@@ -398,7 +414,7 @@ class _ChartLegend extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  '${segment.label} (${segment.value.toInt()})',
+                  '${localizedChartSegmentLabel(l10n, segment.label)} (${segment.value.toInt()})',
                   style: AppTextStyles.subtitle(context).copyWith(fontSize: 12),
                 ),
               ],

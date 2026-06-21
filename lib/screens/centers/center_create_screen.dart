@@ -8,6 +8,8 @@ import 'package:sawaliyatrader/core/centers/models/center_product_type.dart';
 import 'package:sawaliyatrader/core/customers/customer_service.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_dto.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
@@ -18,6 +20,7 @@ import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/l10n/app_localizations.dart';
 
 class CenterCreateScreen extends StatefulWidget {
   const CenterCreateScreen({super.key});
@@ -53,8 +56,6 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   final Set<int> _selectedMemberIds = {};
   List<CustomerDto> _approvedCustomers = [];
   String _memberSearch = '';
-
-  static const _steps = ['Center & loan', 'Members'];
 
   @override
   void initState() {
@@ -132,7 +133,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
     }
 
     if (_selectedMemberIds.isEmpty) {
-      setState(() => _error = 'Select at least one approved customer.');
+      setState(() => _error = context.l10n.selectApprovedCustomerError);
       return;
     }
 
@@ -172,7 +173,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
       if (!mounted) return;
       await showAppSuccessMessage(
         context,
-        message: 'Center ${created.name} created.',
+        message: context.l10n.centerCreated(created.name),
       );
       if (!mounted) return;
       context.pop(true);
@@ -208,6 +209,8 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   @override
   Widget build(BuildContext context) {
     final session = _session;
+    final l10n = AppLocalizations.of(context)!;
+    final steps = centerWizardSteps(l10n);
 
     return Scaffold(
       appBar: ThemedAppBar(
@@ -215,7 +218,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
           icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
           onPressed: _onBack,
         ),
-        title: 'New Center',
+        title: l10n.newCenter,
       ),
       body: session == null || _isLoadingSession
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
@@ -223,7 +226,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
               session: session,
               child: Column(
                 children: [
-                  _StepIndicator(steps: _steps, currentStep: _step),
+                  _StepIndicator(steps: steps, currentStep: _step),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -233,7 +236,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _steps[_step],
+                              steps[_step],
                               style: AppTextStyles.label(context),
                             ),
                             const SizedBox(height: 16),
@@ -260,7 +263,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           AppNextButton(
-                            isLastStep: _step == _steps.length - 1,
+                            isLastStep: _step == steps.length - 1,
                             isLoading: _isSaving,
                             onPressed: _isSaving ? null : _onNext,
                           ),
@@ -275,39 +278,40 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   }
 
   Widget _buildDetailsStep() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Text(
-          'Group approved customers with gold or silver product and loan terms.',
+          l10n.centerCreateIntro,
           style: AppTextStyles.body(context).copyWith(
             color: context.appColors.textSecondary,
           ),
         ),
         const SizedBox(height: 20),
         _SectionCard(
-          title: 'Center details',
+          title: l10n.centerDetails,
           children: [
             AppTextField(
               controller: _nameController,
-              label: 'Center name',
-              hint: 'e.g. Ratlam Group A',
+              label: l10n.centerName,
+              hint: l10n.centerNameHint,
               textInputAction: TextInputAction.next,
               validator: (value) =>
-                  value == null || value.trim().isEmpty ? 'Required' : null,
+                  value == null || value.trim().isEmpty ? l10n.required : null,
             ),
             const SizedBox(height: 16),
             AppDropdownFormField<CenterProductType>(
               value: _productType,
               decoration: AppDropdownDecoration.formField(
                 context,
-                labelText: 'Product type',
+                labelText: l10n.productType,
               ),
               items: CenterProductType.options
                   .map(
                     (type) => DropdownMenuItem(
                       value: type,
                       child: Text(
-                        type.label,
+                        type.localizedLabel(context),
                         style: AppTextStyles.body(context),
                       ),
                     ),
@@ -320,86 +324,88 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _weightController,
-              label: '${_productType.label} weight (grams)',
-              hint: 'e.g. 25.500',
+              label: l10n.weightGrams(_productType.localizedLabel(context)),
+              hint: l10n.weightHint,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _purityController,
-              label: 'Purity',
-              hint: _productType == CenterProductType.gold ? 'e.g. 22K' : 'e.g. 999',
+              label: l10n.purity,
+              hint: _productType == CenterProductType.gold
+                  ? l10n.purityGoldHint
+                  : l10n.puritySilverHint,
               textInputAction: TextInputAction.next,
             ),
           ],
         ),
         const SizedBox(height: 16),
         _SectionCard(
-          title: 'Loan terms',
+          title: l10n.loanTerms,
           children: [
             AppTextField(
               controller: _loanAmountController,
-              label: 'Loan amount (₹)',
-              hint: 'e.g. 500000',
+              label: l10n.loanAmountSymbol,
+              hint: l10n.loanAmountHint,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value == null || value.trim().isEmpty) return 'Required';
-                if (double.tryParse(value.trim()) == null) return 'Invalid amount';
+                if (value == null || value.trim().isEmpty) return l10n.required;
+                if (double.tryParse(value.trim()) == null) return l10n.invalidAmount;
                 return null;
               },
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _interestRateController,
-              label: 'Interest rate (%)',
-              hint: 'e.g. 12',
+              label: l10n.interestRate,
+              hint: l10n.interestRateHint,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value == null || value.trim().isEmpty) return 'Required';
-                if (double.tryParse(value.trim()) == null) return 'Invalid rate';
+                if (value == null || value.trim().isEmpty) return l10n.required;
+                if (double.tryParse(value.trim()) == null) return l10n.invalidRate;
                 return null;
               },
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _tenureController,
-              label: 'Tenure (months)',
-              hint: 'e.g. 12',
+              label: l10n.tenureMonths,
+              hint: l10n.tenureHint,
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value == null || value.trim().isEmpty) return 'Required';
-                if (int.tryParse(value.trim()) == null) return 'Invalid tenure';
+                if (value == null || value.trim().isEmpty) return l10n.required;
+                if (int.tryParse(value.trim()) == null) return l10n.invalidTenure;
                 return null;
               },
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _emiAmountController,
-              label: 'EMI amount (₹)',
-              hint: 'e.g. 45000',
+              label: l10n.emiAmountSymbol,
+              hint: l10n.emiAmountHint,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value == null || value.trim().isEmpty) return 'Required';
-                if (double.tryParse(value.trim()) == null) return 'Invalid EMI';
+                if (value == null || value.trim().isEmpty) return l10n.required;
+                if (double.tryParse(value.trim()) == null) return l10n.invalidEmi;
                 return null;
               },
             ),
             const SizedBox(height: 16),
             _DateField(
-              label: 'Start date',
+              label: l10n.startDate,
               value: _startDate,
               onTap: _pickStartDate,
             ),
             const SizedBox(height: 16),
             AppTextField(
               controller: _remarksController,
-              label: 'Remarks (optional)',
-              hint: 'Any notes for this center',
+              label: l10n.remarksOptional,
+              hint: l10n.centerRemarksHint,
             ),
           ],
         ),
@@ -408,6 +414,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
   }
 
   Widget _buildMembersStep() {
+    final l10n = AppLocalizations.of(context)!;
     final filtered = _approvedCustomers.where((customer) {
       if (_memberSearch.isEmpty) return true;
       final query = _memberSearch.toLowerCase();
@@ -420,14 +427,14 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Select approved customers to include in this center.',
+          l10n.selectApprovedCustomers,
           style: AppTextStyles.body(context).copyWith(
             color: context.appColors.textSecondary,
           ),
         ),
         const SizedBox(height: 16),
         AppSearchField(
-          hintText: 'Search approved customers',
+          hintText: l10n.searchApprovedCustomersHint,
           onSearch: (query) {
             setState(() => _memberSearch = query);
             _loadApprovedCustomers();
@@ -435,7 +442,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          '${_selectedMemberIds.length} selected',
+          l10n.selectedCount(_selectedMemberIds.length),
           style: AppTextStyles.subtitle(context),
         ),
         const SizedBox(height: 12),
@@ -448,7 +455,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
             child: Text(
-              'No approved customers found.',
+              l10n.noApprovedCustomers,
               style: AppTextStyles.body(context),
             ),
           )
@@ -644,8 +651,9 @@ class _DateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final display = value == null
-        ? 'Select date'
+        ? l10n.selectDate
         : '${value!.day.toString().padLeft(2, '0')}/'
             '${value!.month.toString().padLeft(2, '0')}/'
             '${value!.year}';

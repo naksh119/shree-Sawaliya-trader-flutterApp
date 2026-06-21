@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 
 /// Whether [url] points to a remote image that can be loaded and previewed.
@@ -31,7 +32,7 @@ Future<void> showAppImageViewer(
   String? imageUrl,
   Uint8List? imageBytes,
   String? imagePath,
-  String title = 'Image preview',
+  String? title,
 }) {
   assert(
     imageUrl != null || imageBytes != null || imagePath != null,
@@ -42,6 +43,7 @@ Future<void> showAppImageViewer(
     context: context,
     barrierColor: Colors.black87,
     builder: (dialogContext) {
+      final resolvedTitle = title ?? dialogContext.l10n.imagePreview;
       return Dialog.fullscreen(
         backgroundColor: Colors.black,
         child: SafeArea(
@@ -50,16 +52,16 @@ Future<void> showAppImageViewer(
               Align(
                 alignment: Alignment.centerRight,
                 child: IconButton(
-                  tooltip: 'Close',
+                  tooltip: dialogContext.l10n.close,
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   icon: const Icon(Icons.close, color: Colors.white),
                 ),
               ),
-              if (title.isNotEmpty)
+              if (resolvedTitle.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    title,
+                    resolvedTitle,
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
@@ -94,7 +96,7 @@ Future<void> showAppImageViewer(
 Future<void> showAppImageViewerForPicked(
   BuildContext context,
   PickedImage image, {
-  String title = 'Image preview',
+  String? title,
 }) {
   if (image.bytes != null) {
     return showAppImageViewer(
@@ -153,7 +155,7 @@ class AppPreviewImage extends StatelessWidget {
       imageUrl: imageUrl,
       imageBytes: imageBytes,
       imagePath: imagePath,
-      title: viewerTitle ?? 'Image preview',
+      title: viewerTitle,
     );
   }
 

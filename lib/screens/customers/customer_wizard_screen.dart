@@ -13,6 +13,7 @@ import 'package:sawaliyatrader/core/customers/models/guarantor.dart';
 import 'package:sawaliyatrader/core/customers/models/maternal_house.dart';
 import 'package:sawaliyatrader/core/customers/models/other_loan.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
@@ -36,13 +37,13 @@ class CustomerWizardScreen extends StatefulWidget {
 }
 
 class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
-  static const _steps = [
-    'Customer',
-    'Family',
-    'Maternal House',
-    'Other Loans',
-    'Guarantor',
-    'Documents',
+  List<String> _stepLabels(BuildContext context) => [
+    context.l10n.wizardStepCustomer,
+    context.l10n.wizardStepFamily,
+    context.l10n.wizardStepMaternalHouse,
+    context.l10n.wizardStepOtherLoans,
+    context.l10n.wizardStepGuarantor,
+    context.l10n.wizardStepDocuments,
   ];
 
   final _authService = AuthService();
@@ -349,15 +350,15 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
     var valid = true;
 
     if (_livePhoto == null || _livePhoto!.isEmpty) {
-      _setFieldError('live_photo', 'Customer image is required');
+      _setFieldError('live_photo', context.l10n.customerImageRequired);
       valid = false;
     }
     if (_housePhoto == null || _housePhoto!.isEmpty) {
-      _setFieldError('house_photo', 'House photo is required');
+      _setFieldError('house_photo', context.l10n.housePhotoRequired);
       valid = false;
     }
     if (_dateOfBirth == null) {
-      _setFieldError('date_of_birth', 'Date of birth is required');
+      _setFieldError('date_of_birth', context.l10n.dateOfBirthRequired);
       valid = false;
     }
     final genderError = CustomerValidators.gender(_gender);
@@ -371,7 +372,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
 
   bool _validateDocumentStep() {
     if (_pickedFilePath != null) return true;
-    _setFieldError('file', 'Please choose a document');
+    _setFieldError('file', context.l10n.chooseDocument);
     return false;
   }
 
@@ -567,7 +568,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
     try {
       await action();
       if (!mounted) return;
-      if (_step < _steps.length - 1) {
+      if (_step < _stepLabels(context).length - 1) {
         setState(() {
           _step += 1;
           _fieldErrors = const {};
@@ -615,11 +616,14 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
             icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
             onPressed: _onBack,
           ),
-          title: 'New Customer',
+          title: context.l10n.newCustomer,
         ),
         body: Column(
           children: [
-            WizardStepIndicator(steps: _steps, currentStep: _step),
+            WizardStepIndicator(
+              steps: _stepLabels(context),
+              currentStep: _step,
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
@@ -631,7 +635,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_steps[_step], style: AppTextStyles.label(context)),
+                      Text(_stepLabels(context)[_step], style: AppTextStyles.label(context)),
                       const SizedBox(height: 16),
                       _buildStepContent(),
                       if (_generalError != null) ...[
@@ -656,7 +660,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
                   children: [
                     const Spacer(),
                     AppNextButton(
-                      isLastStep: _step == _steps.length - 1,
+                      isLastStep: _step == _stepLabels(context).length - 1,
                       isLoading: _isSaving,
                       onPressed: _onNext,
                     ),
@@ -682,11 +686,12 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Widget _buildCustomerStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         AppPhotoPicker(
-          label: 'Customer image',
-          hint: 'Upload a customer image.',
+          label: l10n.customerImage,
+          hint: l10n.uploadCustomerImage,
           placeholderIcon: Icons.face_outlined,
           image: _livePhoto,
           errorText: _apiError('live_photo'),
@@ -696,7 +701,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 20),
         AppTextField(
           controller: _fullNameController,
-          label: 'Full name',
+          label: l10n.fullName,
           textInputAction: TextInputAction.next,
           externalError: _apiError('full_name'),
           validator: CustomerValidators.fullName,
@@ -704,7 +709,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _mobileController,
-          label: 'Mobile',
+          label: l10n.mobile,
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.next,
           externalError: _apiError('mobile'),
@@ -713,7 +718,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _emailController,
-          label: 'Email',
+          label: l10n.email,
           keyboardType: TextInputType.emailAddress,
           autocorrect: false,
           enableSuggestions: false,
@@ -724,7 +729,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _aadhaarController,
-          label: 'Aadhaar number',
+          label: l10n.aadhaarNumber,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.next,
           externalError: _apiError('aadhaar_number'),
@@ -733,7 +738,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _panController,
-          label: 'PAN',
+          label: l10n.pan,
           textInputAction: TextInputAction.next,
           autocorrect: false,
           enableSuggestions: false,
@@ -744,7 +749,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         ),
         const SizedBox(height: 16),
         _DateField(
-          label: 'Date of birth',
+          label: l10n.dateOfBirth,
           value: _dateOfBirth,
           errorText: _apiError('date_of_birth'),
           onTap: _pickDateOfBirth,
@@ -760,7 +765,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
           value: _gender,
           decoration: AppDropdownDecoration.formField(
             context,
-            labelText: 'Gender',
+            labelText: l10n.gender,
           ).copyWith(errorText: _apiError('gender')),
           validator: (v) => _apiError('gender') ?? CustomerValidators.gender(v),
           items: CustomerValidators.genderOptions
@@ -779,39 +784,39 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _addressController,
-          label: 'Address line 1',
+          label: l10n.addressLine1,
           textInputAction: TextInputAction.next,
           externalError: _apiError('address_line1'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Address'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.address),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _addressLine2Controller,
-          label: 'Address line 2',
+          label: l10n.addressLine2,
           textInputAction: TextInputAction.next,
           externalError: _apiError('address_line2'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Address line 2'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.addressLine2),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _cityController,
-          label: 'City',
+          label: l10n.city,
           textInputAction: TextInputAction.next,
           externalError: _apiError('city'),
-          validator: (v) => CustomerValidators.requiredText(v, 'City'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.city),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _stateController,
-          label: 'State',
+          label: l10n.state,
           textInputAction: TextInputAction.next,
           externalError: _apiError('state'),
-          validator: (v) => CustomerValidators.requiredText(v, 'State'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.state),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _pincodeController,
-          label: 'Pincode',
+          label: l10n.pincode,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.next,
           externalError: _apiError('pincode'),
@@ -820,28 +825,28 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _occupationController,
-          label: 'Occupation',
+          label: l10n.occupation,
           textInputAction: TextInputAction.next,
           externalError: _apiError('occupation'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Occupation'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.occupation),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _incomeController,
-          label: 'Monthly income (₹)',
+          label: l10n.monthlyIncomeWithSymbol,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.done,
           externalError: _apiError('monthly_income'),
           validator: (v) => CustomerValidators.decimalAmount(
             v,
-            label: 'Monthly income',
+            label: l10n.monthlyIncome,
             required: true,
           ),
         ),
         const SizedBox(height: 20),
         AppPhotoPicker(
-          label: 'House photo',
-          hint: 'Upload a photo of the customer house.',
+          label: l10n.housePhoto,
+          hint: l10n.uploadHousePhoto,
           placeholderIcon: Icons.home_outlined,
           image: _housePhoto,
           errorText: _apiError('house_photo'),
@@ -853,16 +858,17 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Widget _buildFamilyStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         Text(
-          'Add a family member.',
+          l10n.addFamilyMember,
           style: AppTextStyles.subtitle(context),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _familyNameController,
-          label: 'Name',
+          label: l10n.name,
           textInputAction: TextInputAction.next,
           externalError: _apiError('name'),
           validator: (v) => CustomerValidators.name(v, required: true),
@@ -870,15 +876,15 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _familyRelationController,
-          label: 'Relationship',
+          label: l10n.relationship,
           textInputAction: TextInputAction.next,
           externalError: _apiError('relationship'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Relationship'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.relationship),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _familyAgeController,
-          label: 'Age',
+          label: l10n.age,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.next,
           externalError: _apiError('age'),
@@ -887,7 +893,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _familyMobileController,
-          label: 'Mobile',
+          label: l10n.mobile,
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.next,
           externalError: _apiError('mobile'),
@@ -896,26 +902,27 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _familyOccupationController,
-          label: 'Occupation',
+          label: l10n.occupation,
           textInputAction: TextInputAction.done,
           externalError: _apiError('occupation'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Occupation'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.occupation),
         ),
       ],
     );
   }
 
   Widget _buildMaternalHouseStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         Text(
-          'Maternal house contact and address.',
+          l10n.maternalHouseContactHint,
           style: AppTextStyles.subtitle(context),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _mhContactNameController,
-          label: 'Contact name',
+          label: l10n.contactName,
           textInputAction: TextInputAction.next,
           externalError: _apiError('contact_name'),
           validator: (v) => CustomerValidators.name(v, required: true),
@@ -923,7 +930,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _mhContactMobileController,
-          label: 'Contact mobile',
+          label: l10n.contactMobile,
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.next,
           externalError: _apiError('contact_mobile'),
@@ -932,31 +939,31 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _mhAddressController,
-          label: 'Address',
+          label: l10n.address,
           textInputAction: TextInputAction.next,
           externalError: _apiError('address_line1'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Address'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.address),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _mhCityController,
-          label: 'City',
+          label: l10n.city,
           textInputAction: TextInputAction.next,
           externalError: _apiError('city'),
-          validator: (v) => CustomerValidators.requiredText(v, 'City'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.city),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _mhStateController,
-          label: 'State',
+          label: l10n.state,
           textInputAction: TextInputAction.next,
           externalError: _apiError('state'),
-          validator: (v) => CustomerValidators.requiredText(v, 'State'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.state),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _mhPincodeController,
-          label: 'Pincode',
+          label: l10n.pincode,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.done,
           externalError: _apiError('pincode'),
@@ -967,52 +974,53 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Widget _buildOtherLoanStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         Text(
-          'Record any existing loans.',
+          l10n.recordExistingLoans,
           style: AppTextStyles.subtitle(context),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _loanLenderController,
-          label: 'Lender name',
+          label: l10n.lenderName,
           externalError: _apiError('lender_name'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Lender name'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.lenderName),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _loanAmountController,
-          label: 'Loan amount (₹)',
+          label: l10n.loanAmountWithSymbol,
           keyboardType: TextInputType.number,
           externalError: _apiError('loan_amount'),
           validator: (v) => CustomerValidators.decimalAmount(
             v,
-            label: 'Loan amount',
+            label: l10n.loanAmount,
             required: true,
           ),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _loanEmiController,
-          label: 'EMI amount (₹)',
+          label: l10n.emiAmountWithSymbol,
           keyboardType: TextInputType.number,
           externalError: _apiError('emi_amount'),
           validator: (v) => CustomerValidators.decimalAmount(
             v,
-            label: 'EMI amount',
+            label: l10n.emiAmount,
             required: true,
           ),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _loanOutstandingController,
-          label: 'Outstanding (₹)',
+          label: l10n.outstandingWithSymbol,
           keyboardType: TextInputType.number,
           externalError: _apiError('outstanding_amount'),
           validator: (v) => CustomerValidators.decimalAmount(
             v,
-            label: 'Outstanding amount',
+            label: l10n.outstandingAmount,
             required: true,
           ),
         ),
@@ -1021,23 +1029,24 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
   }
 
   Widget _buildGuarantorStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         Text(
-          'Add a guarantor.',
+          l10n.addGuarantor,
           style: AppTextStyles.subtitle(context),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _guarantorNameController,
-          label: 'Name',
+          label: l10n.name,
           externalError: _apiError('name'),
           validator: (v) => CustomerValidators.name(v, required: true),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _guarantorMobileController,
-          label: 'Mobile',
+          label: l10n.mobile,
           keyboardType: TextInputType.phone,
           externalError: _apiError('mobile'),
           validator: (v) => CustomerValidators.mobile(v, required: true),
@@ -1045,7 +1054,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _guarantorAadhaarController,
-          label: 'Aadhaar',
+          label: l10n.aadhaar,
           keyboardType: TextInputType.number,
           externalError: _apiError('aadhaar_number'),
           validator: (v) => CustomerValidators.aadhaar(v, required: true),
@@ -1053,27 +1062,28 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
         const SizedBox(height: 16),
         AppTextField(
           controller: _guarantorRelationController,
-          label: 'Relationship',
+          label: l10n.relationship,
           externalError: _apiError('relationship'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Relationship'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.relationship),
         ),
         const SizedBox(height: 16),
         AppTextField(
           controller: _guarantorAddressController,
-          label: 'Address',
+          label: l10n.address,
           externalError: _apiError('address'),
-          validator: (v) => CustomerValidators.requiredText(v, 'Address'),
+          validator: (v) => CustomerValidators.requiredText(v, l10n.address),
         ),
       ],
     );
   }
 
   Widget _buildDocumentsStep() {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Upload a KYC document.',
+          l10n.uploadKycDocument,
           style: AppTextStyles.subtitle(context),
         ),
         const SizedBox(height: 16),
@@ -1081,13 +1091,22 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
           value: _documentType,
           decoration: AppDropdownDecoration.formField(
             context,
-            labelText: 'Document type',
+            labelText: l10n.documentType,
           ),
-          items: const [
-            DropdownMenuItem(value: 'AADHAAR', child: Text('Aadhaar')),
-            DropdownMenuItem(value: 'PAN', child: Text('PAN')),
-            DropdownMenuItem(value: 'PHOTO', child: Text('Photo')),
-            DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+          items: [
+            DropdownMenuItem(
+              value: 'AADHAAR',
+              child: Text(l10n.documentTypeAadhaar),
+            ),
+            DropdownMenuItem(value: 'PAN', child: Text(l10n.documentTypePan)),
+            DropdownMenuItem(
+              value: 'PHOTO',
+              child: Text(l10n.documentTypePhoto),
+            ),
+            DropdownMenuItem(
+              value: 'OTHER',
+              child: Text(l10n.documentTypeOther),
+            ),
           ],
           onChanged: (value) {
             if (value != null) setState(() => _documentType = value);
@@ -1098,7 +1117,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
           onPressed: _pickDocument,
           icon: Icon(Icons.upload_file, color: context.appColors.shinyGold),
           label: Text(
-            _pickedFileName ?? 'Choose file',
+            _pickedFileName ?? l10n.chooseFile,
             style: AppTextStyles.body(context),
           ),
           style: OutlinedButton.styleFrom(
@@ -1124,7 +1143,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
             appPreviewImageIsLocalImagePath(_pickedFilePath)) ...[
           const SizedBox(height: 12),
           Text(
-            'Selected preview',
+            l10n.selectedPreview,
             style: AppTextStyles.subtitle(context).copyWith(
               color: context.appColors.textSecondary,
             ),
@@ -1136,7 +1155,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen> {
             width: 140,
             fit: BoxFit.contain,
             borderRadius: BorderRadius.circular(12),
-            viewerTitle: 'Document preview',
+            viewerTitle: l10n.documentPreview,
           ),
         ],
       ],
@@ -1162,7 +1181,7 @@ class _DateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formatted = value == null
-        ? 'Select date'
+        ? context.l10n.selectDate
         : '${value!.day.toString().padLeft(2, '0')}/'
             '${value!.month.toString().padLeft(2, '0')}/'
             '${value!.year}';

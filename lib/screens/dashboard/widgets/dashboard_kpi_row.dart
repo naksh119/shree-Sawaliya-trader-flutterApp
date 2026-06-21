@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -21,44 +22,47 @@ class DashboardKpiRow extends StatelessWidget {
     decimalDigits: 0,
   );
 
-  List<({String label, String value, IconData icon})> _visibleCards() {
+  List<({String label, String value, IconData icon})> _visibleCards(
+    BuildContext context,
+  ) {
+    final l10n = context.l10n;
     final cards = <({String label, String value, IconData icon})>[];
     if (permissions.canViewCustomers) {
       cards.add((
-        label: 'Customers',
+        label: l10n.customers,
         value: '${stats.customerTotal}',
         icon: Icons.people_outline,
       ));
     }
     if (permissions.canViewCenters) {
       cards.add((
-        label: 'Centers',
+        label: l10n.centers,
         value: '${stats.centerTotal}',
         icon: Icons.hub_outlined,
       ));
     }
     if (permissions.canCollectEmi) {
       cards.add((
-        label: 'Pending EMI',
+        label: l10n.pendingEmi,
         value: '${stats.pendingEmiCount}',
         icon: Icons.payments_outlined,
       ));
       cards.add((
-        label: 'Collected',
+        label: l10n.collected,
         value: _currency.format(stats.totalCollected),
         icon: Icons.currency_rupee_rounded,
       ));
     }
     if (permissions.canViewEmployees) {
       cards.add((
-        label: 'Employees',
+        label: l10n.employees,
         value: '${stats.employeeTotal}',
         icon: Icons.badge_outlined,
       ));
     }
     if (permissions.canManageBranches) {
       cards.add((
-        label: 'Branches',
+        label: l10n.branches,
         value: '${stats.branchTotal}',
         icon: Icons.store_outlined,
       ));
@@ -68,11 +72,11 @@ class DashboardKpiRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cards = _visibleCards();
+    final cards = _visibleCards(context);
 
     if (cards.isEmpty) {
       return Text(
-        'No overview metrics available for your role.',
+        context.l10n.noOverviewMetrics,
         style: AppTextStyles.subtitle(context),
       );
     }

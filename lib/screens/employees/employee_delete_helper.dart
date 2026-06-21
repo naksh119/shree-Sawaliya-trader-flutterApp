@@ -3,6 +3,7 @@ import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_dto.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -19,19 +20,21 @@ Future<bool> confirmAndDeleteEmployee({
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
+    builder: (dialogContext) {
+      final l10n = dialogContext.l10n;
+      return AlertDialog(
       title: Text(
-        'Delete ${employee.displayName}?',
+        l10n.deleteEntityQuestion(employee.displayName),
         style: AppTextStyles.heading(dialogContext),
       ),
       content: Text(
-        'This will permanently remove the employee. This action cannot be undone.',
+        l10n.employeeDeleteConfirmMessage,
         style: AppTextStyles.body(dialogContext),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -39,10 +42,11 @@ Future<bool> confirmAndDeleteEmployee({
             backgroundColor: dialogContext.appColors.gold,
             foregroundColor: AppColors.navy,
           ),
-          child: const Text('Delete'),
+          child: Text(l10n.delete),
         ),
       ],
-    ),
+    );
+    },
   );
 
   if (confirmed != true || !context.mounted) return false;
@@ -57,7 +61,7 @@ Future<bool> confirmAndDeleteEmployee({
 
     await showAppSuccessMessage(
       context,
-      message: 'Employee ${employee.displayName} deleted.',
+      message: context.l10n.employeeDeleted(employee.displayName),
     );
     return true;
   } catch (error) {

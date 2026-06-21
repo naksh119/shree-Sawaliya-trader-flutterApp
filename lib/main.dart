@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
         listenable: Listenable.merge([themeNotifier, localeNotifier]),
         builder: (context, _) {
           return MaterialApp.router(
-            title: 'Sawaliya Trader',
+            onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
             debugShowCheckedModeBanner: false,
             theme: AppThemes.light(),
             darkTheme: AppThemes.dark(),

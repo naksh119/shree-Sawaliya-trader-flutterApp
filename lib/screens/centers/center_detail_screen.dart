@@ -9,6 +9,8 @@ import 'package:sawaliyatrader/core/centers/models/center_member.dart';
 import 'package:sawaliyatrader/core/customers/customer_service.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_dto.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -102,7 +104,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       setState(() => _center = updated);
       await showAppSuccessMessage(
         context,
-        message: 'EMI schedule generated for ${updated.name}.',
+        message: context.l10n.emiScheduleGenerated(updated.name),
       );
     } catch (error) {
       if (!mounted) return;
@@ -144,7 +146,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       if (!mounted) return;
       await _load();
       if (!mounted) return;
-      await showAppSuccessMessage(context, message: 'Member added.');
+      await showAppSuccessMessage(context, message: context.l10n.memberAdded);
     } catch (error) {
       if (!mounted) return;
       await showAppErrorMessage(context, message: error.toString());
@@ -157,26 +159,27 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
     final session = _session;
     if (session == null || _isUpdatingMembers) return;
 
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: context.appColors.card,
-        title: Text('Remove member?', style: AppTextStyles.label(context)),
+        title: Text(l10n.removeMemberQuestion, style: AppTextStyles.label(context)),
         content: Text(
-          'Remove ${member.customerName} from this center?',
+          l10n.removeCenterMemberQuestion(member.customerName),
           style: AppTextStyles.body(context),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFE57373),
             ),
-            child: const Text('Remove'),
+            child: Text(l10n.remove),
           ),
         ],
       ),
@@ -194,7 +197,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
       if (!mounted) return;
       await _load();
       if (!mounted) return;
-      await showAppSuccessMessage(context, message: 'Member removed.');
+      await showAppSuccessMessage(context, message: context.l10n.memberRemoved);
     } catch (error) {
       if (!mounted) return;
       await showAppErrorMessage(context, message: error.toString());
@@ -216,9 +219,10 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final session = _session;
+    final l10n = context.l10n;
     if (session == null || _isLoading) {
       return Scaffold(
-        appBar: const ThemedAppBar(title: 'Center'),
+        appBar: ThemedAppBar(title: l10n.center),
         body: const Center(child: AppLoader(size: kAppPageLoaderSize)),
       );
     }
@@ -229,7 +233,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
     return SessionScope(
       session: session,
       child: Scaffold(
-        appBar: ThemedAppBar(title: center?.name ?? 'Center'),
+        appBar: ThemedAppBar(title: center?.name ?? l10n.center),
         body: _buildBody(center, permissions),
         bottomNavigationBar: center == null
             ? null
@@ -244,6 +248,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
   }
 
   Widget _buildBody(CenterDetail? center, PermissionService permissions) {
+    final l10n = context.l10n;
     if (_error != null && center == null) {
       return Center(
         child: Padding(
@@ -262,7 +267,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
                 style: FilledButton.styleFrom(
                   backgroundColor: context.appColors.gold,
                 ),
-                child: const Text('Retry'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -272,7 +277,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
 
     if (center == null) {
       return Center(
-        child: Text('Center not found.', style: AppTextStyles.body(context)),
+        child: Text(l10n.centerNotFound, style: AppTextStyles.body(context)),
       );
     }
 
@@ -287,66 +292,66 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
         ),
         children: [
           CustomerSectionCard(
-            title: 'Overview',
+            title: l10n.overview,
             trailing: CenterStatusChip(status: center.status),
             child: Column(
               children: [
-                CustomerInfoRow(label: 'Code', value: center.displayCode),
-                CustomerInfoRow(label: 'Branch', value: center.branch ?? ''),
+                CustomerInfoRow(label: l10n.code, value: center.displayCode),
+                CustomerInfoRow(label: l10n.branchLabel, value: center.branch ?? ''),
                 CustomerInfoRow(
-                  label: 'Product',
-                  value: center.productType?.label ?? '',
+                  label: l10n.product,
+                  value: center.productType?.localizedLabel(context) ?? '',
                 ),
                 CustomerInfoRow(
-                  label: 'Start date',
+                  label: l10n.startDate,
                   value: _formatDate(center.startDate),
                 ),
                 CustomerInfoRow(
-                  label: 'EMI schedule',
-                  value: center.emiGenerated ? 'Generated' : 'Not generated',
+                  label: l10n.emiSchedule,
+                  value: center.emiGenerated ? l10n.emiGenerated : l10n.emiNotGenerated,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Loan & product',
+            title: l10n.loanAndProduct,
             child: Column(
               children: [
                 CustomerInfoRow(
-                  label: 'Loan amount',
+                  label: l10n.loanAmount,
                   value: _formatMoney(center.loanAmount),
                 ),
                 CustomerInfoRow(
-                  label: 'Interest rate',
+                  label: l10n.interestRate,
                   value: center.interestRate != null
                       ? '${center.interestRate!.toStringAsFixed(2)}%'
                       : '',
                 ),
                 CustomerInfoRow(
-                  label: 'Tenure',
+                  label: l10n.tenureMonths,
                   value: center.tenureMonths != null
                       ? '${center.tenureMonths} months'
                       : '',
                 ),
                 CustomerInfoRow(
-                  label: 'EMI amount',
+                  label: l10n.emiAmount,
                   value: _formatMoney(center.emiAmount),
                 ),
                 CustomerInfoRow(
-                  label: 'Weight',
+                  label: l10n.weight,
                   value: center.weight != null
                       ? '${center.weight!.toStringAsFixed(3)} g'
                       : '',
                 ),
-                CustomerInfoRow(label: 'Purity', value: center.purity ?? ''),
-                CustomerInfoRow(label: 'Remarks', value: center.remarks ?? ''),
+                CustomerInfoRow(label: l10n.purity, value: center.purity ?? ''),
+                CustomerInfoRow(label: l10n.remarks, value: center.remarks ?? ''),
               ],
             ),
           ),
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Members (${center.memberCount})',
+            title: l10n.membersCount(center.memberCount),
             trailing: permissions.canCreateCenter
                 ? IconButton(
                     icon: Icon(
@@ -358,7 +363,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
                 : null,
             child: center.members.isEmpty
                 ? Text(
-                    'No members linked yet.',
+                    l10n.noMembersLinked,
                     style: AppTextStyles.body(context).copyWith(
                       color: context.appColors.textSecondary,
                     ),
@@ -450,7 +455,7 @@ class _MemberTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Leader',
+                    context.l10n.leader,
                     style: AppTextStyles.subtitle(context).copyWith(
                       color: context.appColors.shinyGold,
                       fontSize: 11,
@@ -499,7 +504,7 @@ class _ActionBar extends StatelessWidget {
           border: Border(top: BorderSide(color: context.appColors.border)),
         ),
         child: AppPrimaryButton(
-          label: 'Generate EMI schedule',
+          label: context.l10n.generateEmiSchedule,
           isLoading: isGeneratingEmi,
           onPressed: isGeneratingEmi ? null : onGenerateEmi,
         ),
@@ -567,6 +572,7 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.75;
 
     return Padding(
@@ -580,12 +586,12 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Text('Add member', style: AppTextStyles.label(context)),
+              child: Text(l10n.addMember, style: AppTextStyles.label(context)),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: AppSearchField(
-                hintText: 'Search approved customers',
+                hintText: l10n.searchApprovedCustomersHint,
                 onSearch: (query) => _loadCustomers(search: query),
               ),
             ),
@@ -604,7 +610,7 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
                       : _customers.isEmpty
                           ? Center(
                               child: Text(
-                                'No eligible customers found.',
+                                l10n.noEligibleCustomers,
                                 style: AppTextStyles.body(context),
                               ),
                             )

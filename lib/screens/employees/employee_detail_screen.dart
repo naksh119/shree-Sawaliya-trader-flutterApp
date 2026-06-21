@@ -5,6 +5,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
@@ -141,9 +142,10 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
     }
 
     final employee = _employee;
+    final l10n = context.l10n;
     if (_error != null || employee == null) {
       return Scaffold(
-        appBar: ThemedAppBar(title: 'Employee'),
+        appBar: ThemedAppBar(title: l10n.employee),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -151,7 +153,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _error ?? 'Employee not found.',
+                  _error ?? l10n.employeeNotFound,
                   style: AppTextStyles.body(context),
                   textAlign: TextAlign.center,
                 ),
@@ -161,7 +163,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: context.appColors.gold,
                   ),
-                  child: const Text('Retry'),
+                  child: Text(l10n.retry),
                 ),
               ],
             ),
@@ -186,70 +188,70 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               _EmployeeHeader(employee: employee),
               const SizedBox(height: 16),
               CustomerSectionCard(
-                title: 'Account',
+                title: l10n.account,
                 child: Column(
                   children: [
-                    CustomerInfoRow(label: 'User ID', value: '${employee.id}'),
+                    CustomerInfoRow(label: l10n.userId, value: '${employee.id}'),
                     if (employee.employeeId != null)
                       CustomerInfoRow(
-                        label: 'Profile ID',
+                        label: l10n.profileId,
                         value: '${employee.employeeId}',
                       ),
                     CustomerInfoRow(
-                      label: 'Email',
+                      label: l10n.email,
                       value: employee.email ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Status',
-                      value: employee.isActive ? 'Active' : 'Inactive',
+                      label: l10n.status,
+                      value: employee.isActive ? l10n.active : l10n.inactive,
                     ),
                     CustomerInfoRow(
-                      label: 'Deleted',
-                      value: employee.isDeleted ? 'Yes' : 'No',
+                      label: l10n.deleted,
+                      value: employee.isDeleted ? l10n.yes : l10n.no,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
               CustomerSectionCard(
-                title: 'Personal',
+                title: l10n.personal,
                 child: Column(
                   children: [
-                    CustomerInfoRow(label: 'Name', value: employee.displayName),
+                    CustomerInfoRow(label: l10n.name, value: employee.displayName),
                     CustomerInfoRow(
-                      label: 'Employee code',
+                      label: l10n.employeeCode,
                       value: employee.displayCode,
                     ),
                     CustomerInfoRow(
-                      label: 'Father name',
+                      label: l10n.fatherName,
                       value: employee.fatherName ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Date of birth',
+                      label: l10n.dateOfBirth,
                       value: _formatDate(employee.dateOfBirth),
                     ),
                     CustomerInfoRow(
-                      label: 'Place of birth',
+                      label: l10n.placeOfBirth,
                       value: employee.placeOfBirth ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Gender',
+                      label: l10n.gender,
                       value: _formatEnum(employee.gender),
                     ),
                     CustomerInfoRow(
-                      label: 'Marital status',
+                      label: l10n.maritalStatus,
                       value: _formatEnum(employee.maritalStatus),
                     ),
                     CustomerInfoRow(
-                      label: 'Nationality',
+                      label: l10n.nationality,
                       value: employee.nationality ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Languages known',
+                      label: l10n.languagesKnown,
                       value: employee.languagesKnown ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Members in family',
+                      label: l10n.membersInFamily,
                       value: _formatInt(employee.membersInFamily),
                     ),
                   ],
@@ -257,15 +259,15 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ),
               const SizedBox(height: 12),
               CustomerSectionCard(
-                title: 'Identity',
+                title: l10n.identity,
                 child: Column(
                   children: [
                     CustomerInfoRow(
-                      label: 'Aadhaar',
+                      label: l10n.aadhaar,
                       value: employee.aadhaarCardNo ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'PAN',
+                      label: l10n.pan,
                       value: employee.panCardNo ?? '',
                     ),
                   ],
@@ -273,27 +275,27 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ),
               const SizedBox(height: 12),
               CustomerSectionCard(
-                title: 'Contact',
+                title: l10n.contact,
                 child: Column(
                   children: [
                     CustomerInfoRow(
-                      label: 'Primary mobile',
+                      label: l10n.primaryMobile,
                       value: employee.mobile ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Secondary mobile',
+                      label: l10n.secondaryMobile,
                       value: employee.secondaryMobile ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Emergency contact',
+                      label: l10n.emergencyContact,
                       value: employee.emergencyContactName ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Emergency relation',
+                      label: l10n.relation,
                       value: employee.emergencyContactRelation ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Emergency number',
+                      label: l10n.contactNumber,
                       value: employee.emergencyContactNumber ?? '',
                     ),
                   ],
@@ -301,15 +303,15 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ),
               const SizedBox(height: 12),
               CustomerSectionCard(
-                title: 'Address',
+                title: l10n.address,
                 child: Column(
                   children: [
                     CustomerInfoRow(
-                      label: 'Present address',
+                      label: l10n.presentAddress,
                       value: employee.addressLine1 ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Permanent address',
+                      label: l10n.permanentAddress,
                       value: employee.permanentAddress ?? '',
                     ),
                   ],
@@ -317,19 +319,19 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ),
               const SizedBox(height: 12),
               CustomerSectionCard(
-                title: 'Physical',
+                title: l10n.physical,
                 child: Column(
                   children: [
                     CustomerInfoRow(
-                      label: 'Height (cm)',
+                      label: l10n.heightCm,
                       value: employee.heightCm ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Weight (kg)',
+                      label: l10n.weightKg,
                       value: employee.weightKg ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Blood group',
+                      label: l10n.bloodGroup,
                       value: employee.bloodGroup ?? '',
                     ),
                   ],
@@ -337,72 +339,72 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ),
               const SizedBox(height: 12),
               CustomerSectionCard(
-                title: 'Employment',
+                title: l10n.employmentDetails,
                 child: Column(
                   children: [
                     CustomerInfoRow(
-                      label: 'Role',
+                      label: l10n.role,
                       value:
                           employee.roleName ??
                           EmployeeRole.displayNameFor(employee.role),
                     ),
-                    CustomerInfoRow(label: 'Role code', value: employee.role),
+                    CustomerInfoRow(label: l10n.roleCode, value: employee.role),
                     if (employee.roleId != null)
                       CustomerInfoRow(
-                        label: 'Role ID',
+                        label: l10n.roleId,
                         value: '${employee.roleId}',
                       ),
                     CustomerInfoRow(
-                      label: 'Role description',
+                      label: l10n.roleDescription,
                       value: employee.roleDescription ?? '',
                     ),
-                    CustomerInfoRow(label: 'Branch', value: employee.branch),
+                    CustomerInfoRow(label: l10n.branchLabel, value: employee.branch),
                     CustomerInfoRow(
-                      label: 'Branch code',
+                      label: l10n.branchCode,
                       value: employee.branchCode ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Branch city',
+                      label: l10n.branchCity,
                       value: employee.branchCity ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Branch location',
+                      label: l10n.branchLocation,
                       value: employee.branchLocation ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Date of appointment',
+                      label: l10n.dateOfAppointment,
                       value: _formatDate(employee.dateOfAppointment),
                     ),
                     CustomerInfoRow(
-                      label: 'Date of joining',
+                      label: l10n.dateOfJoining,
                       value: _formatDate(employee.dateOfJoining),
                     ),
                     CustomerInfoRow(
-                      label: 'Date of confirmation',
+                      label: l10n.dateOfConfirmation,
                       value: _formatDate(employee.dateOfConfirmation),
                     ),
                     CustomerInfoRow(
-                      label: 'Payable from',
+                      label: l10n.payableFromDate,
                       value: _formatDate(employee.payableFromDate),
                     ),
                     CustomerInfoRow(
-                      label: 'Performance appraisal',
+                      label: l10n.performanceAppraisal,
                       value: employee.performanceAppraisal ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Educational qualifications',
+                      label: l10n.educationalQualifications,
                       value: employee.educationalQualifications ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Professional qualifications',
+                      label: l10n.professionalQualifications,
                       value: employee.professionalQualifications ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Warning notes',
+                      label: l10n.warningNotes,
                       value: employee.warningNotes ?? '',
                     ),
                     CustomerInfoRow(
-                      label: 'Remarks',
+                      label: l10n.remarks,
                       value: employee.remarks ?? '',
                     ),
                   ],
@@ -410,7 +412,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ),
               const SizedBox(height: 12),
               CustomerSectionCard(
-                title: 'Permissions',
+                title: l10n.permissionsSection,
                 child: _PermissionList(
                   userPermissions: employee.permissions,
                   rolePermissions: employee.rolePermissions,
@@ -419,15 +421,15 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               if (employee.createdAt != null) ...[
                 const SizedBox(height: 12),
                 CustomerSectionCard(
-                  title: 'Record',
+                  title: l10n.record,
                   child: Column(
                     children: [
                       CustomerInfoRow(
-                        label: 'Created',
+                        label: l10n.created,
                         value: _formatDate(employee.createdAt),
                       ),
                       CustomerInfoRow(
-                        label: 'Updated',
+                        label: l10n.updated,
                         value: _formatDate(employee.updatedAt),
                       ),
                     ],
@@ -460,9 +462,10 @@ class _PermissionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     if (userPermissions.isEmpty && rolePermissions.isEmpty) {
       return Text(
-        'No permissions assigned.',
+        l10n.noGranularPermissions,
         style: AppTextStyles.subtitle(context),
       );
     }
@@ -471,7 +474,7 @@ class _PermissionList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (userPermissions.isNotEmpty) ...[
-          Text('User permissions', style: AppTextStyles.subtitle(context)),
+          Text(l10n.userPermissions, style: AppTextStyles.subtitle(context)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -483,7 +486,7 @@ class _PermissionList extends StatelessWidget {
         ],
         if (rolePermissions.isNotEmpty) ...[
           if (userPermissions.isNotEmpty) const SizedBox(height: 12),
-          Text('Role permissions', style: AppTextStyles.subtitle(context)),
+          Text(l10n.rolePermissions, style: AppTextStyles.subtitle(context)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -569,7 +572,7 @@ class _EmployeeHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              employee.isActive ? 'Active' : 'Inactive',
+              employee.isActive ? context.l10n.active : context.l10n.inactive,
               style: AppTextStyles.subtitle(
                 context,
               ).copyWith(color: statusColor, fontWeight: FontWeight.w600),
@@ -598,7 +601,7 @@ class _EmployeeAvatar extends StatelessWidget {
           onTap: () => showAppImageViewer(
             context,
             imageUrl: photo,
-            title: 'Employee photo',
+            title: context.l10n.employeePhoto,
           ),
           customBorder: const CircleBorder(),
           child: CircleAvatar(

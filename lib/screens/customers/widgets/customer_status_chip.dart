@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
+import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-
 class CustomerStatusChip extends StatelessWidget {
   const CustomerStatusChip({
     required this.status,
@@ -25,7 +25,7 @@ class CustomerStatusChip extends StatelessWidget {
         border: Border.all(color: status.color.withValues(alpha: 0.35)),
       ),
       child: Text(
-        status.label,
+        status.localizedLabel(context),
         style: AppTextStyles.subtitle(context).copyWith(
           fontSize: compact ? 13 : 14,
           color: status.color,

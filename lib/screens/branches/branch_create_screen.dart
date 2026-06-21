@@ -4,6 +4,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -94,7 +95,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
       if (!mounted) return;
       await showAppSuccessMessage(
         context,
-        message: 'Branch ${created.name} created.',
+        message: context.l10n.branchCreated(created.name),
       );
       if (!mounted) return;
       context.pop(true);
@@ -128,7 +129,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
     final session = _session;
 
     return Scaffold(
-      appBar: ThemedAppBar(title: 'New Branch',
+      appBar: ThemedAppBar(title: context.l10n.newBranch,
       ),
       body: session == null || _isLoadingSession
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
@@ -140,40 +141,40 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                   children: [
                     Text(
-                      'Add a branch location for staff assignment and payment QR setup.',
+                      context.l10n.branchCreateIntro,
                       style: AppTextStyles.body(context).copyWith(
                         color: context.appColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 20),
                     _SectionCard(
-                      title: 'Branch details',
+                      title: context.l10n.branchDetails,
                       children: [
                         AppTextField(
                           controller: _nameController,
-                          label: 'Branch name',
-                          hint: 'e.g. Head Office',
+                          label: context.l10n.branchName,
+                          hint: context.l10n.branchNameHint,
                           textInputAction: TextInputAction.next,
                           validator: (value) =>
                               value == null || value.trim().isEmpty
-                                  ? 'Branch name is required'
+                                  ? context.l10n.branchNameRequired
                                   : null,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
                           controller: _codeController,
-                          label: 'Branch code',
-                          hint: 'e.g. HO or JAIPUR',
+                          label: context.l10n.branchCode,
+                          hint: context.l10n.branchCodeHint,
                           textInputAction: TextInputAction.next,
                           autocorrect: false,
                           enableSuggestions: false,
                           validator: (value) {
                             final trimmed = value?.trim() ?? '';
                             if (trimmed.isEmpty) {
-                              return 'Branch code is required';
+                              return context.l10n.branchCodeRequired;
                             }
                             if (!RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(trimmed)) {
-                              return 'Use letters, numbers, hyphen, or underscore';
+                              return context.l10n.employeeCodeFormat;
                             }
                             return null;
                           },
@@ -183,19 +184,19 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
                         const SizedBox(height: 16),
                         AppTextField(
                           controller: _cityController,
-                          label: 'City',
-                          hint: 'e.g. Ratlam',
+                          label: context.l10n.city,
+                          hint: context.l10n.cityHint,
                           textInputAction: TextInputAction.next,
                           validator: (value) =>
                               value == null || value.trim().isEmpty
-                                  ? 'City is required'
+                                  ? context.l10n.cityRequired
                                   : null,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
                           controller: _locationController,
-                          label: 'Address / location',
-                          hint: 'Street address or landmark',
+                          label: context.l10n.location,
+                          hint: context.l10n.addressHint,
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.streetAddress,
                         ),
@@ -203,11 +204,11 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
                     ),
                     const SizedBox(height: 16),
                     _SectionCard(
-                      title: 'Payment QR',
+                      title: context.l10n.paymentQrCode,
                       children: [
                         AppPhotoPicker(
-                          label: 'Payment QR code',
-                          hint: 'Upload the branch payment QR image (optional).',
+                          label: context.l10n.paymentQrCode,
+                          hint: context.l10n.branchQrUploadHint,
                           placeholderIcon: Icons.qr_code_2_rounded,
                           image: _paymentQrCode,
                           onPick: _pickPaymentQr,
@@ -226,7 +227,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen> {
                     ],
                     const SizedBox(height: 24),
                     AppPrimaryButton(
-                      label: 'Create branch',
+                      label: context.l10n.createBranch,
                       isLoading: _isSaving,
                       onPressed: _submit,
                     ),

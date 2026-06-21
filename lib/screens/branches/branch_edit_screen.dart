@@ -5,6 +5,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -93,7 +94,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
     if (session == null) {
       setState(() {
         _isLoading = false;
-        _error = 'Session unavailable. Please sign in again.';
+        _error = context.l10n.sessionUnavailable;
       });
       return;
     }
@@ -154,7 +155,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
       if (!mounted) return;
       await showAppSuccessMessage(
         context,
-        message: 'Branch ${updated.name} updated.',
+        message: context.l10n.branchUpdated(updated.name),
       );
       if (!mounted) return;
       context.pop(true);
@@ -194,7 +195,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
     final session = _session;
 
     return Scaffold(
-      appBar: ThemedAppBar(title: 'Edit Branch'),
+      appBar: ThemedAppBar(title: context.l10n.editBranch),
       body: session == null || _isLoading
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
           : SessionScope(
@@ -205,40 +206,40 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
                     Text(
-                      'Full update uses PUT (all fields) via Save changes on the edit screen.',
+                      context.l10n.branchPutIntro,
                       style: AppTextStyles.body(context).copyWith(
                         color: context.appColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 20),
                     _SectionCard(
-                      title: 'Branch details',
+                      title: context.l10n.branchDetails,
                       children: [
                         AppTextField(
                           controller: _nameController,
-                          label: 'Branch name',
-                          hint: 'e.g. Jaipur Branch',
+                          label: context.l10n.branchName,
+                          hint: context.l10n.branchNameHint,
                           textInputAction: TextInputAction.next,
                           validator: (value) =>
                               value == null || value.trim().isEmpty
-                                  ? 'Branch name is required'
+                                  ? context.l10n.branchNameRequired
                                   : null,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
                           controller: _codeController,
-                          label: 'Branch code',
-                          hint: 'e.g. JAI',
+                          label: context.l10n.branchCode,
+                          hint: context.l10n.branchCodeHintShort,
                           textInputAction: TextInputAction.next,
                           autocorrect: false,
                           enableSuggestions: false,
                           validator: (value) {
                             final trimmed = value?.trim() ?? '';
                             if (trimmed.isEmpty) {
-                              return 'Branch code is required';
+                              return context.l10n.branchCodeRequired;
                             }
                             if (!RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(trimmed)) {
-                              return 'Use letters, numbers, hyphen, or underscore';
+                              return context.l10n.employeeCodeFormat;
                             }
                             return null;
                           },
@@ -246,19 +247,19 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                         const SizedBox(height: 16),
                         AppTextField(
                           controller: _cityController,
-                          label: 'City',
-                          hint: 'e.g. Jaipur',
+                          label: context.l10n.city,
+                          hint: context.l10n.cityHint,
                           textInputAction: TextInputAction.next,
                           validator: (value) =>
                               value == null || value.trim().isEmpty
-                                  ? 'City is required'
+                                  ? context.l10n.cityRequired
                                   : null,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
                           controller: _locationController,
-                          label: 'Address / location',
-                          hint: 'Street address or landmark',
+                          label: context.l10n.location,
+                          hint: context.l10n.addressHint,
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.streetAddress,
                         ),
@@ -266,13 +267,13 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                         SwitchListTile.adaptive(
                           contentPadding: EdgeInsets.zero,
                           title: Text(
-                            'Active branch',
+                            context.l10n.activeBranch,
                             style: AppTextStyles.body(context),
                           ),
                           subtitle: Text(
                             _isActive
-                                ? 'Branch is visible and usable'
-                                : 'Branch is inactive',
+                                ? context.l10n.branchVisibleUsable
+                                : context.l10n.branchIsInactive,
                             style: AppTextStyles.subtitle(context),
                           ),
                           value: _isActive,
@@ -282,17 +283,17 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                     ),
                     const SizedBox(height: 16),
                     _SectionCard(
-                      title: 'Payment QR',
+                      title: context.l10n.paymentQrCode,
                       children: [
                         AppPhotoPicker(
-                          label: 'Payment QR code',
+                          label: context.l10n.paymentQrCode,
                           existingImageUrl: _showExistingQrPreview
                               ? _existingPaymentQrUrl
                               : null,
-                          existingImageLabel: 'Current QR',
+                          existingImageLabel: context.l10n.currentImageCaption('QR'),
                           hint: _existingPaymentQrUrl != null
-                              ? 'Choose a new image to replace the current QR.'
-                              : 'Upload the branch payment QR image (optional).',
+                              ? context.l10n.chooseNewPhotoHint
+                              : context.l10n.branchQrUploadHint,
                           placeholderIcon: Icons.qr_code_2_rounded,
                           image: _paymentQrCode,
                           onPick: _pickPaymentQr,
@@ -321,7 +322,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
               child: SafeArea(
                 minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: AppPrimaryButton(
-                  label: 'Save changes (PUT)',
+                  label: context.l10n.saveChangesPut,
                   isLoading: _isSaving,
                   onPressed: _submit,
                 ),

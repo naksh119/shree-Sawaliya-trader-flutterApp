@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/notifications/notification_notifier.dart';
 import 'package:sawaliyatrader/core/notifications/notification_role_policy.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
@@ -41,6 +42,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final session = _session;
     final notifier = appNotificationNotifier;
 
@@ -53,12 +55,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final permissions = PermissionService(session);
     if (!permissions.canViewNotifications) {
       return Scaffold(
-        appBar: ThemedAppBar(title: 'Notifications',
-        ),
+        appBar: ThemedAppBar(title: l10n.notifications),
         body: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'Your role does not have notification access. Contact your administrator.',
+            l10n.notificationsNoAccess,
             style: AppTextStyles.body(context),
           ),
         ),
@@ -66,7 +67,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
 
     return Scaffold(
-      appBar: ThemedAppBar(title: 'Notifications',
+      appBar: ThemedAppBar(
+        title: l10n.notifications,
         actions: [
           if (notifier != null)
             ListenableBuilder(
@@ -75,7 +77,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 if (notifier.unreadCount == 0) return const SizedBox.shrink();
                 return TextButton(
                   onPressed: notifier.markAllAsRead,
-                  child: const Text('Mark all read'),
+                  child: Text(l10n.markAllRead),
                 );
               },
             ),
@@ -85,7 +87,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ? Padding(
               padding: const EdgeInsets.all(24),
               child: Text(
-                'Notification inbox will appear here once the backend API is connected.',
+                l10n.notificationsInboxPending,
                 style: AppTextStyles.body(context),
               ),
             )
@@ -105,13 +107,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'No notifications yet.',
+                          l10n.noNotificationsYet,
                           style: AppTextStyles.body(context),
                         ),
                         if (notifier.error != null) ...[
                           const SizedBox(height: 12),
                           Text(
-                            'API not available yet. Role-based filtering is ready for when notifications go live.',
+                            l10n.notificationsApiPending,
                             style: AppTextStyles.subtitle(context),
                           ),
                         ],

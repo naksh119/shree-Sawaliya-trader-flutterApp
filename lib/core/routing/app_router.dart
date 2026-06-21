@@ -27,6 +27,7 @@ import 'package:sawaliyatrader/screens/employees/employee_put_edit_screen.dart';
 import 'package:sawaliyatrader/screens/employees/employees_list_screen.dart';
 import 'package:sawaliyatrader/screens/placeholder/module_placeholder_screen.dart';
 import 'package:sawaliyatrader/screens/profile/profile_screen.dart';
+import 'package:sawaliyatrader/l10n/app_localizations.dart';
 import 'package:sawaliyatrader/screens/splash/splash_screen.dart';
 
 GoRouter createAppRouter(SessionNotifier sessionNotifier) {
@@ -114,10 +115,13 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.reports,
-                builder: (context, state) => const ModulePlaceholderScreen(
-                  title: 'Reports',
-                  description: 'Operational reports and analytics.',
-                ),
+                builder: (context, state) {
+                  final l10n = AppLocalizations.of(context)!;
+                  return ModulePlaceholderScreen(
+                    title: l10n.reports,
+                    description: l10n.reportsDescription,
+                  );
+                },
               ),
             ],
           ),
@@ -144,9 +148,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
-            return const ModulePlaceholderScreen(
-              title: 'Edit Branch',
-              description: 'Invalid branch id.',
+            final l10n = AppLocalizations.of(context)!;
+            return ModulePlaceholderScreen(
+              title: l10n.editBranch,
+              description: l10n.invalidBranchId,
             );
           }
           final initialBranch =
@@ -162,9 +167,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
-            return const ModulePlaceholderScreen(
-              title: 'Branch',
-              description: 'Invalid branch id.',
+            final l10n = AppLocalizations.of(context)!;
+            return ModulePlaceholderScreen(
+              title: l10n.branch,
+              description: l10n.invalidBranchId,
             );
           }
           final initialBranch =
@@ -188,9 +194,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
-            return const ModulePlaceholderScreen(
-              title: 'Edit Employee (PUT)',
-              description: 'Invalid employee id.',
+            final l10n = AppLocalizations.of(context)!;
+            return ModulePlaceholderScreen(
+              title: l10n.editEmployeePut,
+              description: l10n.invalidEmployeeId,
             );
           }
           final initialEmployee = state.extra is EmployeeDetail
@@ -207,9 +214,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
-            return const ModulePlaceholderScreen(
-              title: 'Employee',
-              description: 'Invalid employee id.',
+            final l10n = AppLocalizations.of(context)!;
+            return ModulePlaceholderScreen(
+              title: l10n.employee,
+              description: l10n.invalidEmployeeId,
             );
           }
           return EmployeeDetailScreen(employeeId: id);
@@ -220,9 +228,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
-            return const ModulePlaceholderScreen(
-              title: 'Customer',
-              description: 'Invalid customer id.',
+            final l10n = AppLocalizations.of(context)!;
+            return ModulePlaceholderScreen(
+              title: l10n.customer,
+              description: l10n.invalidCustomerId,
             );
           }
           return CustomerDetailScreen(customerId: id);
@@ -237,9 +246,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
-            return const ModulePlaceholderScreen(
-              title: 'Center',
-              description: 'Invalid center id.',
+            final l10n = AppLocalizations.of(context)!;
+            return ModulePlaceholderScreen(
+              title: l10n.center,
+              description: l10n.invalidCenterId,
             );
           }
           return CenterDetailScreen(centerId: id);
@@ -247,10 +257,13 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
       ),
       GoRoute(
         path: AppRoutes.emis,
-        builder: (context, state) => const ModulePlaceholderScreen(
-          title: 'EMI Collection',
-          description: 'Record and track installment payments.',
-        ),
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context)!;
+          return ModulePlaceholderScreen(
+            title: l10n.emiCollection,
+            description: l10n.emiCollectionDescription,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.notifications,

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -15,7 +16,7 @@ class AppPhotoPicker extends StatelessWidget {
     this.onClear,
     this.existingImageUrl,
     this.existingImageLabel,
-    this.hint = 'Upload a photo (optional).',
+    this.hint,
     this.errorText,
     this.placeholderIcon = Icons.image_outlined,
     super.key,
@@ -27,7 +28,7 @@ class AppPhotoPicker extends StatelessWidget {
   final VoidCallback? onClear;
   final String? existingImageUrl;
   final String? existingImageLabel;
-  final String hint;
+  final String? hint;
   final String? errorText;
   final IconData placeholderIcon;
 
@@ -40,6 +41,8 @@ class AppPhotoPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final hintText = hint ?? l10n.uploadPhotoOptional;
     final picked = image;
     final previewProvider = _previewImageProvider(picked);
 
@@ -48,7 +51,7 @@ class AppPhotoPicker extends StatelessWidget {
       children: [
         if (_showExistingPreview) ...[
           _LargePreviewSection(
-            caption: existingImageLabel ?? 'Current $label',
+            caption: existingImageLabel ?? l10n.currentImageCaption(label),
             child: appPreviewImageIsNetworkUrl(existingImageUrl)
                 ? AppPreviewImage(
                     imageUrl: existingImageUrl,
@@ -59,12 +62,12 @@ class AppPhotoPicker extends StatelessWidget {
                     viewerTitle: label,
                     placeholder: _ExistingPlaceholder(
                       icon: placeholderIcon,
-                      label: 'Image on file',
+                      label: l10n.imageOnFile,
                     ),
                   )
                 : _ExistingPlaceholder(
                     icon: placeholderIcon,
-                    label: 'Image on file',
+                    label: l10n.imageOnFile,
                   ),
           ),
           const SizedBox(height: 16),
@@ -86,8 +89,8 @@ class AppPhotoPicker extends StatelessWidget {
                 children: [
                   Text(
                     _hasNewPhoto
-                        ? (picked?.name ?? 'Photo selected')
-                        : hint,
+                        ? (picked?.name ?? l10n.photoSelected)
+                        : hintText,
                     style: AppTextStyles.subtitle(context).copyWith(
                       color: context.appColors.textSecondary,
                     ),
@@ -95,7 +98,7 @@ class AppPhotoPicker extends StatelessWidget {
                   if (_hasNewPhoto || _showExistingPreview) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Tap preview to view full size',
+                      l10n.tapPreviewFullSize,
                       style: AppTextStyles.subtitle(context).copyWith(
                         color: context.appColors.textSecondary,
                         fontSize: 12,
@@ -113,7 +116,7 @@ class AppPhotoPicker extends StatelessWidget {
                           size: 20,
                         ),
                         label: Text(
-                          _hasNewPhoto ? 'Change photo' : 'Choose photo',
+                          _hasNewPhoto ? l10n.changePhoto : l10n.choosePhoto,
                           style: AppTextStyles.body(context),
                         ),
                         style: OutlinedButton.styleFrom(
@@ -124,7 +127,7 @@ class AppPhotoPicker extends StatelessWidget {
                         const SizedBox(width: 8),
                         IconButton(
                           onPressed: onClear,
-                          tooltip: 'Remove photo',
+                          tooltip: l10n.removePhoto,
                           icon: Icon(
                             Icons.close,
                             color: context.appColors.textSecondary,

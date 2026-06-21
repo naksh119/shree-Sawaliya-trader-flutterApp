@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
@@ -14,9 +15,10 @@ class AccessDeniedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
-      appBar: ThemedAppBar(title: 'Access Denied',
-      ),
+      appBar: ThemedAppBar(title: l10n.accessDenied),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -29,21 +31,24 @@ class AccessDeniedScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'You do not have permission to open this screen.',
+              l10n.accessDeniedMessage,
               style: AppTextStyles.body(context).copyWith(fontSize: 18),
             ),
             if (attemptedRoute != null && attemptedRoute!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Requested: $attemptedRoute', style: AppTextStyles.subtitle(context)),
+              Text(
+                l10n.accessDeniedRequested(attemptedRoute!),
+                style: AppTextStyles.subtitle(context),
+              ),
             ],
             const SizedBox(height: 8),
             Text(
-              'Your role only includes access to assigned modules. Contact an administrator if you believe this is a mistake.',
+              l10n.accessDeniedHint,
               style: AppTextStyles.subtitle(context),
             ),
             const Spacer(),
             AppPrimaryButton(
-              label: 'Back to Dashboard',
+              label: l10n.backToDashboard,
               textColor: AppColors.navy,
               onPressed: () => context.go(AppRoutes.dashboard),
             ),

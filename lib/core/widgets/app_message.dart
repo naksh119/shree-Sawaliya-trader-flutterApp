@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -101,8 +103,9 @@ class _AppMessageDialogState extends State<_AppMessageDialog> {
 
   bool get _isSuccess => widget.type == AppMessageType.success;
 
-  String get _title =>
-      widget.title ?? (_isSuccess ? 'Success' : 'Error');
+  String _title(BuildContext context) =>
+      widget.title ??
+      (_isSuccess ? context.l10n.success : context.l10n.error);
 
   IconData get _icon =>
       _isSuccess ? Icons.check_rounded : Icons.error_outline_rounded;
@@ -149,7 +152,7 @@ class _AppMessageDialogState extends State<_AppMessageDialog> {
               ),
               const SizedBox(height: 16),
               Text(
-                _title,
+                _title(context),
                 style: AppTextStyles.label(context).copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,

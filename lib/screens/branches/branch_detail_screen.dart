@@ -6,6 +6,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/branches/branch_service.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -67,7 +68,7 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
     if (session == null) {
       setState(() {
         _isLoading = false;
-        _error = 'Session unavailable. Please sign in again.';
+        _error = context.l10n.sessionUnavailable;
       });
       return;
     }
@@ -151,7 +152,7 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
 
     if (branch == null) {
       return Scaffold(
-        appBar: ThemedAppBar(title: 'Branch',
+        appBar: ThemedAppBar(title: context.l10n.branch,
         ),
         body: Center(
           child: Padding(
@@ -160,7 +161,7 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _error ?? 'Branch not found.',
+                  _error ?? context.l10n.branchNotFound,
                   style: AppTextStyles.body(context),
                   textAlign: TextAlign.center,
                 ),
@@ -170,7 +171,7 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: context.appColors.gold,
                   ),
-                  child: const Text('Retry'),
+                  child: Text(context.l10n.retry),
                 ),
               ],
             ),
@@ -216,15 +217,15 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
           _BranchHeader(branch: branch),
           const SizedBox(height: 16),
           CustomerSectionCard(
-            title: 'Branch details',
+            title: context.l10n.branchDetails,
             child: Column(
               children: [
-                CustomerInfoRow(label: 'Name', value: branch.name),
-                CustomerInfoRow(label: 'Code', value: branch.displayCode),
-                CustomerInfoRow(label: 'City', value: branch.city),
+                CustomerInfoRow(label: context.l10n.name, value: branch.name),
+                CustomerInfoRow(label: context.l10n.code, value: branch.displayCode),
+                CustomerInfoRow(label: context.l10n.city, value: branch.city),
                 CustomerInfoRow(
-                  label: 'Status',
-                  value: branch.isActive ? 'Active' : 'Inactive',
+                  label: context.l10n.status,
+                  value: branch.isActive ? context.l10n.active : context.l10n.inactive,
                 ),
               ],
             ),
@@ -244,34 +245,33 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
               onBranchNotFound: () => setState(() {
                 _branch = null;
                 _detailLoadedFromApi = false;
-                _error =
-                    'Branch not found. It may have been deleted — refresh the list.';
+                _error = context.l10n.branchNotFoundDeleted;
               }),
             ),
           if (branch.location != null && branch.location!.isNotEmpty) ...[
             const SizedBox(height: 12),
             CustomerSectionCard(
-              title: 'Address',
+              title: context.l10n.address,
               child: Text(branch.location!, style: AppTextStyles.body(context)),
             ),
           ],
           const SizedBox(height: 12),
           CustomerSectionCard(
-            title: 'Payment QR',
+            title: context.l10n.paymentQrCode,
             child: _PaymentQrSection(branch: branch),
           ),
           if (branch.createdAt != null || branch.updatedAt != null) ...[
             const SizedBox(height: 12),
             CustomerSectionCard(
-              title: 'Record',
+              title: context.l10n.record,
               child: Column(
                 children: [
                   CustomerInfoRow(
-                    label: 'Created',
+                    label: context.l10n.created,
                     value: _formatDate(branch.createdAt),
                   ),
                   CustomerInfoRow(
-                    label: 'Updated',
+                    label: context.l10n.updated,
                     value: _formatDate(branch.updatedAt),
                   ),
                 ],
@@ -356,7 +356,7 @@ class _BranchHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              branch.isActive ? 'Active' : 'Inactive',
+              branch.isActive ? context.l10n.active : context.l10n.inactive,
               style: AppTextStyles.subtitle(context).copyWith(
                 color: statusColor,
                 fontWeight: FontWeight.w600,
@@ -380,7 +380,7 @@ class _PaymentQrSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!branch.hasPaymentQr) {
       return Text(
-        'No payment QR code uploaded yet.',
+        context.l10n.noPaymentQrUploaded,
         style: AppTextStyles.body(context).copyWith(
           color: context.appColors.textSecondary,
         ),
@@ -397,12 +397,12 @@ class _PaymentQrSection extends StatelessWidget {
             width: 180,
             fit: BoxFit.contain,
             borderRadius: BorderRadius.circular(12),
-            viewerTitle: 'Payment QR',
+            viewerTitle: context.l10n.paymentQrCode,
             placeholder: _qrFallback(context),
           ),
           const SizedBox(height: 8),
           Text(
-            'Scan to pay at this branch.',
+            context.l10n.scanToPayBranch,
             style: AppTextStyles.subtitle(context),
           ),
         ],
@@ -420,7 +420,7 @@ class _PaymentQrSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Payment QR configured',
+              context.l10n.paymentQrConfigured,
               style: AppTextStyles.body(context).copyWith(fontWeight: FontWeight.w600),
             ),
           ],
@@ -450,7 +450,7 @@ class _PaymentQrSection extends StatelessWidget {
             color: context.appColors.shinyGold.withValues(alpha: 0.7),
           ),
           const SizedBox(height: 8),
-          Text('QR uploaded', style: AppTextStyles.subtitle(context)),
+          Text(context.l10n.qrUploaded, style: AppTextStyles.subtitle(context)),
         ],
       ),
     );

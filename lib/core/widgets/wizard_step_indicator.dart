@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -95,7 +96,11 @@ class WizardStepIndicator extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Step ${currentStep + 1} of ${steps.length}: ${steps[currentStep]}',
+            context.l10n.stepProgress(
+              currentStep + 1,
+              steps.length,
+              steps[currentStep],
+            ),
             style: AppTextStyles.subtitle(context),
           ),
         ],
