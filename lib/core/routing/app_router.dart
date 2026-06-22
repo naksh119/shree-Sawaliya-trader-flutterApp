@@ -14,7 +14,7 @@ import 'package:sawaliyatrader/screens/branches/branch_create_screen.dart';
 import 'package:sawaliyatrader/core/branches/branch_models.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_detail.dart';
 import 'package:sawaliyatrader/screens/branches/branch_detail_screen.dart';
-import 'package:sawaliyatrader/screens/branches/branch_edit_screen.dart';
+import 'package:sawaliyatrader/screens/branches/branch_patch_screen.dart';
 import 'package:sawaliyatrader/screens/branches/branches_list_screen.dart';
 import 'package:sawaliyatrader/screens/centers/center_create_screen.dart';
 import 'package:sawaliyatrader/screens/centers/center_detail_screen.dart';
@@ -24,7 +24,7 @@ import 'package:sawaliyatrader/screens/customers/customer_wizard_screen.dart';
 import 'package:sawaliyatrader/screens/customers/customers_list_screen.dart';
 import 'package:sawaliyatrader/screens/employees/employee_create_screen.dart';
 import 'package:sawaliyatrader/screens/employees/employee_detail_screen.dart';
-import 'package:sawaliyatrader/screens/employees/employee_put_edit_screen.dart';
+import 'package:sawaliyatrader/screens/employees/employee_patch_screen.dart';
 import 'package:sawaliyatrader/screens/employees/employees_list_screen.dart';
 import 'package:sawaliyatrader/screens/placeholder/module_placeholder_screen.dart';
 import 'package:sawaliyatrader/screens/profile/profile_screen.dart';
@@ -147,7 +147,7 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         ),
       ),
       GoRoute(
-        path: '/branches/:id/edit',
+        path: '/branches/:id/patch',
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
@@ -159,7 +159,7 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
           }
           final initialBranch =
               state.extra is BranchDto ? state.extra! as BranchDto : null;
-          return BranchEditScreen(
+          return BranchPatchScreen(
             branchId: id,
             initialBranch: initialBranch,
           );
@@ -197,20 +197,20 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
         ),
       ),
       GoRoute(
-        path: '/employees/:id/put-edit',
+        path: '/employees/:id/patch',
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
           if (id == null) {
             final l10n = AppLocalizations.of(context)!;
             return ModulePlaceholderScreen(
-              title: l10n.editEmployeePut,
+              title: l10n.editEmployeePatch,
               description: l10n.invalidEmployeeId,
             );
           }
           final initialEmployee = state.extra is EmployeeDetail
               ? state.extra! as EmployeeDetail
               : null;
-          return EmployeePutEditScreen(
+          return EmployeePatchScreen(
             employeeId: id,
             initialEmployee: initialEmployee,
           );

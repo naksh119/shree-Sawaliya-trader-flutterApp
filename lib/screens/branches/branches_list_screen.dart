@@ -166,7 +166,7 @@ class _BranchesListScreenState extends State<BranchesListScreen>
 
   Future<void> _editBranch(BranchDto branch) async {
     final updated = await context.push<bool>(
-      AppRoutes.branchEdit(branch.id),
+      AppRoutes.branchPatch(branch.id),
       extra: branch,
     );
 

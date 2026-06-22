@@ -48,7 +48,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newEmployee => 'New Employee';
 
   @override
-  String get editEmployeePut => 'Edit Employee (PUT)';
+  String get editEmployeePatch => 'Edit Employee';
 
   @override
   String get branches => 'Branches';
@@ -1080,7 +1080,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteEmployeeQuestion => 'Delete employee?';
 
   @override
-  String get saveChangesPut => 'Save changes (PUT)';
+  String get saveChangesPatch => 'Save changes';
 
   @override
   String get roleAndBranch => 'Role & branch';
@@ -1089,7 +1089,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get employmentDatesAssessment => 'Employment dates & assessment';
 
   @override
-  String get passwordRequiredPut => 'Required for full PUT update';
+  String get passwordOptionalPatch => 'Leave blank to keep current password';
 
   @override
   String get chooseNewPhotoHint =>
@@ -1344,8 +1344,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lastName => 'Last name';
 
   @override
-  String get employeePutIntro =>
-      'Full update uses PUT with all employee fields.';
+  String get employeePatchIntro =>
+      'Update employee details. Only changed fields are sent to the server.';
 
   @override
   String employeeCodeReadOnly(String code) {

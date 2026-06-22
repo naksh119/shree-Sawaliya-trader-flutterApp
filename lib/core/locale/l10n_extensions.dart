@@ -103,11 +103,11 @@ List<String> employeeWizardSteps(AppLocalizations l10n) => [
       l10n.employeeStepEmploymentHistory,
     ];
 
-/// API gender values sent to the backend.
-const kGenderOptions = ['MALE', 'FEMALE', 'OTHER'];
+/// API gender values accepted by the backend.
+const kGenderOptions = ['MALE', 'FEMALE'];
 
-/// API marital status values sent to the backend.
-const kMaritalStatusOptions = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'];
+/// API marital status values accepted by the backend.
+const kMaritalStatusOptions = ['SINGLE', 'MARRIED'];
 
 String localizedGenderLabel(AppLocalizations l10n, String? value) {
   if (value == null || value.isEmpty) return '';

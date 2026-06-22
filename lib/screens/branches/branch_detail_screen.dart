@@ -18,7 +18,6 @@ import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.d
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/screens/branches/branch_delete_helper.dart';
-import 'package:sawaliyatrader/screens/branches/branch_patch_section.dart';
 
 class BranchDetailScreen extends StatefulWidget {
   const BranchDetailScreen({
@@ -42,7 +41,6 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
   LoginResponse? _session;
   BranchDto? _branch;
   bool _isLoading = true;
-  bool _detailLoadedFromApi = false;
   String? _error;
   String? _fetchWarning;
 
@@ -81,7 +79,6 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
       if (!mounted) return;
       setState(() {
         _branch = branch;
-        _detailLoadedFromApi = true;
         _error = null;
         _fetchWarning = null;
       });
@@ -92,7 +89,6 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
       final notFound = error is ApiException && error.statusCode == 404;
 
       setState(() {
-        _detailLoadedFromApi = false;
         if (notFound) {
           _branch = null;
           _error = message;
@@ -131,7 +127,7 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
 
   Future<void> _editBranch(BranchDto branch) async {
     final updated = await context.push<bool>(
-      AppRoutes.branchEdit(_branchId),
+      AppRoutes.branchPatch(_branchId),
       extra: branch,
     );
 
@@ -230,24 +226,6 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
               ],
             ),
           ),
-          if (kBranchPatchUiEnabled &&
-              permissions?.canEditBranch == true &&
-              session != null)
-            BranchPatchSection(
-              branch: branch,
-              branchId: _branchId,
-              session: session,
-              detailLoadedFromApi: _detailLoadedFromApi,
-              onBranchUpdated: (updated) => setState(() {
-                _branch = updated;
-                _fetchWarning = null;
-              }),
-              onBranchNotFound: () => setState(() {
-                _branch = null;
-                _detailLoadedFromApi = false;
-                _error = context.l10n.branchNotFoundDeleted;
-              }),
-            ),
           if (branch.location != null && branch.location!.isNotEmpty) ...[
             const SizedBox(height: 12),
             CustomerSectionCard(

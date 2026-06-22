@@ -521,7 +521,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
             canDelete: permissions.canDeleteEmployee,
             onTap: () => context.push(AppRoutes.employeeDetail(employee.id)),
             onEdit: permissions.canEditEmployee
-                ? () => context.push(AppRoutes.employeePutEdit(employee.id))
+                ? () => context.push(AppRoutes.employeePatch(employee.id))
                 : null,
             onDelete: permissions.canDeleteEmployee
                 ? () => _deleteEmployee(employee)

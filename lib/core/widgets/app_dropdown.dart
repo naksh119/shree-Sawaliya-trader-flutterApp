@@ -26,16 +26,33 @@ Future<T?> showAppScrollableDropdownMenu<T>({
   final completer = Completer<T?>();
   final scrollController = ScrollController();
 
+  const edgePadding = 16.0;
+  const gap = 4.0;
+
   final totalContentHeight = items.length * itemHeight +
       (items.length > 1 ? (items.length - 1) * dividerHeight : 0);
-  final menuHeight = math.min(totalContentHeight, menuMaxHeight);
-  final canScroll = totalContentHeight > menuMaxHeight;
+
+  final openBelowTop = offset.dy + buttonSize.height + gap;
+  final spaceBelow = screenSize.height - openBelowTop - edgePadding;
+  final spaceAbove = offset.dy - edgePadding;
+  final openBelow = spaceBelow >= spaceAbove || spaceBelow >= itemHeight * 2;
+  final availableHeight = math.max(
+    openBelow ? spaceBelow : spaceAbove,
+    itemHeight,
+  );
+
+  final cappedMaxHeight = math.min(menuMaxHeight, availableHeight);
+  final menuHeight = math.min(totalContentHeight, cappedMaxHeight);
+  final canScroll = totalContentHeight > menuHeight;
+  final menuTop = openBelow
+      ? openBelowTop
+      : offset.dy - gap - menuHeight;
 
   var left = offset.dx;
-  if (left + menuWidth > screenSize.width - 16) {
-    left = screenSize.width - 16 - menuWidth;
+  if (left + menuWidth > screenSize.width - edgePadding) {
+    left = screenSize.width - edgePadding - menuWidth;
   }
-  if (left < 16) left = 16;
+  if (left < edgePadding) left = edgePadding;
 
   late OverlayEntry entry;
 
@@ -61,7 +78,7 @@ Future<T?> showAppScrollableDropdownMenu<T>({
           ),
           Positioned(
             left: left,
-            top: offset.dy + buttonSize.height + 4,
+            top: menuTop,
             width: menuWidth,
             child: Material(
               color: AppDropdownDecoration.menuBackground(overlayContext),

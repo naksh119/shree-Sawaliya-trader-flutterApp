@@ -176,11 +176,11 @@ abstract class AppLocalizations {
   /// **'New Employee'**
   String get newEmployee;
 
-  /// No description provided for @editEmployeePut.
+  /// No description provided for @editEmployeePatch.
   ///
   /// In en, this message translates to:
-  /// **'Edit Employee (PUT)'**
-  String get editEmployeePut;
+  /// **'Edit Employee'**
+  String get editEmployeePatch;
 
   /// No description provided for @branches.
   ///
@@ -2108,11 +2108,11 @@ abstract class AppLocalizations {
   /// **'Delete employee?'**
   String get deleteEmployeeQuestion;
 
-  /// No description provided for @saveChangesPut.
+  /// No description provided for @saveChangesPatch.
   ///
   /// In en, this message translates to:
-  /// **'Save changes (PUT)'**
-  String get saveChangesPut;
+  /// **'Save changes'**
+  String get saveChangesPatch;
 
   /// No description provided for @roleAndBranch.
   ///
@@ -2126,11 +2126,11 @@ abstract class AppLocalizations {
   /// **'Employment dates & assessment'**
   String get employmentDatesAssessment;
 
-  /// No description provided for @passwordRequiredPut.
+  /// No description provided for @passwordOptionalPatch.
   ///
   /// In en, this message translates to:
-  /// **'Required for full PUT update'**
-  String get passwordRequiredPut;
+  /// **'Leave blank to keep current password'**
+  String get passwordOptionalPatch;
 
   /// No description provided for @chooseNewPhotoHint.
   ///
@@ -2606,11 +2606,11 @@ abstract class AppLocalizations {
   /// **'Last name'**
   String get lastName;
 
-  /// No description provided for @employeePutIntro.
+  /// No description provided for @employeePatchIntro.
   ///
   /// In en, this message translates to:
-  /// **'Full update uses PUT with all employee fields.'**
-  String get employeePutIntro;
+  /// **'Update employee details. Only changed fields are sent to the server.'**
+  String get employeePatchIntro;
 
   /// No description provided for @employeeCodeReadOnly.
   ///

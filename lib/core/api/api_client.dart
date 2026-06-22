@@ -266,6 +266,36 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> patchMultipart(
+    String path, {
+    required FormData data,
+  }) async {
+    final requestPath = _normalizePath(path);
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        requestPath,
+        data: data,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final body = response.data;
+
+      debugPrint(
+        'API PATCH (multipart) $requestPath → status: ${response.statusCode}',
+      );
+
+      if (body == null) {
+        throw const ApiException('Empty response from server');
+      }
+
+      return body;
+    } on DioException catch (error) {
+      debugPrint(
+        'API PATCH (multipart) $requestPath failed → status: ${error.response?.statusCode}',
+      );
+      throw _mapDioError(error);
+    }
+  }
+
   Future<Map<String, dynamic>> patch(
     String path, {
     Map<String, dynamic>? data,

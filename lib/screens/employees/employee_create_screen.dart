@@ -20,6 +20,7 @@ import 'package:sawaliyatrader/core/widgets/app_date_form_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
+import 'package:sawaliyatrader/core/widgets/app_person_dropdowns.dart';
 import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
@@ -104,9 +105,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
   DateTime? _historyServiceFrom;
   DateTime? _historyServiceTo;
   final List<EmployeeEmploymentHistory> _savedHistories = [];
-
-  static const _genderOptions = kGenderOptions;
-  static const _maritalOptions = kMaritalStatusOptions;
 
   static const _fieldStepMap = <String, int>{
     'employee_code': 0,
@@ -1198,18 +1196,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                     validator: (value) =>
                         _apiError('gender') ??
                         CustomerValidators.gender(l10n, value),
-                    items: _genderOptions
-                        .map(
-                          (value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(
-                              localizedGenderLabel(l10n, value),
-                              style: AppTextStyles.body(context),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    items: genderDropdownItems(context),
                     onChanged: (value) {
                       if (value != null) {
                         _clearFieldError('gender');
@@ -1229,18 +1216,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                     validator: (value) =>
                         _apiError('marital_status') ??
                         CustomerValidators.maritalStatus(l10n, value),
-                    items: _maritalOptions
-                        .map(
-                          (value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(
-                              localizedMaritalStatusLabel(l10n, value),
-                              style: AppTextStyles.body(context),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    items: maritalStatusDropdownItems(context),
                     onChanged: (value) {
                       if (value != null) {
                         _clearFieldError('marital_status');

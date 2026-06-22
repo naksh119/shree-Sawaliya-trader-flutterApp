@@ -48,7 +48,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get newEmployee => 'नया कर्मचारी';
 
   @override
-  String get editEmployeePut => 'कर्मचारी संपादित करें (PUT)';
+  String get editEmployeePatch => 'कर्मचारी संपादित करें';
 
   @override
   String get branches => 'शाखाएँ';
@@ -1079,7 +1079,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get deleteEmployeeQuestion => 'कर्मचारी हटाएँ?';
 
   @override
-  String get saveChangesPut => 'परिवर्तन सहेजें (PUT)';
+  String get saveChangesPatch => 'परिवर्तन सहेजें';
 
   @override
   String get roleAndBranch => 'भूमिका और शाखा';
@@ -1088,7 +1088,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get employmentDatesAssessment => 'रोजगार तिथियाँ और मूल्यांकन';
 
   @override
-  String get passwordRequiredPut => 'पूर्ण PUT अपडेट के लिए आवश्यक';
+  String get passwordOptionalPatch => 'वर्तमान पासवर्ड रखने के लिए खाली छोड़ें';
 
   @override
   String get chooseNewPhotoHint => 'वर्तमान फ़ोटो बदलने के लिए नई छवि चुनें।';
@@ -1342,8 +1342,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get lastName => 'उपनाम';
 
   @override
-  String get employeePutIntro =>
-      'पूर्ण अपडेट सभी कर्मचारी फ़ील्ड के साथ PUT का उपयोग करता है।';
+  String get employeePatchIntro =>
+      'कर्मचारी विवरण अपडेट करें। केवल बदले गए फ़ील्ड सर्वर को भेजे जाते हैं।';
 
   @override
   String employeeCodeReadOnly(String code) {

@@ -113,9 +113,9 @@ class BranchCreateRequest {
   }
 }
 
-class BranchUpdateRequest {
-  /// PUT `/branches/api/{id}/` request body — full replace of all branch fields.
-  const BranchUpdateRequest({
+class BranchPatchRequest {
+  /// PATCH `/branches/api/{id}/` request body.
+  const BranchPatchRequest({
     required this.name,
     required this.code,
     required this.city,
@@ -124,8 +124,8 @@ class BranchUpdateRequest {
     this.isDeleted = false,
   });
 
-  factory BranchUpdateRequest.fromBranch(BranchDto branch) {
-    return BranchUpdateRequest(
+  factory BranchPatchRequest.fromBranch(BranchDto branch) {
+    return BranchPatchRequest(
       name: branch.name,
       code: branch.code,
       city: branch.city,

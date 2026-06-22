@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/customers/customer_validators.dart';
-import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/app_person_dropdowns.dart';
 import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/upper_case_text_input_formatter.dart';
@@ -175,20 +175,12 @@ class CustomerWizardCustomerStep extends StatelessWidget {
                     validator: (v) =>
                         apiError('gender') ??
                         CustomerValidators.gender(l10n, v),
-                    items: CustomerValidators.genderOptions
-                        .map(
-                          (value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(
-                              localizedGenderLabel(l10n, value),
-                              style: AppTextStyles.body(context).copyWith(
-                                fontSize: 14,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    items: genderDropdownItems(
+                      context,
+                      textStyle: AppTextStyles.body(context).copyWith(
+                        fontSize: 14,
+                      ),
+                    ),
                     style: AppTextStyles.body(context).copyWith(fontSize: 14),
                     onChanged: onGenderChanged,
                   ),

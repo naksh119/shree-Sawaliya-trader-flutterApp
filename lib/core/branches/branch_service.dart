@@ -84,17 +84,17 @@ class BranchService {
     _ensureSuccess(body, 'Failed to delete branch');
   }
 
-  /// PUT `/branches/api/{id}/` — Full update; replaces all branch fields.
-  Future<BranchDto> updateBranch({
+  /// PATCH `/branches/api/{id}/` — Updates branch fields.
+  Future<BranchDto> patchBranch({
     required LoginResponse session,
     required int branchId,
-    required BranchUpdateRequest request,
+    required BranchPatchRequest request,
     PickedImage? paymentQrCode,
   }) async {
     final Map<String, dynamic> body;
 
     if (paymentQrCode != null && paymentQrCode.isNotEmpty) {
-      body = await _apiClient.putMultipart(
+      body = await _apiClient.patchMultipart(
         ApiConfig.branchPath(branchId),
         data: await buildMultipartFormData(
           fields: request.toJson(),
@@ -102,7 +102,7 @@ class BranchService {
         ),
       );
     } else {
-      body = await _apiClient.put(
+      body = await _apiClient.patch(
         ApiConfig.branchPath(branchId),
         data: request.toJson(),
       );

@@ -17,7 +17,7 @@ class ApiConfig {
   static const employeesPath = '/employees/api/'; // ✓ GET
   static const employeeRegisterPath = '/employees/register/'; // ✓ POST
   static const employeeRolesPath = '/employees/api/roles/'; // ✓ GET
-  static String employeePath(int id) => '/employees/api/$id/'; // ✓ GET, PUT, DELETE
+  static String employeePath(int id) => '/employees/api/$id/'; // ✓ GET, PATCH, DELETE
   static String employeeEmploymentHistoryPath(int employeeId) =>
       '/employees/api/employment-history/$employeeId/'; // ✓ POST
   // employee api end

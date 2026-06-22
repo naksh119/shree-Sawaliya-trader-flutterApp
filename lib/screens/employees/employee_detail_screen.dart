@@ -82,9 +82,9 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
     await fetchEmployee();
   }
 
-  Future<void> _putEditEmployee(EmployeeDetail employee) async {
+  Future<void> _patchEditEmployee(EmployeeDetail employee) async {
     final updated = await context.push<bool>(
-      AppRoutes.employeePutEdit(widget.employeeId),
+      AppRoutes.employeePatch(widget.employeeId),
       extra: employee,
     );
 
@@ -449,7 +449,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           entityName: employee.displayName,
           canEdit: permissions.canEditEmployee,
           canDelete: permissions.canDeleteEmployee,
-          onEdit: () => _putEditEmployee(employee),
+          onEdit: () => _patchEditEmployee(employee),
           onDelete: () => _deleteEmployee(employee),
         ),
       ),

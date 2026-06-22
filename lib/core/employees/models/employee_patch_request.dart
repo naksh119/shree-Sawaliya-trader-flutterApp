@@ -1,10 +1,10 @@
-/// Request body for `PUT /employees/api/{id}/` (full replace).
-class EmployeePutRequest {
-  const EmployeePutRequest({
-    required this.email,
-    required this.password,
-    required this.roleId,
-    required this.branchId,
+/// Request body for `PATCH /employees/api/{id}/` (partial update).
+class EmployeePatchRequest {
+  const EmployeePatchRequest({
+    this.email,
+    this.password,
+    this.roleId,
+    this.branchId,
     required this.firstName,
     required this.lastName,
     this.fatherName,
@@ -38,10 +38,10 @@ class EmployeePutRequest {
     this.emergencyContactNumber,
   });
 
-  final String email;
-  final String password;
-  final int roleId;
-  final int branchId;
+  final String? email;
+  final String? password;
+  final int? roleId;
+  final int? branchId;
   final String firstName;
   final String lastName;
   final String? fatherName;
@@ -76,10 +76,10 @@ class EmployeePutRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'email': email,
-      'password': password,
-      'role': roleId,
-      'branch': branchId,
+      if (_hasText(email)) 'email': email,
+      if (_hasText(password)) 'password': password,
+      if (roleId != null) 'role': roleId,
+      if (branchId != null) 'branch': branchId,
       'first_name': firstName,
       'last_name': lastName,
       if (_hasText(fatherName)) 'father_name': fatherName,

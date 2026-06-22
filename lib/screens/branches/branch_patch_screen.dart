@@ -17,8 +17,8 @@ import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 
-class BranchEditScreen extends StatefulWidget {
-  const BranchEditScreen({
+class BranchPatchScreen extends StatefulWidget {
+  const BranchPatchScreen({
     required this.branchId,
     this.initialBranch,
     super.key,
@@ -28,10 +28,10 @@ class BranchEditScreen extends StatefulWidget {
   final BranchDto? initialBranch;
 
   @override
-  State<BranchEditScreen> createState() => _BranchEditScreenState();
+  State<BranchPatchScreen> createState() => _BranchPatchScreenState();
 }
 
-class _BranchEditScreenState extends State<BranchEditScreen> {
+class _BranchPatchScreenState extends State<BranchPatchScreen> {
   final _authService = AuthService();
   final _branchService = BranchService();
   final _formKey = GlobalKey<FormState>();
@@ -41,7 +41,6 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
   bool _isSaving = false;
   bool _isActive = true;
   String? _error;
-  String? _paymentQrError;
 
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
@@ -131,21 +130,14 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
     final session = _session;
     if (session == null || _isSaving) return;
     if (!_formKey.currentState!.validate()) return;
-    final hasQr = (_paymentQrCode?.isNotEmpty ?? false) ||
-        (_existingPaymentQrUrl != null && _existingPaymentQrUrl!.isNotEmpty);
-    if (!hasQr) {
-      setState(() => _paymentQrError = context.l10n.paymentQrRequired);
-      return;
-    }
 
     setState(() {
       _isSaving = true;
       _error = null;
-      _paymentQrError = null;
     });
 
     try {
-      final request = BranchUpdateRequest(
+      final request = BranchPatchRequest(
         name: _nameController.text.trim(),
         code: _codeController.text.trim(),
         city: _cityController.text.trim(),
@@ -153,7 +145,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
         isActive: _isActive,
       );
 
-      final updated = await _branchService.updateBranch(
+      final updated = await _branchService.patchBranch(
         session: session,
         branchId: widget.branchId,
         request: request,
@@ -186,7 +178,6 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
     final picked = await PickedImage.pick();
     if (picked == null) return;
     setState(() => _paymentQrCode = picked);
-    if (_paymentQrError != null) setState(() => _paymentQrError = null);
   }
 
   void _clearPaymentQr() {
@@ -214,13 +205,6 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
-                    Text(
-                      context.l10n.branchPutIntro,
-                      style: AppTextStyles.body(context).copyWith(
-                        color: context.appColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                     _SectionCard(
                       title: context.l10n.branchDetails,
                       children: [
@@ -309,7 +293,6 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
                               : context.l10n.branchQrUploadHint,
                           placeholderIcon: Icons.qr_code_2_rounded,
                           image: _paymentQrCode,
-                          errorText: _paymentQrError,
                           onPick: _pickPaymentQr,
                           onClear: _paymentQrCode?.isNotEmpty == true
                               ? _clearPaymentQr
@@ -336,7 +319,7 @@ class _BranchEditScreenState extends State<BranchEditScreen> {
               child: SafeArea(
                 minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: AppPrimaryButton(
-                  label: context.l10n.saveChangesPut,
+                  label: context.l10n.save,
                   isLoading: _isSaving,
                   onPressed: _submit,
                 ),

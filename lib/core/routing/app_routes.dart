@@ -5,7 +5,7 @@ abstract final class AppRoutes {
   static const branches = '/branches';
   static const branchNew = '/branches/new';
 
-  static String branchEdit(int id) => '/branches/$id/edit';
+  static String branchPatch(int id) => '/branches/$id/patch';
   static const customers = '/customers';
   static const customerNew = '/customers/new';
   static const centers = '/centers';
@@ -23,10 +23,7 @@ abstract final class AppRoutes {
 
   static String employeeDetail(int id) => '/employees/$id';
 
-  static String employeePutEdit(int id) => '/employees/$id/put-edit';
-
-  @Deprecated('Use employeePutEdit')
-  static String employeeEdit(int id) => employeePutEdit(id);
+  static String employeePatch(int id) => '/employees/$id/patch';
 
   static String branchDetail(int id) => '/branches/$id';
 
