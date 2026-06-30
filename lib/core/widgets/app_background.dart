@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/constants/app_assets.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -15,16 +14,6 @@ class AppBackground extends StatelessWidget {
   final Widget child;
   final bool showOverlay;
   final String? imageUrl;
-
-  Widget _assetBackground() {
-    return Image.asset(
-      AppAssets.splashBackground,
-      fit: BoxFit.cover,
-      alignment: Alignment.topCenter,
-      filterQuality: FilterQuality.high,
-      gaplessPlayback: true,
-    );
-  }
 
   Widget _remotePlaceholder() {
     return const ColoredBox(color: AppColors.cream);
@@ -50,10 +39,7 @@ class AppBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (imageUrl != null)
-          _networkBackground()
-        else
-          _assetBackground(),
+        if (imageUrl != null) _networkBackground() else _remotePlaceholder(),
         if (showOverlay) ColoredBox(color: context.appColors.overlay),
         child,
       ],

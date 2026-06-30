@@ -27,14 +27,35 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/app_icon.png
+  adaptive_icon_background: '#FDFBF6'
+  adaptive_icon_foreground: assets/app_icon.png
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: assets/app_icon.png
+    background_color: '#FDFBF6'
+    theme_color: '#D4A62A'
+  windows:
+    generate: true
+    image_path: assets/app_icon.png
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: assets/app_icon.png
 
 flutter:
   generate: true
   uses-material-design: true
   assets:
     - .env
-    - assets/splash_background.png
     - assets/feather_loader.png
+    - assets/app_icon.png
   fonts:
     - family: TimesNewRoman
       fonts:
