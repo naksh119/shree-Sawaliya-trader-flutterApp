@@ -12,8 +12,8 @@ import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
+import 'package:sawaliyatrader/core/theme/app_themes.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
-import 'package:sawaliyatrader/core/widgets/theme_toggle_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -100,122 +100,120 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = context.l10n;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Scaffold(
-      backgroundColor: context.appColors.surface,
-      resizeToAvoidBottomInset: false,
-      body: AppBackground(
-        imageUrl: AppAssets.splashBackgroundUrl,
-        showOverlay: Theme.of(context).brightness == Brightness.dark,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            SafeArea(
-              child: MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaler: TextScaler.noScaling,
-                ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    const horizontalPadding = 24.0;
-                    const verticalPadding = 24.0;
-                    final contentWidth =
-                        constraints.maxWidth - (horizontalPadding * 2);
-                    final logoWidth =
-                        (contentWidth * 0.58).clamp(150.0, 210.0);
-                    final minContentHeight = constraints.maxHeight -
-                        (verticalPadding * 2) -
-                        bottomInset;
+    return Theme(
+      data: AppThemes.light(),
+      child: Scaffold(
+        backgroundColor: context.appColors.surface,
+        resizeToAvoidBottomInset: false,
+        body: AppBackground(
+          imageUrl: AppAssets.splashBackgroundUrl,
+          showOverlay: false,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              SafeArea(
+                child: MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: TextScaler.noScaling,
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const horizontalPadding = 24.0;
+                      const verticalPadding = 24.0;
+                      final contentWidth =
+                          constraints.maxWidth - (horizontalPadding * 2);
+                      final logoWidth =
+                          (contentWidth * 0.58).clamp(150.0, 210.0);
+                      final minContentHeight = constraints.maxHeight -
+                          (verticalPadding * 2) -
+                          bottomInset;
 
-                    final form = Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.network(
-                            AppAssets.logoUrl,
-                            width: logoWidth,
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.high,
-                            gaplessPlayback: true,
-                          ),
-                          const SizedBox(height: 20),
-                          BrandGradientText(text: l10n.welcomeBack),
-                          const SizedBox(height: 6),
-                          Text(
-                            l10n.signInSubtitle,
-                            style: AppTextStyles.subtitle(context),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 24),
-                          AppTextField(
-                            controller: _emailController,
-                            label: l10n.emailAddress,
-                            hint: l10n.enterYourEmail,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            validator: _validateEmail,
-                          ),
-                          const SizedBox(height: 16),
-                          AppTextField(
-                            controller: _passwordController,
-                            label: l10n.password,
-                            hint: l10n.enterYourPassword,
-                            obscureText: _obscurePassword,
-                            textInputAction: TextInputAction.done,
-                            onFieldSubmitted: (_) => _onLogin(),
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            suffixIcon: IconButton(
-                              icon: BrandGradientIcon(
-                                _obscurePassword
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                              ),
-                              onPressed: _togglePasswordVisibility,
-                            ),
-                            validator: _validatePassword,
-                          ),
-                          const SizedBox(height: 28),
-                          AppPrimaryButton(
-                            label: l10n.login,
-                            onPressed: _isSubmitting ? null : _onLogin,
-                          ),
-                        ],
-                      ),
-                    );
-
-                    return SingleChildScrollView(
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: EdgeInsets.fromLTRB(
-                        horizontalPadding,
-                        verticalPadding,
-                        horizontalPadding,
-                        verticalPadding + bottomInset,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minHeight: minContentHeight),
+                      final form = Form(
+                        key: _formKey,
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [form],
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.network(
+                              AppAssets.logoUrl,
+                              width: logoWidth,
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
+                              gaplessPlayback: true,
+                            ),
+                            const SizedBox(height: 20),
+                            BrandGradientText(text: l10n.welcomeBack),
+                            const SizedBox(height: 6),
+                            Text(
+                              l10n.signInSubtitle,
+                              style: AppTextStyles.subtitle(context),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            AppTextField(
+                              controller: _emailController,
+                              label: l10n.emailAddress,
+                              hint: l10n.enterYourEmail,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              validator: _validateEmail,
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              controller: _passwordController,
+                              label: l10n.password,
+                              hint: l10n.enterYourPassword,
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _onLogin(),
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              suffixIcon: IconButton(
+                                icon: BrandGradientIcon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: _togglePasswordVisibility,
+                              ),
+                              validator: _validatePassword,
+                            ),
+                            const SizedBox(height: 28),
+                            AppPrimaryButton(
+                              label: l10n.login,
+                              onPressed: _isSubmitting ? null : _onLogin,
+                            ),
+                          ],
                         ),
-                      ),
-                    );
-                  },
+                      );
+
+                      return SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          verticalPadding,
+                          horizontalPadding,
+                          verticalPadding + bottomInset,
+                        ),
+                        child: ConstrainedBox(
+                          constraints:
+                              BoxConstraints(minHeight: minContentHeight),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [form],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-            const SafeArea(
-              child: Align(
-                alignment: Alignment.topRight,
-                child: ThemeToggleButton(),
-              ),
-            ),
-            if (_isSubmitting)
-              AppLoadingOverlay(message: l10n.signingIn),
-          ],
+              if (_isSubmitting)
+                AppLoadingOverlay(message: l10n.signingIn),
+            ],
+          ),
         ),
       ),
     );

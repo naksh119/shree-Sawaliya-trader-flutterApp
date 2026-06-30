@@ -10,6 +10,7 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_background.dart';
+import 'package:sawaliyatrader/core/theme/app_themes.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -128,92 +129,95 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.appColors.card,
-      body: AppBackground(
-        imageUrl: AppAssets.splashBackgroundUrl,
-        showOverlay: Theme.of(context).brightness == Brightness.dark,
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxHeight < 680;
-              final contentWidth = constraints.maxWidth - 48;
-              final logoWidth = (contentWidth * 0.68).clamp(140.0, 240.0);
-              final titleStyle = AppTextStyles.highlightedRaw(
-                fontSize: compact ? 17 : 22,
-                letterSpacing: compact ? 0.8 : 1.2,
-                fontWeight: FontWeight.w700,
-              );
-              final titleHeight = _titleBlockHeight(titleStyle, contentWidth);
-              final contentGap = compact ? 16.0 : 24.0;
-              final loaderGap = compact ? 24.0 : 36.0;
+    return Theme(
+      data: AppThemes.light(),
+      child: Scaffold(
+        backgroundColor: context.appColors.card,
+        body: AppBackground(
+          imageUrl: AppAssets.splashBackgroundUrl,
+          showOverlay: false,
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxHeight < 680;
+                final contentWidth = constraints.maxWidth - 48;
+                final logoWidth = (contentWidth * 0.68).clamp(140.0, 240.0);
+                final titleStyle = AppTextStyles.highlightedRaw(
+                  fontSize: compact ? 17 : 22,
+                  letterSpacing: compact ? 0.8 : 1.2,
+                  fontWeight: FontWeight.w700,
+                );
+                final titleHeight = _titleBlockHeight(titleStyle, contentWidth);
+                final contentGap = compact ? 16.0 : 24.0;
+                final loaderGap = compact ? 24.0 : 36.0;
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FadeTransition(
-                        opacity: _logoOpacity,
-                        child: ScaleTransition(
-                          scale: _logoScale,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.06),
-                                  blurRadius: 28,
-                                  offset: const Offset(0, 12),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        FadeTransition(
+                          opacity: _logoOpacity,
+                          child: ScaleTransition(
+                            scale: _logoScale,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.06),
+                                    blurRadius: 28,
+                                    offset: const Offset(0, 12),
+                                  ),
+                                ],
+                              ),
+                              child: Image.network(
+                                AppAssets.logoUrl,
+                                width: logoWidth,
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                                gaplessPlayback: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: contentGap),
+                        SizedBox(
+                          height: titleHeight,
+                          width: contentWidth,
+                          child: Center(
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Opacity(
+                                  opacity: 0,
+                                  child: Text(
+                                    _titleText,
+                                    textAlign: TextAlign.center,
+                                    style: titleStyle,
+                                  ),
+                                ),
+                                BrandGradientText(
+                                  text: _visibleTitle,
+                                  style: titleStyle,
+                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
-                            child: Image.network(
-                              AppAssets.logoUrl,
-                              width: logoWidth,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
-                              gaplessPlayback: true,
-                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: contentGap),
-                      SizedBox(
-                        height: titleHeight,
-                        width: contentWidth,
-                        child: Center(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Opacity(
-                                opacity: 0,
-                                child: Text(
-                                  _titleText,
-                                  textAlign: TextAlign.center,
-                                  style: titleStyle,
-                                ),
-                              ),
-                              BrandGradientText(
-                                text: _visibleTitle,
-                                style: titleStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
+                        SizedBox(height: loaderGap),
+                        AppLoader(
+                          size: compact
+                              ? AppLoaderSize.medium
+                              : AppLoaderSize.large,
                         ),
-                      ),
-                      SizedBox(height: loaderGap),
-                      AppLoader(
-                        size: compact
-                            ? AppLoaderSize.medium
-                            : AppLoaderSize.large,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
