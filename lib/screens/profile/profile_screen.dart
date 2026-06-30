@@ -11,6 +11,7 @@ import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -227,7 +228,7 @@ class _ProfileHeader extends StatelessWidget {
           CircleAvatar(
             radius: 28,
             backgroundColor: context.appColors.gold.withValues(alpha: 0.25),
-            child: Icon(Icons.person, color: context.appColors.shinyGold, size: 32),
+            child: BrandGradientIcon(Icons.person, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -323,38 +324,69 @@ class _LogoutButton extends StatelessWidget {
   final bool isLoading;
   final VoidCallback? onPressed;
 
+  static const _borderRadius = BorderRadius.all(Radius.circular(12));
+
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final l10n = context.l10n;
+    final isDisabled = isLoading || onPressed == null;
+    final effectiveGradient = isDisabled
+        ? _fadeGradient(AppColors.brandGradient, 0.6)
+        : AppColors.brandGradient;
 
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colors.gold,
-          foregroundColor: AppColors.navy,
-          disabledBackgroundColor: colors.gold.withValues(alpha: 0.6),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: _borderRadius,
+          gradient: effectiveGradient,
         ),
-        icon: isLoading
-            ? const AppLoader(size: AppLoaderSize.small)
-            : const Icon(Icons.logout),
-        label: Text(
-          l10n.logout,
-          style: AppFont.style(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-            color: AppColors.navy,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: isDisabled ? null : onPressed,
+            borderRadius: _borderRadius,
+            child: Center(
+              child: isLoading
+                  ? const AppLoader(size: AppLoaderSize.small)
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.logout, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.logout,
+                          style: AppFont.style(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  static Gradient _fadeGradient(Gradient gradient, double opacity) {
+    if (gradient is LinearGradient) {
+      return LinearGradient(
+        begin: gradient.begin,
+        end: gradient.end,
+        colors: gradient.colors
+            .map((color) => color.withValues(alpha: opacity))
+            .toList(),
+        stops: gradient.stops,
+        tileMode: gradient.tileMode,
+        transform: gradient.transform,
+      );
+    }
+
+    return gradient;
   }
 }

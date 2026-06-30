@@ -16,6 +16,32 @@ abstract final class AppTextStyles {
 
   static TextStyle link(BuildContext context) => linkFor(context.appColors);
 
+  /// Style for brand-highlighted text rendered via [BrandGradientText].
+  static TextStyle highlighted(
+    BuildContext context, {
+    double fontSize = 28,
+    double letterSpacing = 0.5,
+    FontWeight fontWeight = FontWeight.w600,
+  }) =>
+      highlightedRaw(
+        fontSize: fontSize,
+        letterSpacing: letterSpacing,
+        fontWeight: fontWeight,
+      );
+
+  /// Same as [highlighted] without requiring a [BuildContext].
+  static TextStyle highlightedRaw({
+    double fontSize = 28,
+    double letterSpacing = 0.5,
+    FontWeight fontWeight = FontWeight.w600,
+  }) =>
+      AppFont.style(
+        color: Colors.white,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        letterSpacing: letterSpacing,
+      );
+
   static TextStyle headingFor(AppThemeColors colors) => AppFont.style(
         color: colors.textPrimary,
         fontSize: 28,
@@ -46,9 +72,4 @@ abstract final class AppTextStyles {
         fontSize: 16,
         fontWeight: FontWeight.w600,
       );
-
-  /// Fixed light-theme styles for chart labels and static assets.
-  static TextStyle get headingLight => headingFor(AppThemeColors.light);
-
-  static TextStyle get bodyLight => bodyFor(AppThemeColors.light);
 }

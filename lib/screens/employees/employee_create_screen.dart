@@ -15,8 +15,10 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
+import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_date_form_field.dart';
+import 'package:sawaliyatrader/core/widgets/app_date_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
@@ -25,6 +27,7 @@ import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/upper_case_text_input_formatter.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -545,22 +548,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
     DateTime? initial,
   }) async {
     final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showAppDatePicker(
       context: context,
       initialDate: initial ?? now,
       firstDate: DateTime(1960),
       lastDate: DateTime(now.year + 1),
-      builder: (context, child) {
-        final colors = context.appColors;
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: colors.gold,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (picked != null) onPicked(picked);
@@ -884,7 +876,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
     return Scaffold(
       appBar: ThemedAppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
+          icon: BrandGradientIcon(Icons.arrow_back),
           onPressed: _onBack,
         ),
         title: l10n.newEmployee,
@@ -948,9 +940,9 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                             OutlinedButton(
                               onPressed: _isSaving ? null : _onBack,
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: context.appColors.shinyGold,
-                                side: BorderSide(
-                                  color: context.appColors.shinyGold,
+                                foregroundColor: AppColors.teal500,
+                                side: const BorderSide(
+                                  color: AppColors.teal500,
                                 ),
                                 minimumSize: const Size(110, 40),
                               ),
@@ -966,9 +958,9 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                                         clearAfterSave: true,
                                       ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: context.appColors.shinyGold,
-                                side: BorderSide(
-                                  color: context.appColors.shinyGold,
+                                foregroundColor: AppColors.teal500,
+                                side: const BorderSide(
+                                  color: AppColors.teal500,
                                 ),
                                 minimumSize: const Size(120, 40),
                               ),
@@ -1466,11 +1458,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
               textInputAction: TextInputAction.next,
               externalError: _apiError('password'),
               suffixIcon: IconButton(
-                icon: Icon(
+                icon: BrandGradientIcon(
                   _obscurePassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: context.appColors.textSecondary,
                 ),
                 onPressed: () =>
                     setState(() => _obscurePassword = !_obscurePassword),
@@ -1497,11 +1488,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
               enableSuggestions: false,
               textInputAction: TextInputAction.next,
               suffixIcon: IconButton(
-                icon: Icon(
+                icon: BrandGradientIcon(
                   _obscureConfirmPassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: context.appColors.textSecondary,
                 ),
                 onPressed: () => setState(
                   () => _obscureConfirmPassword = !_obscureConfirmPassword,

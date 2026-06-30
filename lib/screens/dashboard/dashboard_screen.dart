@@ -17,10 +17,9 @@ import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_charts.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_kpi_row.dart';
-import 'package:sawaliyatrader/core/widgets/language_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
-import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -82,6 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: ThemedAppBar(
         title: context.l10n.home,
+        showLanguageDropdown: true,
         showThemeToggle: true,
         actions: [
           if (appNotificationNotifier != null)
@@ -98,10 +98,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Badge(
                       isLabelVisible: unread > 0,
                       label: Text('$unread'),
-                      child: Icon(
-                        Icons.notifications_outlined,
-                        color: context.appColors.shinyGold,
-                      ),
+                      child: BrandGradientIcon(Icons.notifications_outlined),
                     ),
                   );
                 },
@@ -115,42 +112,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: _statsLoading || stats == null
           ? const Center(child: AppLoader(size: kAppPageLoaderSize))
-          : Stack(
-              fit: StackFit.expand,
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 72),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.overview,
-                        style: AppTextStyles.label(context),
-                      ),
-                      const SizedBox(height: 12),
-                      DashboardKpiRow(
-                        stats: stats,
-                        permissions: permissions,
-                      ),
-                      const SizedBox(height: 28),
-                      Text(
-                        context.l10n.analytics,
-                        style: AppTextStyles.label(context),
-                      ),
-                      const SizedBox(height: 12),
-                      _AnalyticsSection(
-                        stats: stats,
-                        permissions: permissions,
-                      ),
-                    ],
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.overview,
+                    style: AppTextStyles.label(context),
                   ),
-                ),
-                const Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: LanguageGlobeButton(),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  DashboardKpiRow(
+                    stats: stats,
+                    permissions: permissions,
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    context.l10n.analytics,
+                    style: AppTextStyles.label(context),
+                  ),
+                  const SizedBox(height: 12),
+                  _AnalyticsSection(
+                    stats: stats,
+                    permissions: permissions,
+                  ),
+                ],
+              ),
             ),
     );
   }

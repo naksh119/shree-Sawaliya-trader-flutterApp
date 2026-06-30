@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
-import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class AccessDeniedScreen extends StatelessWidget {
   const AccessDeniedScreen({super.key, this.attemptedRoute});
@@ -24,10 +23,10 @@ class AccessDeniedScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
+            BrandGradientIcon(
               Icons.lock_outline,
               size: 48,
-              color: context.appColors.shinyGold.withValues(alpha: 0.75),
+              opacity: 0.75,
             ),
             const SizedBox(height: 16),
             Text(
@@ -49,7 +48,6 @@ class AccessDeniedScreen extends StatelessWidget {
             const Spacer(),
             AppPrimaryButton(
               label: l10n.backToDashboard,
-              textColor: AppColors.navy,
               onPressed: () => context.go(AppRoutes.dashboard),
             ),
           ],

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
+import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/app_gradient_border.dart';
 
 /// Date picker integrated with [FormField] so [FormState.validate] includes it.
 class AppDateFormField extends StatelessWidget {
@@ -53,62 +56,60 @@ class AppDateFormField extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-            Material(
-              color: context.appColors.inputFill,
-              borderRadius: BorderRadius.circular(12),
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: compact ? 10 : 16,
-                    vertical: compact ? 12 : 14,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: hasError
-                          ? Colors.red.shade300
-                          : context.appColors.progressTrack,
+            AppDropdownDecoration.fieldBorder(
+              context,
+              hasError: hasError,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.circular(AppInputMetrics.borderRadius),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: compact ? 10 : 16,
+                      vertical: compact ? 12 : 14,
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today_outlined,
-                        size: compact ? 16 : 18,
-                        color: context.appColors.shinyGold.withValues(alpha: 0.8),
-                      ),
-                      SizedBox(width: compact ? 8 : 12),
-                      Expanded(
-                        child: Text(
-                          formatted,
-                          style: AppTextStyles.body(context).copyWith(
-                            color: displayValue == null
-                                ? context.appColors.textSecondary
-                                : context.appColors.textPrimary,
-                            fontSize: compact ? 14 : null,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                    child: Row(
+                      children: [
+                        BrandGradientIcon(
+                          Icons.calendar_today_outlined,
+                          size: compact ? 16 : 18,
+                          opacity: 0.8,
                         ),
-                      ),
-                      if (onClear != null)
-                        IconButton(
-                          icon: const Icon(Icons.close, size: 18),
-                          color: context.appColors.textSecondary,
-                          visualDensity: VisualDensity.compact,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
+                        SizedBox(width: compact ? 8 : 12),
+                        Expanded(
+                          child: Text(
+                            formatted,
+                            style: AppTextStyles.body(context).copyWith(
+                              color: displayValue == null
+                                  ? context.appColors.textSecondary
+                                  : context.appColors.textPrimary,
+                              fontSize: compact ? 14 : null,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                          onPressed: () {
-                            field.didChange(null);
-                            onClear?.call();
-                          },
                         ),
-                    ],
+                        if (onClear != null)
+                          IconButton(
+                            icon: BrandGradientIcon(
+                              Icons.close,
+                              size: 18,
+                              opacity: 0.7,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
+                            onPressed: () {
+                              field.didChange(null);
+                              onClear?.call();
+                            },
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),

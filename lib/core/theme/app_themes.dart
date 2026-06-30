@@ -58,25 +58,29 @@ abstract final class AppThemes {
         circularTrackColor: colors.progressTrack,
       ),
       inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: colors.inputFill,
+        filled: false,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colors.progressTrack),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colors.progressTrack),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colors.gold, width: 1.5),
-        ),
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
         hintStyle: AppFont.style(
           color: colors.textPrimary.withValues(alpha: 0.4),
           fontSize: 16,
         ),
+        errorStyle: AppFont.style(
+          color: Colors.red.shade700,
+          fontSize: 12,
+        ),
+      ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: colors.card,
+        headerBackgroundColor: colors.card,
+        headerForegroundColor: colors.textPrimary,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colors.card,
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: colors.textPrimary,

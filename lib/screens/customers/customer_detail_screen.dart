@@ -19,6 +19,7 @@ import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
@@ -438,9 +439,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
-                              Icon(
+                              BrandGradientIcon(
                                 Icons.description_outlined,
-                                color: context.appColors.shinyGold,
                                 size: 20,
                               ),
                               const SizedBox(width: 10),

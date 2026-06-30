@@ -19,9 +19,11 @@ import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_date_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_customer_step.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/wizard/customer_wizard_documents_step.dart';
@@ -270,22 +272,11 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen>
 
   Future<void> _pickDateOfBirth() async {
     final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showAppDatePicker(
       context: context,
       initialDate: _dateOfBirth ?? DateTime(now.year - 25),
       firstDate: DateTime(1940),
       lastDate: now,
-      builder: (context, child) {
-        final colors = context.appColors;
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: colors.gold,
-                ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (picked == null) return;
@@ -597,7 +588,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen>
     return Scaffold(
       appBar: ThemedAppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
+          icon: BrandGradientIcon(Icons.arrow_back),
           onPressed: _onBack,
         ),
         title: context.l10n.newCustomer,

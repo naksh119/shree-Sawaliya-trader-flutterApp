@@ -17,6 +17,8 @@ import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/screens/employees/employee_delete_helper.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
+import 'package:sawaliyatrader/core/widgets/app_status_chip.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -538,10 +540,6 @@ class _EmployeeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = employee.isActive
-        ? const Color(0xFF4CAF50)
-        : context.appColors.textPrimary;
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -571,18 +569,10 @@ class _EmployeeHeader extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              employee.isActive ? context.l10n.active : context.l10n.inactive,
-              style: AppTextStyles.subtitle(
-                context,
-              ).copyWith(color: statusColor, fontWeight: FontWeight.w600),
-            ),
+          AppStatusChip(
+            label: employee.isActive
+                ? context.l10n.active
+                : context.l10n.inactive,
           ),
         ],
       ),
@@ -630,11 +620,9 @@ class _EmployeeAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: 32,
       backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
-      child: Text(
-        employee.initials,
-        style: AppTextStyles.heading(
-          context,
-        ).copyWith(color: context.appColors.shinyGold, fontSize: 22),
+      child: BrandGradientText(
+        text: employee.initials,
+        style: AppTextStyles.heading(context).copyWith(fontSize: 22),
       ),
     );
   }

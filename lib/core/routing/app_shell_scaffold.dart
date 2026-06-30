@@ -10,6 +10,7 @@ import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/routing/bottom_nav_config.dart';
 import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 
 class AppShellScaffold extends StatefulWidget {
   const AppShellScaffold({
@@ -173,12 +174,10 @@ class _NavIconButton extends StatelessWidget {
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(
+          child: BrandGradientIcon(
             isSelected ? item.selectedIcon : item.icon,
             size: iconSize,
-            color: isSelected
-                ? context.appColors.shinyGold
-                : context.appColors.shinyGold.withValues(alpha: 0.55),
+            opacity: isSelected ? 1 : 0.55,
           ),
         ),
       ),

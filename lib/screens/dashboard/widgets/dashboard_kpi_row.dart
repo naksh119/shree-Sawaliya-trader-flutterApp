@@ -4,6 +4,7 @@ import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 class DashboardKpiRow extends StatelessWidget {
@@ -124,7 +125,7 @@ class _KpiCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: context.appColors.shinyGold, size: 22),
+          BrandGradientIcon(icon, size: 22),
           const Spacer(),
           Text(
             value,

@@ -10,7 +10,6 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.textPrimary,
     required this.textSecondary,
     required this.gold,
-    required this.shinyGold,
     required this.navy,
     required this.progressTrack,
     required this.border,
@@ -24,7 +23,6 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color textPrimary;
   final Color textSecondary;
   final Color gold;
-  final Color shinyGold;
   final Color navy;
   final Color progressTrack;
   final Color border;
@@ -38,7 +36,6 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textPrimary: AppColors.brown,
     textSecondary: Color(0xBF6D5732),
     gold: AppColors.gold,
-    shinyGold: AppColors.shinyGold,
     navy: AppColors.navy,
     progressTrack: AppColors.progressTrack,
     border: Color(0x1F6D5732),
@@ -53,7 +50,6 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textPrimary: Color(0xFFE8DFD0),
     textSecondary: Color(0xBFC4B8A5),
     gold: AppColors.gold,
-    shinyGold: AppColors.shinyGold,
     navy: Color(0xFF9DB4FF),
     progressTrack: Color(0xFF3D3528),
     border: Color(0x33E8DFD0),
@@ -69,7 +65,6 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? textPrimary,
     Color? textSecondary,
     Color? gold,
-    Color? shinyGold,
     Color? navy,
     Color? progressTrack,
     Color? border,
@@ -83,7 +78,6 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       gold: gold ?? this.gold,
-      shinyGold: shinyGold ?? this.shinyGold,
       navy: navy ?? this.navy,
       progressTrack: progressTrack ?? this.progressTrack,
       border: border ?? this.border,
@@ -102,7 +96,6 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       gold: Color.lerp(gold, other.gold, t)!,
-      shinyGold: Color.lerp(shinyGold, other.shinyGold, t)!,
       navy: Color.lerp(navy, other.navy, t)!,
       progressTrack: Color.lerp(progressTrack, other.progressTrack, t)!,
       border: Color.lerp(border, other.border, t)!,

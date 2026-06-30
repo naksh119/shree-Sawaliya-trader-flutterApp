@@ -19,6 +19,8 @@ import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/core/widgets/user_header_badge.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_status_chip.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/screens/branches/branch_delete_helper.dart';
 
 class BranchesListScreen extends StatefulWidget {
@@ -395,9 +397,9 @@ class _BranchListTile extends StatelessWidget {
               CircleAvatar(
                 radius: 22,
                 backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
-                child: Text(
-                  branch.initials,
-                  style: AppTextStyles.label(context).copyWith(color: context.appColors.shinyGold),
+                child: BrandGradientText(
+                  text: branch.initials,
+                  style: AppTextStyles.label(context),
                 ),
               ),
               const SizedBox(width: 14),
@@ -439,7 +441,12 @@ class _BranchListTile extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  _BranchActiveChip(isActive: branch.isActive),
+                  AppStatusChip(
+                    label: branch.isActive
+                        ? context.l10n.active
+                        : context.l10n.inactive,
+                    compact: true,
+                  ),
                   EntityEditDeleteTrailingActions(
                     entityName: branch.name,
                     canEdit: canEdit,
@@ -473,10 +480,10 @@ class _BranchMetaRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
+        BrandGradientIcon(
           icon,
           size: 16,
-          color: context.appColors.shinyGold.withValues(alpha: 0.75),
+          opacity: 0.75,
         ),
         const SizedBox(width: 6),
         Expanded(
@@ -487,29 +494,3 @@ class _BranchMetaRow extends StatelessWidget {
   }
 }
 
-class _BranchActiveChip extends StatelessWidget {
-  const _BranchActiveChip({required this.isActive});
-
-  final bool isActive;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isActive ? const Color(0xFF4CAF50) : context.appColors.textPrimary;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        isActive ? context.l10n.active : context.l10n.inactive,
-        style: AppTextStyles.subtitle(context).copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-}

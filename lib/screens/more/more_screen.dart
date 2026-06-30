@@ -6,6 +6,7 @@ import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
@@ -122,12 +123,12 @@ class _MoreTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, color: context.appColors.shinyGold, size: 24),
+              BrandGradientIcon(icon, size: 24),
               const SizedBox(width: 14),
               Expanded(child: Text(label, style: AppTextStyles.body(context))),
-              Icon(
+              BrandGradientIcon(
                 Icons.chevron_right_rounded,
-                color: context.appColors.shinyGold.withValues(alpha: 0.45),
+                opacity: 0.45,
               ),
             ],
           ),

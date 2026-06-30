@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/theme/app_font.dart';
+import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
@@ -138,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen>
               final compact = constraints.maxHeight < 680;
               final contentWidth = constraints.maxWidth - 48;
               final logoWidth = (contentWidth * 0.68).clamp(140.0, 240.0);
-              final titleStyle = AppFont.style(
+              final titleStyle = AppTextStyles.highlightedRaw(
                 fontSize: compact ? 17 : 22,
                 letterSpacing: compact ? 0.8 : 1.2,
                 fontWeight: FontWeight.w700,
@@ -193,9 +194,10 @@ class _SplashScreenState extends State<SplashScreen>
                                   style: titleStyle,
                                 ),
                               ),
-                              _GoldenShimmerText(
+                              BrandGradientText(
                                 text: _visibleTitle,
                                 style: titleStyle,
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
@@ -213,104 +215,6 @@ class _SplashScreenState extends State<SplashScreen>
               );
             },
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GoldenShimmerText extends StatefulWidget {
-  const _GoldenShimmerText({required this.text, required this.style});
-
-  final String text;
-  final TextStyle style;
-
-  @override
-  State<_GoldenShimmerText> createState() => _GoldenShimmerTextState();
-}
-
-class _GoldenShimmerTextState extends State<_GoldenShimmerText>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _shimmerController;
-
-  static const _goldColors = <Color>[
-    Color(0xFF4A3A0F),
-    Color(0xFF6D5416),
-    Color(0xFF8B6914),
-    Color(0xFFA67C1A),
-    Color(0xFFC9A227),
-    Color(0xFFD4A62A),
-    Color(0xFFC9A227),
-    Color(0xFFA67C1A),
-    Color(0xFF8B6914),
-    Color(0xFF6D5416),
-    Color(0xFF4A3A0F),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _shimmerController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _shimmerController,
-      builder: (context, child) {
-        final slide = _shimmerController.value * 2.4 - 1.2;
-
-        return ShaderMask(
-          blendMode: BlendMode.srcIn,
-          shaderCallback: (bounds) {
-            return LinearGradient(
-              begin: Alignment(slide - 1, -0.2),
-              end: Alignment(slide + 1, 0.2),
-              colors: _goldColors,
-              stops: const [
-                0.0,
-                0.1,
-                0.22,
-                0.34,
-                0.44,
-                0.5,
-                0.56,
-                0.66,
-                0.78,
-                0.9,
-                1.0,
-              ],
-            ).createShader(bounds);
-          },
-          child: child,
-        );
-      },
-      child: Text(
-        widget.text,
-        textAlign: TextAlign.center,
-        style: widget.style.copyWith(
-          color: context.appColors.card,
-          shadows: const [
-            Shadow(
-              color: Color(0xFF3D2F0A),
-              offset: Offset(0, 1),
-              blurRadius: 2,
-            ),
-            Shadow(
-              color: Color(0xFF6D5416),
-              offset: Offset(0, 0),
-              blurRadius: 6,
-            ),
-          ],
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/customers/models/customer_dto.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_status_chip.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 
@@ -39,11 +40,11 @@ class CustomerListTile extends StatelessWidget {
               CircleAvatar(
                 radius: 22,
                 backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
-                child: Text(
-                  customer.fullName.isNotEmpty
+                child: BrandGradientText(
+                  text: customer.fullName.isNotEmpty
                       ? customer.fullName[0].toUpperCase()
                       : '?',
-                  style: AppTextStyles.label(context).copyWith(color: context.appColors.shinyGold),
+                  style: AppTextStyles.label(context),
                 ),
               ),
               const SizedBox(width: 14),

@@ -1,31 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/locale/locale_notifier.dart';
-import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 
 const _englishFlag = '🇺🇸';
 const _hindiFlag = '🇮🇳';
 
-Widget _languageMenuItem(String flag, String label, {bool selected = false}) {
+Widget _languageMenuItem(
+  String flag,
+  String label, {
+  bool selected = false,
+}) {
   return Row(
     children: [
-      Text(flag, style: const TextStyle(fontSize: 18)),
-      const SizedBox(width: 10),
-      Expanded(child: Text(label)),
-      if (selected) const Icon(Icons.check, size: 18),
+      Text(
+        flag,
+        style: const TextStyle(fontSize: 16, height: 1),
+        maxLines: 1,
+        softWrap: false,
+      ),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          label,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      SizedBox(
+        width: 16,
+        height: 16,
+        child: selected
+            ? const BrandGradientIcon(Icons.check, size: 16)
+            : null,
+      ),
     ],
   );
 }
 
-List<PopupMenuEntry<Locale>> _languageMenuItems(
-  BuildContext context,
+List<DropdownMenuItem<Locale>> _languageDropdownItems(
   AppLocalizations l10n,
   Locale current,
 ) {
   return [
-    PopupMenuItem(
+    DropdownMenuItem(
       value: const Locale('en'),
       child: _languageMenuItem(
         _englishFlag,
@@ -33,8 +54,7 @@ List<PopupMenuEntry<Locale>> _languageMenuItems(
         selected: current.languageCode == 'en',
       ),
     ),
-    AppDropdownDecoration.menuDivider(context),
-    PopupMenuItem(
+    DropdownMenuItem(
       value: const Locale('hi'),
       child: _languageMenuItem(
         _hindiFlag,
@@ -45,67 +65,26 @@ List<PopupMenuEntry<Locale>> _languageMenuItems(
   ];
 }
 
-/// Globe icon language picker for the dashboard bottom corner.
+/// Legacy name — renders the compact [LanguageDropdown].
 class LanguageGlobeButton extends StatelessWidget {
   const LanguageGlobeButton({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final notifier = appLocaleNotifier;
-    if (notifier == null) return const SizedBox.shrink();
-
-    return ListenableBuilder(
-      listenable: notifier,
-      builder: (context, _) {
-        final l10n = context.l10n;
-        final colors = context.appColors;
-
-        return PopupMenuButton<Locale>(
-          tooltip: l10n.selectLanguage,
-          position: PopupMenuPosition.over,
-          offset: const Offset(0, -8),
-          color: AppDropdownDecoration.menuBackground(context),
-          shape: AppDropdownDecoration.openMenuShape(context),
-          onSelected: notifier.setLocale,
-          itemBuilder: (context) =>
-              _languageMenuItems(context, l10n, notifier.locale),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Theme.of(context).colorScheme.surface,
-              border: Border.all(color: colors.shinyGold, width: 2.5),
-              boxShadow: [
-                BoxShadow(
-                  color: colors.gold.withValues(alpha: 0.35),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Icon(Icons.language, color: colors.navy, size: 24),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => const LanguageDropdown();
 }
 
 class LanguageDropdown extends StatelessWidget {
   const LanguageDropdown({super.key});
 
-  static Widget _languageItem(String flag, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(flag, style: const TextStyle(fontSize: 18)),
-        const SizedBox(width: 8),
-        Text(label),
-      ],
-    );
-  }
+  static const _buttonWidth = 46.0;
+  static const _buttonHeight = 26.0;
+  static const _menuWidth = 112.0;
+
+  static String _flagFor(Locale locale) =>
+      locale.languageCode == 'hi' ? _hindiFlag : _englishFlag;
+
+  static String _codeFor(Locale locale) =>
+      locale.languageCode == 'hi' ? 'HI' : 'EN';
 
   @override
   Widget build(BuildContext context) {
@@ -116,33 +95,52 @@ class LanguageDropdown extends StatelessWidget {
       listenable: notifier,
       builder: (context, _) {
         final l10n = context.l10n;
-        final gold = context.appColors.shinyGold;
+        final locale = notifier.locale;
 
-        return Padding(
-          padding: const EdgeInsets.only(right: 4),
-          child: Tooltip(
-            message: l10n.selectLanguage,
-            child: AppInlineDropdown<Locale>(
-              value: notifier.locale,
-              icon: Icon(Icons.arrow_drop_down, color: gold, size: 20),
-              style: TextStyle(
-                color: gold,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+        return Tooltip(
+          message: l10n.selectLanguage,
+          child: SizedBox(
+            width: _buttonWidth,
+            height: _buttonHeight,
+            child: AppDropdownDecoration.fieldBorder(
+              context,
+              padding: EdgeInsets.zero,
+              borderRadius: 10,
+              child: AppInlineDropdown<Locale>(
+                value: locale,
+                expandHitTarget: true,
+                menuWidth: _menuWidth,
+                selectedChild: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _flagFor(locale),
+                        maxLines: 1,
+                        softWrap: false,
+                        style: const TextStyle(fontSize: 14, height: 1),
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        _codeFor(locale),
+                        maxLines: 1,
+                        softWrap: false,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          height: 1,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                icon: const SizedBox.shrink(),
+                items: _languageDropdownItems(l10n, locale),
+                onChanged: (locale) {
+                  if (locale != null) notifier.setLocale(locale);
+                },
               ),
-              items: [
-                DropdownMenuItem(
-                  value: const Locale('en'),
-                  child: _languageItem(_englishFlag, l10n.languageEnglish),
-                ),
-                DropdownMenuItem(
-                  value: const Locale('hi'),
-                  child: _languageItem(_hindiFlag, l10n.languageHindi),
-                ),
-              ],
-              onChanged: (locale) {
-                if (locale != null) notifier.setLocale(locale);
-              },
             ),
           ),
         );

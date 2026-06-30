@@ -29,24 +29,6 @@ class DashboardService {
     ('CANCELLED', 'Cancelled'),
   ];
 
-  static const _customerColors = [
-    0xFF8B7355,
-    0xFFD4A62A,
-    0xFF0B2A8F,
-    0xFF4CAF50,
-    0xFFE57373,
-    0xFF6D5732,
-    0xFFB0A090,
-  ];
-
-  static const _emiColors = [
-    0xFFD4A62A,
-    0xFF0B2A8F,
-    0xFF4CAF50,
-    0xFFE57373,
-    0xFFB0A090,
-  ];
-
   Future<DashboardStats> fetchStats({
     required LoginResponse session,
   }) async {
@@ -65,7 +47,6 @@ class DashboardService {
     if (checker.canViewCustomers) {
       customerTotal = await _fetchTotal(ApiConfig.customersPath, baseQuery) ?? 0;
 
-      var colorIndex = 0;
       for (final (status, label) in _customerStatuses) {
         final count = await _fetchTotal(
           ApiConfig.customersPath,
@@ -76,11 +57,10 @@ class DashboardService {
             ChartSegment(
               label: label,
               value: count.toDouble(),
-              colorArgb: _customerColors[colorIndex % _customerColors.length],
+              colorArgb: goldArgb,
             ),
           );
         }
-        colorIndex++;
       }
     }
 
@@ -109,7 +89,6 @@ class DashboardService {
     final collectionTrend = <TrendPoint>[];
 
     if (checker.canCollectEmi) {
-      var colorIndex = 0;
       for (final (status, label) in _emiStatuses) {
         final count = await _fetchTotal(
           '/operations/api/emis/',
@@ -120,14 +99,13 @@ class DashboardService {
             ChartSegment(
               label: label,
               value: count.toDouble(),
-              colorArgb: _emiColors[colorIndex % _emiColors.length],
+              colorArgb: goldArgb,
             ),
           );
           if (status == 'PENDING' || status == 'OVERDUE' || status == 'PARTIAL') {
             pendingEmiCount += count;
           }
         }
-        colorIndex++;
       }
 
       final emiItems = await _fetchListItems('/operations/api/emis/', {

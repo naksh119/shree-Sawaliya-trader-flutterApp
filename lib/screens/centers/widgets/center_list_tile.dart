@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:sawaliyatrader/core/centers/models/center_dto.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/screens/centers/widgets/center_status_chip.dart';
 
 class CenterListTile extends StatelessWidget {
@@ -38,11 +39,9 @@ class CenterListTile extends StatelessWidget {
               CircleAvatar(
                 radius: 22,
                 backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
-                child: Text(
-                  center.initials,
-                  style: AppTextStyles.label(context).copyWith(
-                    color: context.appColors.shinyGold,
-                  ),
+                child: BrandGradientText(
+                  text: center.initials,
+                  style: AppTextStyles.label(context),
                 ),
               ),
               const SizedBox(width: 14),
@@ -79,10 +78,10 @@ class CenterListTile extends StatelessWidget {
                   CenterStatusChip(status: center.status, compact: true),
                   if (center.emiGenerated) ...[
                     const SizedBox(height: 6),
-                    Icon(
+                    BrandGradientIcon(
                       Icons.event_available_outlined,
                       size: 16,
-                      color: context.appColors.shinyGold.withValues(alpha: 0.8),
+                      opacity: 0.8,
                     ),
                   ],
                 ],

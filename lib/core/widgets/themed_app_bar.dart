@@ -32,6 +32,7 @@ class ThemedAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: automaticallyImplyLeading ?? leading == null,
       leading: leading,
       title: titleWidget ?? Text(title!, style: AppTextStyles.heading(context)),
+      actionsPadding: const EdgeInsets.only(right: 4),
       actions: [
         if (showLanguageDropdown) const LanguageDropdown(),
         if (showThemeToggle) const ThemeToggleButton(),

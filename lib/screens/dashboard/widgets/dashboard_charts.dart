@@ -6,6 +6,7 @@ import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/screens/dashboard/widgets/dashboard_chart_card.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -264,34 +265,35 @@ class ModuleOverviewChart extends StatelessWidget {
   final bool showBranches;
 
   List<ChartSegment> _segments(BuildContext context, AppLocalizations l10n) {
+    final chartColor = context.appColors.gold.toARGB32();
     final segments = <ChartSegment>[];
 
     if (showCustomers) {
       segments.add(ChartSegment(
         label: l10n.customers,
         value: stats.customerTotal.toDouble(),
-        colorArgb: AppColors.navy.toARGB32(),
+        colorArgb: chartColor,
       ));
     }
     if (showCenters) {
       segments.add(ChartSegment(
         label: l10n.centers,
         value: stats.centerTotal.toDouble(),
-        colorArgb: context.appColors.gold.toARGB32(),
+        colorArgb: chartColor,
       ));
     }
     if (showEmployees) {
       segments.add(ChartSegment(
         label: l10n.employees,
         value: stats.employeeTotal.toDouble(),
-        colorArgb: context.appColors.textPrimary.toARGB32(),
+        colorArgb: chartColor,
       ));
     }
     if (showBranches) {
       segments.add(ChartSegment(
         label: l10n.branches,
         value: stats.branchTotal.toDouble(),
-        colorArgb: const Color(0xFF8B7355).toARGB32(),
+        colorArgb: chartColor,
       ));
     }
 
@@ -438,10 +440,10 @@ class _ChartEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            BrandGradientIcon(
               Icons.insert_chart_outlined,
               size: 36,
-              color: context.appColors.shinyGold.withValues(alpha: 0.45),
+              opacity: 0.45,
             ),
             const SizedBox(height: 8),
             Text(message, style: AppTextStyles.subtitle(context)),

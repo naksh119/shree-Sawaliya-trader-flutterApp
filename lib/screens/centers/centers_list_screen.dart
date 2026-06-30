@@ -196,7 +196,6 @@ class _CentersListScreenState extends State<CentersListScreen>
                     _FilterChip(
                       label: status.localizedLabel(context),
                       selected: _statusFilter == status,
-                      color: status.color,
                       onTap: () => _onStatusSelected(status),
                     ),
                   ],
@@ -296,17 +295,15 @@ class _FilterChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
-    this.color,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = color ?? context.appColors.gold;
+    final activeColor = context.appColors.gold;
 
     return FilterChip(
       label: Text(label),

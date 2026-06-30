@@ -4,6 +4,7 @@ import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 
 class CustomerWizardDocumentsStep extends StatelessWidget {
@@ -66,7 +67,7 @@ class CustomerWizardDocumentsStep extends StatelessWidget {
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: onPickDocument,
-          icon: Icon(Icons.upload_file, color: context.appColors.shinyGold),
+          icon: BrandGradientIcon(Icons.upload_file),
           label: Text(
             pickedFileName ?? l10n.chooseFile,
             style: AppTextStyles.body(context),

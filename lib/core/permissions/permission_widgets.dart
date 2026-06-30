@@ -3,6 +3,7 @@ import 'package:sawaliyatrader/core/permissions/app_permission.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 /// Shows [child] only when the signed-in user has the required permission(s).
@@ -71,7 +72,7 @@ class PermissionButton extends StatelessWidget {
     if (icon != null) {
       return FilledButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 20),
+        icon: BrandGradientIcon(icon!, size: 20),
         label: Text(label),
         style: style,
       );

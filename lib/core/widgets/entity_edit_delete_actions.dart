@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
@@ -54,8 +55,8 @@ abstract final class EntityActionPlaceholder {
   }
 }
 
-class _GoldenIconButton extends StatelessWidget {
-  const _GoldenIconButton({
+class _BrandIconButton extends StatelessWidget {
+  const _BrandIconButton({
     required this.icon,
     required this.tooltip,
     required this.onPressed,
@@ -87,10 +88,9 @@ class _GoldenIconButton extends StatelessWidget {
               ),
             ),
             alignment: Alignment.center,
-            child: Icon(
+            child: BrandGradientIcon(
               icon,
               size: size * 0.5,
-              color: context.appColors.shinyGold,
             ),
           ),
         ),
@@ -130,7 +130,7 @@ class EntityEditDeleteIconStack extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (canEdit)
-          _GoldenIconButton(
+          _BrandIconButton(
             size: buttonSize,
             tooltip: l10n.edit,
             icon: Icons.edit_outlined,
@@ -139,7 +139,7 @@ class EntityEditDeleteIconStack extends StatelessWidget {
           ),
         if (canEdit && canDelete) SizedBox(height: gap),
         if (canDelete)
-          _GoldenIconButton(
+          _BrandIconButton(
             size: buttonSize,
             tooltip: l10n.delete,
             icon: Icons.delete_outline,
@@ -218,7 +218,7 @@ class EntityEditDeleteBar extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onEdit ??
                       () => EntityActionPlaceholder.onEdit(context, entityName),
-                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  icon: BrandGradientIcon(Icons.edit_outlined, size: 18),
                   label: Text(l10n.edit),
                 ),
               ),
@@ -232,7 +232,7 @@ class EntityEditDeleteBar extends StatelessWidget {
                     backgroundColor: context.appColors.gold,
                     foregroundColor: AppColors.navy,
                   ),
-                  icon: const Icon(Icons.delete_outline, size: 18),
+                  icon: BrandGradientIcon(Icons.delete_outline, size: 18),
                   label: Text(l10n.delete),
                 ),
               ),

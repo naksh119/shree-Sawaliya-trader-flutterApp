@@ -5,6 +5,7 @@ import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 
 /// Reusable image upload field with preview, used across employee, customer, and branch forms.
@@ -110,9 +111,8 @@ class AppPhotoPicker extends StatelessWidget {
                     children: [
                       OutlinedButton.icon(
                         onPressed: onPick,
-                        icon: Icon(
+                        icon: BrandGradientIcon(
                           Icons.upload_file,
-                          color: context.appColors.shinyGold,
                           size: 20,
                         ),
                         label: Text(
@@ -128,9 +128,9 @@ class AppPhotoPicker extends StatelessWidget {
                         IconButton(
                           onPressed: onClear,
                           tooltip: l10n.removePhoto,
-                          icon: Icon(
+                          icon: BrandGradientIcon(
                             Icons.close,
-                            color: context.appColors.textSecondary,
+                            opacity: 0.7,
                           ),
                         ),
                       ],
@@ -212,10 +212,10 @@ class _ExistingPlaceholder extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          BrandGradientIcon(
             icon,
             size: 36,
-            color: context.appColors.shinyGold.withValues(alpha: 0.7),
+            opacity: 0.7,
           ),
           const SizedBox(height: 6),
           Text(label, style: AppTextStyles.subtitle(context)),
@@ -245,10 +245,10 @@ class _PreviewAvatar extends StatelessWidget {
       backgroundColor: context.appColors.inputFill,
       backgroundImage: previewProvider,
       child: previewProvider == null
-          ? Icon(
+          ? BrandGradientIcon(
               placeholderIcon,
               size: 32,
-              color: context.appColors.textSecondary,
+              opacity: 0.7,
             )
           : null,
     );

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_gradient_border.dart';
+import 'package:sawaliyatrader/core/widgets/app_input_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 
 abstract final class AppDropdownMetrics {
   static const filterPadding = EdgeInsets.symmetric(horizontal: 8, vertical: 6);
@@ -37,10 +41,9 @@ abstract final class AppDropdownMetrics {
         itemHeight: kMinInteractiveDimension,
       );
 
-  static Widget expandIcon(BuildContext context) => Icon(
+  static Widget expandIcon(BuildContext context) => BrandGradientIcon(
         Icons.expand_more_rounded,
         size: iconSize,
-        color: context.appColors.shinyGold.withValues(alpha: 0.8),
       );
 }
 
@@ -53,107 +56,63 @@ abstract final class AppDropdownDecoration {
     String? labelText,
     EdgeInsetsGeometry? contentPadding,
   }) {
-    final colors = context.appColors;
-    final borderRadius = BorderRadius.circular(12);
-
-    return InputDecoration(
+    return AppInputDecoration.borderless(
+      context,
       labelText: labelText,
-      labelStyle: labelText != null ? AppTextStyles.label(context) : null,
-      filled: true,
-      fillColor: colors.inputFill,
       contentPadding: contentPadding ??
           const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: colors.progressTrack),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: colors.progressTrack),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: colors.gold, width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: Colors.red.shade300),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: borderRadius,
-        borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
-      ),
-      errorStyle: AppTextStyles.subtitle(context).copyWith(
-        color: Colors.red.shade700,
-      ),
-      errorMaxLines: 3,
     );
   }
+
+  /// Branded gradient outline shared by text fields, dropdowns, and date pickers.
+  static Widget fieldBorder(
+    BuildContext context, {
+    required Widget child,
+    EdgeInsetsGeometry? padding,
+    bool hasError = false,
+    bool isFocused = false,
+    double borderRadius = AppInputMetrics.borderRadius,
+  }) {
+    Widget content = child;
+    if (padding != null) {
+      content = Padding(padding: padding, child: child);
+    }
+
+    return AppGradientBorder(
+      backgroundColor: context.appColors.card,
+      hasError: hasError,
+      isFocused: isFocused,
+      borderRadius: borderRadius,
+      child: content,
+    );
+  }
+
+  static const double menuBorderRadius = 12;
 
   static Color menuBackground(BuildContext context) {
     final colors = context.appColors;
-    // Soft golden tint — lighter than progressTrack, still on-theme.
     return Color.lerp(
       colors.card,
-      colors.progressTrack,
-      isDark(context) ? 0.38 : 0.22,
+      AppColors.teal500,
+      isDark(context) ? 0.1 : 0.05,
     )!;
   }
 
-  static BoxDecoration container(BuildContext context) {
-    final colors = context.appColors;
-    return BoxDecoration(
-      color: colors.card,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: colors.border),
-    );
-  }
-
-  static Color menuBorderColor(BuildContext context) {
-    final colors = context.appColors;
-    return isDark(context)
-        ? colors.gold
-        : colors.gold.withValues(alpha: 0.65);
-  }
-
   static Color menuDividerColor(BuildContext context) {
-    final colors = context.appColors;
-    return isDark(context)
-        ? colors.gold.withValues(alpha: 0.85)
-        : colors.gold.withValues(alpha: 0.45);
-  }
-
-  static ShapeBorder openMenuShape(BuildContext context) {
-    return RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-      side: BorderSide(
-        color: menuBorderColor(context),
-        width: 1,
-      ),
+    return AppColors.teal500.withValues(
+      alpha: isDark(context) ? 0.4 : 0.22,
     );
   }
 
-  static PopupMenuDivider menuDivider(BuildContext context) {
-    return PopupMenuDivider(
-      height: 1,
-      thickness: 1,
-      color: menuDividerColor(context),
-    );
-  }
-
-  static BoxDecoration filterIconButton(
+  /// Branded gradient outline for open dropdown / popup menus.
+  static Widget menuBorder(
     BuildContext context, {
-    required bool isActive,
+    required Widget child,
   }) {
-    final colors = context.appColors;
-    return BoxDecoration(
-      color: colors.inputFill,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: isActive
-            ? colors.gold.withValues(alpha: 0.5)
-            : colors.border,
-      ),
+    return AppGradientBorder(
+      backgroundColor: menuBackground(context),
+      borderRadius: menuBorderRadius,
+      child: child,
     );
   }
 }

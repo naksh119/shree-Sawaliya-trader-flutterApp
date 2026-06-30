@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
-
 enum CustomerStatus {
   sourced('SOURCED', 'Sourced'),
   applied('APPLIED', 'Applied'),
@@ -24,18 +21,6 @@ enum CustomerStatus {
   }
 
   static List<CustomerStatus> get filterOptions => CustomerStatus.values;
-
-  Color get color {
-    return switch (this) {
-      CustomerStatus.sourced => const Color(0xFF8B7355),
-      CustomerStatus.applied => AppColors.gold,
-      CustomerStatus.underReview => AppColors.navy,
-      CustomerStatus.approved => const Color(0xFF4CAF50),
-      CustomerStatus.rejected => const Color(0xFFE57373),
-      CustomerStatus.active => AppColors.brown,
-      CustomerStatus.closed => const Color(0xFFB0A090),
-    };
-  }
 
   bool get canApproveOrReject =>
       this == CustomerStatus.applied || this == CustomerStatus.underReview;

@@ -12,6 +12,8 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_status_chip.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/app_image_viewer.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
@@ -289,9 +291,6 @@ class _BranchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor =
-        branch.isActive ? const Color(0xFF4CAF50) : context.appColors.textPrimary;
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -304,12 +303,9 @@ class _BranchHeader extends StatelessWidget {
           CircleAvatar(
             radius: 32,
             backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
-            child: Text(
-              branch.initials,
-              style: AppTextStyles.heading(context).copyWith(
-                color: context.appColors.shinyGold,
-                fontSize: 22,
-              ),
+            child: BrandGradientText(
+              text: branch.initials,
+              style: AppTextStyles.heading(context).copyWith(fontSize: 22),
             ),
           ),
           const SizedBox(width: 16),
@@ -327,19 +323,10 @@ class _BranchHeader extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              branch.isActive ? context.l10n.active : context.l10n.inactive,
-              style: AppTextStyles.subtitle(context).copyWith(
-                color: statusColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+          AppStatusChip(
+            label: branch.isActive
+                ? context.l10n.active
+                : context.l10n.inactive,
           ),
         ],
       ),
@@ -392,9 +379,9 @@ class _PaymentQrSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
+            BrandGradientIcon(
               Icons.qr_code_2_rounded,
-              color: context.appColors.shinyGold.withValues(alpha: 0.85),
+              opacity: 0.85,
             ),
             const SizedBox(width: 8),
             Text(
@@ -422,10 +409,10 @@ class _PaymentQrSection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          BrandGradientIcon(
             Icons.qr_code_2_rounded,
             size: 48,
-            color: context.appColors.shinyGold.withValues(alpha: 0.7),
+            opacity: 0.7,
           ),
           const SizedBox(height: 8),
           Text(context.l10n.qrUploaded, style: AppTextStyles.subtitle(context)),

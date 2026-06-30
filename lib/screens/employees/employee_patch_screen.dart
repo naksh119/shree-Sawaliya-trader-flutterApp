@@ -17,9 +17,11 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
+import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_date_form_field.dart';
+import 'package:sawaliyatrader/core/widgets/app_date_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
@@ -27,6 +29,7 @@ import 'package:sawaliyatrader/core/widgets/app_person_dropdowns.dart';
 import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
 import 'package:sawaliyatrader/core/widgets/upper_case_text_input_formatter.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
 
@@ -721,22 +724,11 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
     DateTime? initial,
   }) async {
     final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showAppDatePicker(
       context: context,
       initialDate: initial ?? now,
       firstDate: DateTime(1960),
       lastDate: DateTime(now.year + 1),
-      builder: (context, child) {
-        final colors = context.appColors;
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: colors.gold,
-                ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (picked != null) onPicked(picked);
@@ -884,7 +876,7 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
     return Scaffold(
       appBar: ThemedAppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
+          icon: BrandGradientIcon(Icons.arrow_back),
           onPressed: _onBack,
         ),
         title: l10n.editEmployeePatch,
@@ -947,9 +939,9 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
                             OutlinedButton(
                               onPressed: _isSaving ? null : _onBack,
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: context.appColors.shinyGold,
-                                side: BorderSide(
-                                  color: context.appColors.shinyGold,
+                                foregroundColor: AppColors.teal500,
+                                side: const BorderSide(
+                                  color: AppColors.teal500,
                                 ),
                                 minimumSize: const Size(110, 40),
                               ),
@@ -965,9 +957,9 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
                                         clearAfterSave: true,
                                       ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: context.appColors.shinyGold,
-                                side: BorderSide(
-                                  color: context.appColors.shinyGold,
+                                foregroundColor: AppColors.teal500,
+                                side: const BorderSide(
+                                  color: AppColors.teal500,
                                 ),
                                 minimumSize: const Size(120, 40),
                               ),
@@ -1231,7 +1223,7 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
           children: [
             Expanded(
               child: _isLoadingOptions
-                  ? _DropdownLoadingField(label: l10n.role)
+                  ? AppDropdownLoadingField(label: l10n.role)
                   : _roles.isEmpty
                       ? Text(
                           l10n.noRolesAvailable,
@@ -1267,7 +1259,7 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _isLoadingOptions
-                  ? _DropdownLoadingField(label: l10n.branchLabel)
+                  ? AppDropdownLoadingField(label: l10n.branchLabel)
                   : _branches.isEmpty
                       ? Text(
                           l10n.noBranchesForAssignment,
@@ -1662,11 +1654,10 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
           textInputAction: TextInputAction.next,
           externalError: _apiError('password'),
           suffixIcon: IconButton(
-            icon: Icon(
+            icon: BrandGradientIcon(
               _obscurePassword
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
-              color: context.appColors.textSecondary,
             ),
             onPressed: () =>
                 setState(() => _obscurePassword = !_obscurePassword),
@@ -1840,48 +1831,6 @@ class _EmployeePatchScreenState extends State<EmployeePatchScreen> {
           externalError: _apiError('emergency_contact_number'),
           validator: (v) =>
               CustomerValidators.mobile(l10n, v, required: true),
-        ),
-      ],
-    );
-  }
-}
-
-class _DropdownLoadingField extends StatelessWidget {
-  const _DropdownLoadingField({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.label(context)),
-        const SizedBox(height: 8),
-        Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: context.appColors.inputFill,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: context.appColors.progressTrack),
-          ),
-          child: Row(
-            children: [
-              const AppLoader(size: AppLoaderSize.small),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  context.l10n.loading,
-                  style: AppTextStyles.body(context).copyWith(
-                    color: context.appColors.textSecondary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );

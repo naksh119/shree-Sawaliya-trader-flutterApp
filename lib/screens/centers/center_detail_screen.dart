@@ -21,6 +21,7 @@ import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/screens/centers/widgets/center_status_chip.dart';
 import 'package:sawaliyatrader/screens/customers/widgets/customer_section_card.dart';
 
@@ -354,10 +355,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
             title: l10n.membersCount(center.memberCount),
             trailing: permissions.canCreateCenter
                 ? IconButton(
-                    icon: Icon(
-                      Icons.person_add_outlined,
-                      color: context.appColors.shinyGold,
-                    ),
+                    icon: BrandGradientIcon(Icons.person_add_outlined),
                     onPressed: _isUpdatingMembers ? null : _addMember,
                   )
                 : null,
@@ -422,13 +420,11 @@ class _MemberTile extends StatelessWidget {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
-                child: Text(
-                  member.customerName.isNotEmpty
+                child: BrandGradientText(
+                  text: member.customerName.isNotEmpty
                       ? member.customerName[0].toUpperCase()
                       : '?',
-                  style: AppTextStyles.subtitle(context).copyWith(
-                    color: context.appColors.shinyGold,
-                  ),
+                  style: AppTextStyles.subtitle(context),
                 ),
               ),
               const SizedBox(width: 12),
@@ -454,10 +450,9 @@ class _MemberTile extends StatelessWidget {
                     color: context.appColors.gold.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    context.l10n.leader,
+                  child: BrandGradientText(
+                    text: context.l10n.leader,
                     style: AppTextStyles.subtitle(context).copyWith(
-                      color: context.appColors.shinyGold,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -465,8 +460,7 @@ class _MemberTile extends StatelessWidget {
                 ),
               if (canRemove)
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
-                  color: context.appColors.textSecondary,
+                  icon: BrandGradientIcon(Icons.close, size: 20, opacity: 0.7),
                   onPressed: isBusy ? null : onRemove,
                 ),
             ],
@@ -634,9 +628,8 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
                                     style: AppTextStyles.label(context),
                                   ),
                                   subtitle: Text(customer.displayCode),
-                                  trailing: Icon(
+                                  trailing: BrandGradientIcon(
                                     Icons.add_circle_outline,
-                                    color: context.appColors.shinyGold,
                                   ),
                                   onTap: () =>
                                       Navigator.pop(context, customer.id),

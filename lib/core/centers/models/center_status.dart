@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
-
 enum CenterStatus {
   pending('PENDING', 'Pending EMI'),
   active('ACTIVE', 'Active'),
@@ -20,12 +17,4 @@ enum CenterStatus {
   }
 
   static List<CenterStatus> get filterOptions => CenterStatus.values;
-
-  Color get color {
-    return switch (this) {
-      CenterStatus.pending => AppColors.gold,
-      CenterStatus.active => const Color(0xFF4CAF50),
-      CenterStatus.closed => const Color(0xFFB0A090),
-    };
-  }
 }

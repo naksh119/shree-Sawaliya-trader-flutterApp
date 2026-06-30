@@ -18,8 +18,12 @@ import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
+import 'package:sawaliyatrader/core/widgets/app_date_form_field.dart';
+import 'package:sawaliyatrader/core/widgets/app_date_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
+import 'package:sawaliyatrader/core/widgets/wizard_step_indicator.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 
 class CenterCreateScreen extends StatefulWidget implements HasInitialSession {
@@ -197,7 +201,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen>
   }
 
   Future<void> _pickStartDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppDatePicker(
       context: context,
       initialDate: _startDate ?? DateTime.now(),
       firstDate: DateTime(2020),
@@ -219,7 +223,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen>
     return Scaffold(
       appBar: ThemedAppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.appColors.shinyGold),
+          icon: BrandGradientIcon(Icons.arrow_back),
           onPressed: _onBack,
         ),
         title: l10n.newCenter,
@@ -230,7 +234,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen>
               session: session!,
               child: Column(
                 children: [
-                  _StepIndicator(steps: steps, currentStep: _step),
+                  WizardStepIndicator(steps: steps, currentStep: _step),
                   Expanded(
                     child: SingleChildScrollView(
                       key: ValueKey(_step),
@@ -409,7 +413,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen>
               },
             ),
             const SizedBox(height: 16),
-            _DateField(
+            AppDateFormField(
               label: l10n.startDate,
               value: _startDate,
               errorText: _startDateError,
@@ -551,78 +555,6 @@ class _CenterCreateScreenState extends State<CenterCreateScreen>
   }
 }
 
-class _StepIndicator extends StatelessWidget {
-  const _StepIndicator({
-    required this.steps,
-    required this.currentStep,
-  });
-
-  final List<String> steps;
-  final int currentStep;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-      child: Row(
-        children: [
-          for (var index = 0; index < steps.length; index++) ...[
-            if (index > 0)
-              Expanded(
-                child: Container(
-                  height: 2,
-                  color: index <= currentStep
-                      ? context.appColors.gold.withValues(alpha: 0.5)
-                      : context.appColors.border,
-                ),
-              ),
-            _StepDot(
-              label: '${index + 1}',
-              isActive: index == currentStep,
-              isComplete: index < currentStep,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _StepDot extends StatelessWidget {
-  const _StepDot({
-    required this.label,
-    required this.isActive,
-    required this.isComplete,
-  });
-
-  final String label;
-  final bool isActive;
-  final bool isComplete;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isActive || isComplete
-        ? context.appColors.gold
-        : context.appColors.border;
-
-    return Container(
-      width: 28,
-      height: 28,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isActive || isComplete
-            ? color.withValues(alpha: 0.18)
-            : context.appColors.card,
-        border: Border.all(color: color),
-      ),
-      child: isComplete
-          ? Icon(Icons.check, size: 16, color: context.appColors.shinyGold)
-          : Text(label, style: AppTextStyles.subtitle(context)),
-    );
-  }
-}
-
 class _SectionCard extends StatelessWidget {
   const _SectionCard({
     required this.title,
@@ -650,85 +582,6 @@ class _SectionCard extends StatelessWidget {
           ...children,
         ],
       ),
-    );
-  }
-}
-
-class _DateField extends StatelessWidget {
-  const _DateField({
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.errorText,
-  });
-
-  final String label;
-  final DateTime? value;
-  final VoidCallback onTap;
-  final String? errorText;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final display = value == null
-        ? l10n.selectDate
-        : '${value!.day.toString().padLeft(2, '0')}/'
-            '${value!.month.toString().padLeft(2, '0')}/'
-            '${value!.year}';
-    final hasError = errorText != null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.subtitle(context)),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            decoration: BoxDecoration(
-              color: context.appColors.inputFill,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: hasError
-                    ? Colors.red.shade300
-                    : context.appColors.border,
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    display,
-                    style: AppTextStyles.body(context).copyWith(
-                      color: value == null
-                          ? context.appColors.textSecondary
-                          : context.appColors.textPrimary,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 18,
-                  color: context.appColors.shinyGold.withValues(alpha: 0.8),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (hasError) ...[
-          const SizedBox(height: 8),
-          Text(
-            errorText!,
-            style: AppTextStyles.body(context).copyWith(
-              color: Colors.red.shade700,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ],
     );
   }
 }

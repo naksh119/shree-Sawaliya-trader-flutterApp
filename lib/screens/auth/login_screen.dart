@@ -7,6 +7,7 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_background.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_text_field.dart';
@@ -138,10 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             gaplessPlayback: true,
                           ),
                           const SizedBox(height: 20),
-                          Text(
-                            l10n.welcomeBack,
-                            style: AppTextStyles.heading(context),
-                          ),
+                          BrandGradientText(text: l10n.welcomeBack),
                           const SizedBox(height: 6),
                           Text(
                             l10n.signInSubtitle,
@@ -170,12 +168,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             autocorrect: false,
                             enableSuggestions: false,
                             suffixIcon: IconButton(
-                              icon: Icon(
+                              icon: BrandGradientIcon(
                                 _obscurePassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: context.appColors.shinyGold
-                                    .withValues(alpha: 0.75),
                               ),
                               onPressed: _togglePasswordVisibility,
                             ),

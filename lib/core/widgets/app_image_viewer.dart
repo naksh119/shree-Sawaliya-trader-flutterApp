@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 
 /// Whether [url] points to a remote image that can be loaded and previewed.
@@ -210,7 +211,10 @@ class AppPreviewImage extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: const Icon(Icons.broken_image_outlined),
+      child: BrandGradientIcon(
+        Icons.broken_image_outlined,
+        opacity: 0.54,
+      ),
     );
   }
 }
@@ -243,10 +247,10 @@ class _ViewerImage extends StatelessWidget {
           child: CircularProgressIndicator(color: Colors.white54),
         );
       },
-      errorBuilder: (_, __, ___) => const Icon(
+      errorBuilder: (_, __, ___) => BrandGradientIcon(
         Icons.broken_image_outlined,
-        color: Colors.white54,
         size: 64,
+        opacity: 0.54,
       ),
     );
   }

@@ -2,9 +2,14 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
+import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
+import 'package:sawaliyatrader/core/widgets/app_gradient_border.dart';
+import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 
 export 'app_dropdown_decoration.dart';
 
@@ -80,66 +85,76 @@ Future<T?> showAppScrollableDropdownMenu<T>({
             left: left,
             top: menuTop,
             width: menuWidth,
-            child: Material(
-              color: AppDropdownDecoration.menuBackground(overlayContext),
-              elevation: 8,
-              shadowColor: Colors.black.withValues(alpha: 0.2),
-              shape: AppDropdownDecoration.openMenuShape(overlayContext),
-              clipBehavior: Clip.antiAlias,
-              child: SizedBox(
-                height: menuHeight,
-                child: ScrollbarTheme(
-                  data: ScrollbarThemeData(
-                    thumbColor: WidgetStateProperty.all(
-                      colors.gold.withValues(alpha: 0.85),
-                    ),
-                    trackColor: WidgetStateProperty.all(
-                      colors.border.withValues(alpha: 0.35),
-                    ),
-                    trackBorderColor: WidgetStateProperty.all(
-                      colors.border.withValues(alpha: 0.2),
-                    ),
-                    thickness: WidgetStateProperty.all(5),
-                    radius: const Radius.circular(6),
-                    crossAxisMargin: 2,
-                    mainAxisMargin: 4,
-                    interactive: true,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
-                  child: Scrollbar(
-                    controller: scrollController,
-                    thumbVisibility: canScroll,
-                    trackVisibility: canScroll,
-                    interactive: true,
-                    child: ListView.separated(
-                      controller: scrollController,
-                      padding: EdgeInsets.zero,
-                      physics: canScroll
-                          ? const ClampingScrollPhysics()
-                          : const NeverScrollableScrollPhysics(),
-                      itemCount: items.length,
-                      separatorBuilder: (_, __) => Divider(
-                        height: dividerHeight,
-                        thickness: dividerHeight,
-                        color: AppDropdownDecoration.menuDividerColor(
-                          overlayContext,
-                        ),
+                ],
+              ),
+              child: AppDropdownDecoration.menuBorder(
+                overlayContext,
+                child: Material(
+                  color: Colors.transparent,
+                  child: SizedBox(
+                    height: menuHeight,
+                    child: ScrollbarTheme(
+                    data: ScrollbarThemeData(
+                      thumbColor: WidgetStateProperty.all(
+                        AppColors.teal500.withValues(alpha: 0.85),
                       ),
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        return InkWell(
-                          onTap: item.enabled ? () => close(item.value) : null,
-                          child: SizedBox(
-                            height: itemHeight,
-                            width: menuWidth,
-                            child: item.child,
+                      trackColor: WidgetStateProperty.all(
+                        colors.border.withValues(alpha: 0.35),
+                      ),
+                      trackBorderColor: WidgetStateProperty.all(
+                        colors.border.withValues(alpha: 0.2),
+                      ),
+                      thickness: WidgetStateProperty.all(5),
+                      radius: const Radius.circular(6),
+                      crossAxisMargin: 2,
+                      mainAxisMargin: 4,
+                      interactive: true,
+                    ),
+                    child: Scrollbar(
+                      controller: scrollController,
+                      thumbVisibility: canScroll,
+                      trackVisibility: canScroll,
+                      interactive: true,
+                      child: ListView.separated(
+                        controller: scrollController,
+                        padding: EdgeInsets.zero,
+                        physics: canScroll
+                            ? const ClampingScrollPhysics()
+                            : const NeverScrollableScrollPhysics(),
+                        itemCount: items.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: dividerHeight,
+                          thickness: dividerHeight,
+                          color: AppDropdownDecoration.menuDividerColor(
+                            overlayContext,
                           ),
-                        );
-                      },
+                        ),
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          return InkWell(
+                            onTap: item.enabled ? () => close(item.value) : null,
+                            child: SizedBox(
+                              height: itemHeight,
+                              width: menuWidth,
+                              child: item.child,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
+          ),
           ),
         ],
       );
@@ -208,7 +223,9 @@ class AppInlineDropdown<T> extends StatefulWidget {
     required this.onChanged,
     super.key,
     this.isExpanded = false,
+    this.expandHitTarget = false,
     this.icon,
+    this.selectedChild,
     this.style,
     this.menuMinWidth,
     this.menuMaxWidth,
@@ -219,7 +236,9 @@ class AppInlineDropdown<T> extends StatefulWidget {
   final List<DropdownMenuItem<T>> items;
   final ValueChanged<T?> onChanged;
   final bool isExpanded;
+  final bool expandHitTarget;
   final Widget? icon;
+  final Widget? selectedChild;
   final TextStyle? style;
   final double? menuMinWidth;
   final double? menuMaxWidth;
@@ -256,25 +275,34 @@ class _AppInlineDropdownState<T> extends State<AppInlineDropdown<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final child = _selectedItem.child;
+    final child = widget.selectedChild ?? _selectedItem.child;
     final textStyle = widget.style ?? DefaultTextStyle.of(context).style;
+
+    final row = Row(
+      mainAxisSize:
+          widget.expandHitTarget ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisAlignment: widget.expandHitTarget
+          ? MainAxisAlignment.center
+          : MainAxisAlignment.start,
+      children: [
+        if (widget.isExpanded)
+          Expanded(
+            child: DefaultTextStyle(style: textStyle, child: child),
+          )
+        else
+          DefaultTextStyle(style: textStyle, child: child),
+        widget.icon ??
+            AppDropdownMetrics.expandIcon(context),
+      ],
+    );
 
     return InkWell(
       key: _anchorKey,
       onTap: _openMenu,
       borderRadius: BorderRadius.circular(12),
-      child: Row(
-        children: [
-          if (widget.isExpanded)
-            Expanded(
-              child: DefaultTextStyle(style: textStyle, child: child),
-            )
-          else
-            DefaultTextStyle(style: textStyle, child: child),
-          widget.icon ??
-              AppDropdownMetrics.expandIcon(context),
-        ],
-      ),
+      child: widget.expandHitTarget
+          ? SizedBox(width: double.infinity, height: double.infinity, child: row)
+          : row,
     );
   }
 }
@@ -364,24 +392,28 @@ class _AppDropdownFormFieldBodyState<T> extends State<_AppDropdownFormFieldBody<
       }
     }
 
-    return InputDecorator(
-      decoration: widget.decoration.copyWith(errorText: widget.field.errorText),
-      isEmpty: currentValue == null,
-      child: InkWell(
-        key: _anchorKey,
-        onTap: widget.enabled ? _openMenu : null,
-        child: Row(
-          children: [
-            Expanded(
-              child: DefaultTextStyle(
-                style: widget.style ?? DefaultTextStyle.of(context).style,
-                child: selectedItem == null
-                    ? const SizedBox.shrink()
-                    : selectedItem.child,
+    return AppDropdownDecoration.fieldBorder(
+      context,
+      hasError: widget.field.hasError,
+      child: InputDecorator(
+        decoration: widget.decoration.copyWith(errorText: widget.field.errorText),
+        isEmpty: currentValue == null,
+        child: InkWell(
+          key: _anchorKey,
+          onTap: widget.enabled ? _openMenu : null,
+          child: Row(
+            children: [
+              Expanded(
+                child: DefaultTextStyle(
+                  style: widget.style ?? DefaultTextStyle.of(context).style,
+                  child: selectedItem == null
+                      ? const SizedBox.shrink()
+                      : selectedItem.child,
+                ),
               ),
-            ),
-            AppDropdownMetrics.expandIcon(context),
-          ],
+              AppDropdownMetrics.expandIcon(context),
+            ],
+          ),
         ),
       ),
     );
@@ -412,9 +444,9 @@ class AppFilterDropdown<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyle = AppDropdownMetrics.filterTextStyle(context);
 
-    return Container(
+    return AppDropdownDecoration.fieldBorder(
+      context,
       padding: AppDropdownMetrics.filterPadding,
-      decoration: AppDropdownDecoration.container(context),
       child: AppInlineDropdown<T>(
         value: value,
         isExpanded: isExpanded,
@@ -533,13 +565,13 @@ class _AppScrollableFilterDropdownState<T>
     final textStyle = AppDropdownMetrics.filterTextStyle(context);
     final selected = _selectedItem;
 
-    return Container(
+    return AppDropdownDecoration.fieldBorder(
+      context,
       padding: AppDropdownMetrics.filterPadding,
-      decoration: AppDropdownDecoration.container(context),
       child: InkWell(
         key: _anchorKey,
         onTap: _openMenu,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppInputMetrics.borderRadius),
         child: Row(
           children: [
             if (widget.isExpanded)
@@ -640,22 +672,23 @@ class _AppFilterIconButtonState<T> extends State<AppFilterIconButton<T>> {
   Widget build(BuildContext context) {
     final active = widget.isActive ??
         (widget.items.isNotEmpty && widget.items.first.value != widget.value);
-    final iconColor = active
-        ? context.appColors.gold
-        : context.appColors.shinyGold.withValues(alpha: 0.7);
+    final iconColor = active ? 1.0 : 0.7;
 
-    final button = InkWell(
-      key: _anchorKey,
-      onTap: _openMenu,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: AppDropdownMetrics.filterIconButtonSize,
-        height: AppDropdownMetrics.filterIconButtonSize,
-        decoration: AppDropdownDecoration.filterIconButton(
-          context,
-          isActive: active,
+    final button = AppDropdownDecoration.fieldBorder(
+      context,
+      borderRadius: AppInputMetrics.borderRadius,
+      child: InkWell(
+        key: _anchorKey,
+        onTap: _openMenu,
+        borderRadius: BorderRadius.circular(AppInputMetrics.borderRadius),
+        child: SizedBox(
+          width: AppDropdownMetrics.filterIconButtonSize,
+          height: AppDropdownMetrics.filterIconButtonSize,
+          child: BrandGradientIcon(
+            widget.icon,
+            opacity: iconColor,
+          ),
         ),
-        child: Icon(widget.icon, color: iconColor),
       ),
     );
 
@@ -685,9 +718,9 @@ class AppContainerDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dropdown = Container(
+    final dropdown = AppDropdownDecoration.fieldBorder(
+      context,
       padding: padding,
-      decoration: AppDropdownDecoration.container(context),
       child: AppInlineDropdown<T>(
         value: value,
         isExpanded: isExpanded,
@@ -706,6 +739,49 @@ class AppContainerDropdown<T> extends StatelessWidget {
         Text(label!, style: AppTextStyles.subtitle(context)),
         const SizedBox(height: 8),
         dropdown,
+      ],
+    );
+  }
+}
+
+/// Placeholder shown while async dropdown options are loading.
+class AppDropdownLoadingField extends StatelessWidget {
+  const AppDropdownLoadingField({required this.label, super.key});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.label(context)),
+        const SizedBox(height: 8),
+        AppDropdownDecoration.fieldBorder(
+          context,
+          child: SizedBox(
+            height: 52,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const AppLoader(size: AppLoaderSize.small),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      context.l10n.loading,
+                      style: AppTextStyles.body(context).copyWith(
+                        color: context.appColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
