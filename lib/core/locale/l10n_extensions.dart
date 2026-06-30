@@ -118,7 +118,6 @@ String localizedGenderLabel(AppLocalizations l10n, String? value) {
     _ => value,
   };
 }
-
 String localizedMaritalStatusLabel(AppLocalizations l10n, String? value) {
   if (value == null || value.isEmpty) return '';
   return switch (value.toUpperCase()) {

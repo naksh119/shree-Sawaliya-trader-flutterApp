@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/theme/app_font.dart';
 import 'package:sawaliyatrader/core/theme/app_theme_colors.dart';
 
 abstract final class AppThemes {
@@ -19,19 +19,30 @@ abstract final class AppThemes {
       onSurfaceVariant: colors.textSecondary,
     );
 
-    return ThemeData(
+    final base = ThemeData(
       colorScheme: colorScheme,
       brightness: brightness,
+      fontFamily: AppFont.family,
       canvasColor: colors.card,
       scaffoldBackgroundColor: colors.surface,
       useMaterial3: true,
       extensions: [colors],
+    );
+
+    return base.copyWith(
+      textTheme: AppFont.textTheme(base.textTheme),
+      primaryTextTheme: AppFont.textTheme(base.primaryTextTheme),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.surface,
         foregroundColor: colors.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
+        titleTextStyle: AppFont.style(
+          color: colors.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       cardTheme: CardThemeData(
         color: colors.card,
@@ -62,14 +73,14 @@ abstract final class AppThemes {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: colors.gold, width: 1.5),
         ),
-        hintStyle: GoogleFonts.cormorantGaramond(
+        hintStyle: AppFont.style(
           color: colors.textPrimary.withValues(alpha: 0.4),
           fontSize: 16,
         ),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: colors.textPrimary,
-        contentTextStyle: GoogleFonts.cormorantGaramond(
+        contentTextStyle: AppFont.style(
           color: colors.surface,
           fontSize: 16,
         ),

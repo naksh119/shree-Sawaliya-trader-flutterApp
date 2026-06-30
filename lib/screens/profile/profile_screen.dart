@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
+import 'package:sawaliyatrader/core/theme/app_font.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
@@ -347,7 +347,7 @@ class _LogoutButton extends StatelessWidget {
             : const Icon(Icons.logout),
         label: Text(
           l10n.logout,
-          style: GoogleFonts.cormorantGaramond(
+          style: AppFont.style(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,

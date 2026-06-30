@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
-import 'package:sawaliyatrader/core/auth/models/login_response.dart';
-import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
@@ -11,60 +8,40 @@ import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
+import 'package:sawaliyatrader/core/locale/locale_context.dart';
 
-class MoreScreen extends StatefulWidget {
+class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
 
   @override
-  State<MoreScreen> createState() => _MoreScreenState();
-}
-
-class _MoreScreenState extends State<MoreScreen> {
-  late final Future<LoginResponse?> _sessionFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _sessionFuture = AuthService().getSession();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<LoginResponse?>(
-      future: _sessionFuture,
-      builder: (context, snapshot) {
-        final session = snapshot.data;
-        if (session == null) {
-          return const Scaffold(
-            body: Center(child: AppLoader(size: kAppPageLoaderSize)),
+    final session = SessionScope.maybeOf(context)?.session;
+    if (session == null) {
+      return const Scaffold(
+        body: Center(child: AppLoader(size: kAppPageLoaderSize)),
+      );
+    }
+
+    final permissions = PermissionService(session);
+    final l10n = context.l10n;
+    final items =
+        _moreMenuItems(l10n).where((item) => item.isVisible(permissions)).toList();
+
+    return Scaffold(
+      appBar: ThemedAppBar(title: l10n.more),
+      body: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return _MoreTile(
+            icon: item.icon,
+            label: item.label,
+            onTap: () => context.push(item.route),
           );
-        }
-
-        final permissions = PermissionService(session);
-        final l10n = context.l10n;
-        final items =
-            _moreMenuItems(l10n).where((item) => item.isVisible(permissions)).toList();
-
-        return SessionScope(
-          session: session,
-          child: Scaffold(
-            appBar: ThemedAppBar(title: l10n.more),
-            body: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return _MoreTile(
-                  icon: item.icon,
-                  label: item.label,
-                  onTap: () => context.push(item.route),
-                );
-              },
-            ),
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 }

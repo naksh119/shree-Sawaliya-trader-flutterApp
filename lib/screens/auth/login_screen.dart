@@ -103,6 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: context.appColors.surface,
       resizeToAvoidBottomInset: false,
       body: AppBackground(
+        imageUrl: AppAssets.splashBackgroundUrl,
         showOverlay: Theme.of(context).brightness == Brightness.dark,
         child: Stack(
           fit: StackFit.expand,
@@ -119,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     final contentWidth =
                         constraints.maxWidth - (horizontalPadding * 2);
                     final logoWidth =
-                        (contentWidth * 0.42).clamp(120.0, 160.0);
+                        (contentWidth * 0.58).clamp(150.0, 210.0);
                     final minContentHeight = constraints.maxHeight -
                         (verticalPadding * 2) -
                         bottomInset;
@@ -129,10 +130,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Image.asset(
-                            AppAssets.logo,
+                          Image.network(
+                            AppAssets.logoUrl,
                             width: logoWidth,
                             fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
+                            gaplessPlayback: true,
                           ),
                           const SizedBox(height: 20),
                           Text(

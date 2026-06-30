@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
+import 'package:sawaliyatrader/core/theme/app_font.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 enum AppLoaderSize {
@@ -97,7 +97,7 @@ class AppLoaderView extends StatelessWidget {
             Text(
               message!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.cormorantGaramond(
+              style: AppFont.style(
                 color: context.appColors.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w500,

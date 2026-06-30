@@ -3,6 +3,7 @@ import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/session_notifier.dart';
 import 'package:sawaliyatrader/core/permissions/route_access.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
+import 'package:sawaliyatrader/core/routing/lazy_shell_tab.dart';
 import 'package:sawaliyatrader/core/routing/route_session.dart';
 import 'package:sawaliyatrader/core/routing/app_shell_scaffold.dart';
 import 'package:sawaliyatrader/screens/access_denied/access_denied_screen.dart';
@@ -84,7 +85,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.dashboard,
-                builder: (context, state) => const DashboardScreen(),
+                builder: (context, state) => const LazyShellTab(
+                  branchIndex: 0,
+                  child: DashboardScreen(),
+                ),
               ),
             ],
           ),
@@ -92,7 +96,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.customers,
-                builder: (context, state) => const CustomersListScreen(),
+                builder: (context, state) => const LazyShellTab(
+                  branchIndex: 1,
+                  child: CustomersListScreen(),
+                ),
               ),
             ],
           ),
@@ -100,7 +107,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.centers,
-                builder: (context, state) => const CentersListScreen(),
+                builder: (context, state) => const LazyShellTab(
+                  branchIndex: 2,
+                  child: CentersListScreen(),
+                ),
               ),
             ],
           ),
@@ -108,7 +118,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.employees,
-                builder: (context, state) => const EmployeesListScreen(),
+                builder: (context, state) => const LazyShellTab(
+                  branchIndex: 3,
+                  child: EmployeesListScreen(),
+                ),
               ),
             ],
           ),
@@ -118,9 +131,12 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
                 path: AppRoutes.reports,
                 builder: (context, state) {
                   final l10n = AppLocalizations.of(context)!;
-                  return ModulePlaceholderScreen(
-                    title: l10n.reports,
-                    description: l10n.reportsDescription,
+                  return LazyShellTab(
+                    branchIndex: 4,
+                    child: ModulePlaceholderScreen(
+                      title: l10n.reports,
+                      description: l10n.reportsDescription,
+                    ),
                   );
                 },
               ),
@@ -130,7 +146,10 @@ GoRouter createAppRouter(SessionNotifier sessionNotifier) {
             routes: [
               GoRoute(
                 path: AppRoutes.more,
-                builder: (context, state) => const MoreScreen(),
+                builder: (context, state) => const LazyShellTab(
+                  branchIndex: 5,
+                  child: MoreScreen(),
+                ),
               ),
             ],
           ),

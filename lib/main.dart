@@ -15,6 +15,7 @@ import 'package:sawaliyatrader/core/theme/app_themes.dart';
 import 'package:sawaliyatrader/core/theme/theme_notifier.dart';
 import 'package:sawaliyatrader/core/theme/theme_scope.dart';
 import 'package:sawaliyatrader/core/widgets/dismiss_keyboard.dart';
+import 'package:sawaliyatrader/core/widgets/splash_background_cache.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,7 @@ Future<void> main() async {
   appNotificationNotifier = NotificationNotifier();
   appThemeNotifier = await ThemeNotifier.load();
   appLocaleNotifier = await LocaleNotifier.load();
+  await Future.wait([precacheSplashBackground(), precacheAppLogo()]);
   final router = createAppRouter(appSessionNotifier!);
 
   runApp(MyApp(router: router));
@@ -54,7 +56,8 @@ class MyApp extends StatelessWidget {
         listenable: Listenable.merge([themeNotifier, localeNotifier]),
         builder: (context, _) {
           return MaterialApp.router(
-            onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+            onGenerateTitle: (context) =>
+                AppLocalizations.of(context)!.appTitle,
             debugShowCheckedModeBanner: false,
             theme: AppThemes.light(),
             darkTheme: AppThemes.dark(),

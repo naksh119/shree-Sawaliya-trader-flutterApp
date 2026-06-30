@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/auth/user_display.dart';
 import 'package:sawaliyatrader/core/dashboard/dashboard_service.dart';
@@ -28,96 +29,93 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardViewModel {
-  const _DashboardViewModel({
-    required this.session,
-    required this.stats,
-  });
-
-  final LoginResponse session;
-  final DashboardStats stats;
-}
-
 class _DashboardScreenState extends State<DashboardScreen> {
-  final _authService = AuthService();
   final _dashboardService = DashboardService();
 
-  late final Future<_DashboardViewModel?> _dashboardFuture;
+  DashboardStats? _stats;
+  bool _statsLoading = false;
+  bool _statsStarted = false;
 
   @override
-  void initState() {
-    super.initState();
-    _dashboardFuture = _loadDashboard();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_statsStarted) return;
+
+    final session = SessionScope.maybeOf(context)?.session;
+    if (session == null) return;
+
+    _statsStarted = true;
+    appNotificationNotifier?.bindSession(session);
+    unawaited(_loadStats(session));
   }
 
-  Future<_DashboardViewModel?> _loadDashboard() async {
-    final session = await _authService.getSession();
-    if (session == null) return null;
+  Future<void> _loadStats(LoginResponse session) async {
+    if (!mounted) return;
+    setState(() => _statsLoading = true);
 
-    final stats = await _dashboardService.fetchStats(session: session);
-    appNotificationNotifier?.bindSession(session);
-
-    return _DashboardViewModel(
-      session: session,
-      stats: stats,
-    );
+    try {
+      final stats = await _dashboardService.fetchStats(session: session);
+      if (!mounted) return;
+      setState(() {
+        _stats = stats;
+        _statsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _statsLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<_DashboardViewModel?>(
-      future: _dashboardFuture,
-      builder: (context, snapshot) {
-        final viewModel = snapshot.data;
+    final session = SessionScope.maybeOf(context)?.session;
+    if (session == null) {
+      return const Scaffold(
+        body: Center(child: AppLoader(size: kAppPageLoaderSize)),
+      );
+    }
 
-        if (viewModel == null) {
-          return const Scaffold(
-            body: Center(child: AppLoader(size: kAppPageLoaderSize)),
-          );
-        }
+    final permissions = PermissionService(session);
+    final userDisplay = UserDisplay.fromSession(session);
+    final stats = _stats;
 
-        final session = viewModel.session;
-        final permissions = PermissionService(session);
-        final userDisplay = UserDisplay.fromSession(session);
-
-        return SessionScope(
-          session: session,
-          child: Scaffold(
-            appBar: ThemedAppBar(
-              title: context.l10n.home,
-              showThemeToggle: true,
-              actions: [
-                if (appNotificationNotifier != null)
-                  PermissionWidget(
-                    permission: AppPermission.notificationView,
-                    service: permissions,
-                    child: ListenableBuilder(
-                      listenable: appNotificationNotifier!,
-                      builder: (context, _) {
-                        final unread = appNotificationNotifier?.unreadCount ?? 0;
-                        return IconButton(
-                          tooltip: context.l10n.notifications,
-                          onPressed: () =>
-                              context.push(AppRoutes.notifications),
-                          icon: Badge(
-                            isLabelVisible: unread > 0,
-                            label: Text('$unread'),
-                            child: Icon(
-                              Icons.notifications_outlined,
-                              color: context.appColors.shinyGold,
-                            ),
-                          ),
-                        );
-                      },
+    return Scaffold(
+      appBar: ThemedAppBar(
+        title: context.l10n.home,
+        showThemeToggle: true,
+        actions: [
+          if (appNotificationNotifier != null)
+            PermissionWidget(
+              permission: AppPermission.notificationView,
+              service: permissions,
+              child: ListenableBuilder(
+                listenable: appNotificationNotifier!,
+                builder: (context, _) {
+                  final unread = appNotificationNotifier?.unreadCount ?? 0;
+                  return IconButton(
+                    tooltip: context.l10n.notifications,
+                    onPressed: () => context.push(AppRoutes.notifications),
+                    icon: Badge(
+                      isLabelVisible: unread > 0,
+                      label: Text('$unread'),
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        color: context.appColors.shinyGold,
+                      ),
                     ),
-                  ),
-                UserHeaderBadge(
-                  initials: userDisplay.initials,
-                  onTap: () => context.push(AppRoutes.profile),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
-            body: Stack(
+          UserHeaderBadge(
+            initials: userDisplay.initials,
+            onTap: () => context.push(AppRoutes.profile),
+          ),
+        ],
+      ),
+      body: _statsLoading || stats == null
+          ? const Center(child: AppLoader(size: kAppPageLoaderSize))
+          : Stack(
               fit: StackFit.expand,
               children: [
                 SingleChildScrollView(
@@ -125,17 +123,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(context.l10n.overview, style: AppTextStyles.label(context)),
+                      Text(
+                        context.l10n.overview,
+                        style: AppTextStyles.label(context),
+                      ),
                       const SizedBox(height: 12),
                       DashboardKpiRow(
-                        stats: viewModel.stats,
+                        stats: stats,
                         permissions: permissions,
                       ),
                       const SizedBox(height: 28),
-                      Text(context.l10n.analytics, style: AppTextStyles.label(context)),
+                      Text(
+                        context.l10n.analytics,
+                        style: AppTextStyles.label(context),
+                      ),
                       const SizedBox(height: 12),
                       _AnalyticsSection(
-                        stats: viewModel.stats,
+                        stats: stats,
                         permissions: permissions,
                       ),
                     ],
@@ -148,9 +152,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
-          ),
-        );
-      },
     );
   }
 }

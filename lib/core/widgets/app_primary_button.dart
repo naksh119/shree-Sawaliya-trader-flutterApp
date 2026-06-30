@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
+import 'package:sawaliyatrader/core/theme/app_font.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -47,7 +47,7 @@ class AppPrimaryButton extends StatelessWidget {
             ? const AppLoader(size: AppLoaderSize.small)
             : Text(
                 label,
-                style: GoogleFonts.cormorantGaramond(
+                style: AppFont.style(
                   fontSize: fontSize,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,

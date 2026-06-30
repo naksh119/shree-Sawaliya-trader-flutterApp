@@ -70,6 +70,31 @@ class AuthService {
     appSessionNotifier?.refresh();
   }
 
+  /// Validates a stored session on cold start by refreshing the access token.
+  ///
+  /// Returns `true` when the user should enter the app, `false` when they
+  /// should sign in again. Network failures keep the local session so offline
+  /// launches still work.
+  Future<bool> warmUpSession() async {
+    if (!await _authStorage.hasSession()) return false;
+
+    try {
+      await refreshSession();
+    } on ApiException catch (error) {
+      debugPrint('Session warm-up rejected: ${error.message}');
+      await handleRefreshFailed();
+      return false;
+    } catch (error) {
+      debugPrint('Session warm-up skipped (offline/transient): $error');
+    }
+
+    final session = await getSession();
+    if (session != null) {
+      appNotificationNotifier?.bindSession(session);
+    }
+    return session != null;
+  }
+
   Future<bool> isLoggedIn() => _authStorage.hasSession();
 
   Future<LoginResponse?> getSession() async {

@@ -77,7 +77,7 @@ mixin ListSessionBootstrapMixin<T extends StatefulWidget> on State<T> {
     final inherited = SessionScope.maybeOf(context)?.session;
     if (inherited != null) {
       _listSessionBootstrapStarted = true;
-      session = inherited;
+      setState(() => session = inherited);
       onReady(inherited);
       return;
     }

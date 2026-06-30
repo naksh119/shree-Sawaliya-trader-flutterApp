@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:sawaliyatrader/core/theme/app_font.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
@@ -110,10 +110,19 @@ class _SplashScreenState extends State<SplashScreen>
     await Future<void>.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
-    final isLoggedIn = await AuthService().isLoggedIn();
+    final authService = AuthService();
+    final hasStoredSession = await authService.isLoggedIn();
     if (!mounted) return;
 
-    context.go(isLoggedIn ? AppRoutes.dashboard : AppRoutes.login);
+    if (!hasStoredSession) {
+      context.go(AppRoutes.login);
+      return;
+    }
+
+    final sessionReady = await authService.warmUpSession();
+    if (!mounted) return;
+
+    context.go(sessionReady ? AppRoutes.dashboard : AppRoutes.login);
   }
 
   @override
@@ -121,6 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: context.appColors.card,
       body: AppBackground(
+        imageUrl: AppAssets.splashBackgroundUrl,
         showOverlay: Theme.of(context).brightness == Brightness.dark,
         child: SafeArea(
           child: LayoutBuilder(
@@ -128,7 +138,7 @@ class _SplashScreenState extends State<SplashScreen>
               final compact = constraints.maxHeight < 680;
               final contentWidth = constraints.maxWidth - 48;
               final logoWidth = (contentWidth * 0.68).clamp(140.0, 240.0);
-              final titleStyle = GoogleFonts.cormorantGaramond(
+              final titleStyle = AppFont.style(
                 fontSize: compact ? 17 : 22,
                 letterSpacing: compact ? 0.8 : 1.2,
                 fontWeight: FontWeight.w700,
@@ -157,10 +167,12 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ],
                             ),
-                            child: Image.asset(
-                              AppAssets.logo,
+                            child: Image.network(
+                              AppAssets.logoUrl,
                               width: logoWidth,
                               fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
+                              gaplessPlayback: true,
                             ),
                           ),
                         ),
