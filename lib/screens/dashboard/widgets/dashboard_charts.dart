@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/dashboard/models/dashboard_stats.dart';
 import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
@@ -92,7 +91,7 @@ class EmiStatusBarChart extends StatelessWidget {
                     drawVerticalLine: false,
                     horizontalInterval: maxY <= 0 ? 2 : (maxY / 4).ceilToDouble(),
                     getDrawingHorizontalLine: (value) => FlLine(
-                      color: AppColors.progressTrack,
+                      color: context.appColors.progressTrack,
                       strokeWidth: 1,
                     ),
                   ),
@@ -188,7 +187,7 @@ class CollectionTrendChart extends StatelessWidget {
                     show: true,
                     drawVerticalLine: false,
                     getDrawingHorizontalLine: (value) => FlLine(
-                      color: AppColors.progressTrack,
+                      color: context.appColors.progressTrack,
                       strokeWidth: 1,
                     ),
                   ),
@@ -237,7 +236,7 @@ class CollectionTrendChart extends StatelessWidget {
                       ),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: context.appColors.gold.withValues(alpha: 0.18),
+                        color: context.appColors.goldTint,
                       ),
                     ),
                   ],
@@ -325,7 +324,7 @@ class ModuleOverviewChart extends StatelessWidget {
                         show: true,
                         drawVerticalLine: false,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: AppColors.progressTrack,
+                          color: context.appColors.progressTrack,
                           strokeWidth: 1,
                         ),
                       ),

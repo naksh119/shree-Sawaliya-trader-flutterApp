@@ -112,14 +112,14 @@ class _EmployeeAvatar extends StatelessWidget {
     if (photo != null && photo.isNotEmpty) {
       return CircleAvatar(
         radius: 22,
-        backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+        backgroundColor: context.appColors.goldTint,
         backgroundImage: NetworkImage(photo),
       );
     }
 
     return CircleAvatar(
       radius: 22,
-      backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+      backgroundColor: context.appColors.goldTint,
       child: BrandGradientText(
         text: employee.initials,
         style: AppTextStyles.label(context),

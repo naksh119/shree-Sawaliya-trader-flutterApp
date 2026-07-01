@@ -396,7 +396,7 @@ class _BranchListTile extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+                backgroundColor: context.appColors.goldTint,
                 child: BrandGradientText(
                   text: branch.initials,
                   style: AppTextStyles.label(context),

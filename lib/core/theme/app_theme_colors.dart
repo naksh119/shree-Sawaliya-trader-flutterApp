@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 
 @immutable
@@ -15,6 +16,12 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.border,
     required this.overlay,
     required this.inputFill,
+    required this.error,
+    required this.errorText,
+    required this.errorBorder,
+    required this.warningBackground,
+    required this.warningBorder,
+    required this.warningText,
   });
 
   final Color surface;
@@ -28,6 +35,26 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color border;
   final Color overlay;
   final Color inputFill;
+  final Color error;
+  final Color errorText;
+  final Color errorBorder;
+  final Color warningBackground;
+  final Color warningBorder;
+  final Color warningText;
+
+  // Gold tints — derived from [gold] for consistent alpha steps.
+  Color get goldSubtle => gold.withValues(alpha: 0.08);
+  Color get goldHighlight => gold.withValues(alpha: 0.12);
+  Color get goldSurface => gold.withValues(alpha: 0.16);
+  Color get goldTint => gold.withValues(alpha: 0.18);
+  Color get goldAvatar => gold.withValues(alpha: 0.22);
+  Color get goldMuted => gold.withValues(alpha: 0.25);
+  Color get goldBorder => gold.withValues(alpha: 0.35);
+  Color get goldBorderStrong => gold.withValues(alpha: 0.42);
+  Color get goldSelected => gold.withValues(alpha: 0.5);
+  Color get goldDisabled => gold.withValues(alpha: 0.6);
+
+  LinearGradient get brandGradient => AppColors.brandGradient;
 
   static const light = AppThemeColors(
     surface: AppColors.cream,
@@ -41,6 +68,12 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     border: Color(0x1F6D5732),
     overlay: Color(0xB8FDFBF6),
     inputFill: Color(0xD9FFFFFF),
+    error: AppColors.error,
+    errorText: AppColors.errorText,
+    errorBorder: AppColors.errorBorder,
+    warningBackground: AppColors.warningBackground,
+    warningBorder: AppColors.warningBorder,
+    warningText: AppColors.warningText,
   );
 
   static const dark = AppThemeColors(
@@ -55,6 +88,12 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     border: Color(0x33E8DFD0),
     overlay: Color(0xCC12100D),
     inputFill: Color(0xCC1E1A14),
+    error: AppColors.error,
+    errorText: AppColors.errorText,
+    errorBorder: AppColors.errorBorder,
+    warningBackground: Color(0xFF2E1F0A),
+    warningBorder: Color(0xFF6D4C1A),
+    warningText: Color(0xFFFFB74D),
   );
 
   @override
@@ -70,6 +109,12 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? border,
     Color? overlay,
     Color? inputFill,
+    Color? error,
+    Color? errorText,
+    Color? errorBorder,
+    Color? warningBackground,
+    Color? warningBorder,
+    Color? warningText,
   }) {
     return AppThemeColors(
       surface: surface ?? this.surface,
@@ -83,12 +128,19 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       border: border ?? this.border,
       overlay: overlay ?? this.overlay,
       inputFill: inputFill ?? this.inputFill,
+      error: error ?? this.error,
+      errorText: errorText ?? this.errorText,
+      errorBorder: errorBorder ?? this.errorBorder,
+      warningBackground: warningBackground ?? this.warningBackground,
+      warningBorder: warningBorder ?? this.warningBorder,
+      warningText: warningText ?? this.warningText,
     );
   }
 
   @override
   AppThemeColors lerp(ThemeExtension<AppThemeColors>? other, double t) {
     if (other is! AppThemeColors) return this;
+
     return AppThemeColors(
       surface: Color.lerp(surface, other.surface, t)!,
       card: Color.lerp(card, other.card, t)!,
@@ -101,6 +153,13 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       border: Color.lerp(border, other.border, t)!,
       overlay: Color.lerp(overlay, other.overlay, t)!,
       inputFill: Color.lerp(inputFill, other.inputFill, t)!,
+      error: Color.lerp(error, other.error, t)!,
+      errorText: Color.lerp(errorText, other.errorText, t)!,
+      errorBorder: Color.lerp(errorBorder, other.errorBorder, t)!,
+      warningBackground:
+          Color.lerp(warningBackground, other.warningBackground, t)!,
+      warningBorder: Color.lerp(warningBorder, other.warningBorder, t)!,
+      warningText: Color.lerp(warningText, other.warningText, t)!,
     );
   }
 }

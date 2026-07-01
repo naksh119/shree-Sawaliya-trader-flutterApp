@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/permissions/app_permission.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
@@ -64,7 +63,7 @@ class PermissionButton extends StatelessWidget {
     final colors = context.appColors;
     final style = FilledButton.styleFrom(
       backgroundColor: colors.gold,
-      foregroundColor: AppColors.navy,
+      foregroundColor: colors.navy,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );

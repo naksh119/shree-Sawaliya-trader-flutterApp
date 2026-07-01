@@ -199,14 +199,14 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: context.appColors.warningBackground,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(color: context.appColors.warningBorder),
               ),
               child: Text(
                 _fetchWarning!,
                 style: AppTextStyles.body(context).copyWith(
-                  color: Colors.orange.shade900,
+                  color: context.appColors.warningText,
                 ),
               ),
             ),
@@ -302,7 +302,7 @@ class _BranchHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 32,
-            backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+            backgroundColor: context.appColors.goldTint,
             child: BrandGradientText(
               text: branch.initials,
               style: AppTextStyles.heading(context).copyWith(fontSize: 22),
@@ -402,7 +402,7 @@ class _PaymentQrSection extends StatelessWidget {
       width: 180,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: context.appColors.gold.withValues(alpha: 0.08),
+        color: context.appColors.goldSubtle,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: context.appColors.border),
       ),

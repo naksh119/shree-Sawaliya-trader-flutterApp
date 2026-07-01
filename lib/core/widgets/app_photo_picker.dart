@@ -146,7 +146,7 @@ class AppPhotoPicker extends StatelessWidget {
           Text(
             errorText!,
             style: AppTextStyles.subtitle(context).copyWith(
-              color: Colors.red.shade300,
+              color: context.appColors.errorBorder,
             ),
           ),
         ],
@@ -205,7 +205,7 @@ class _ExistingPlaceholder extends StatelessWidget {
       width: 140,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: context.appColors.gold.withValues(alpha: 0.08),
+        color: context.appColors.goldSubtle,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: context.appColors.border),
       ),

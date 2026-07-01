@@ -517,7 +517,7 @@ class _StatusActionBar extends StatelessWidget {
           child: OutlinedButton(
             onPressed: isUpdating ? null : onReject,
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFE57373),
+              foregroundColor: context.appColors.error,
             ),
             child: Text(context.l10n.reject),
           ),

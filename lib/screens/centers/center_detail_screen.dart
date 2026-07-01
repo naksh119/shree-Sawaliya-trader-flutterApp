@@ -178,7 +178,7 @@ class _CenterDetailScreenState extends State<CenterDetailScreen> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFE57373),
+              backgroundColor: context.appColors.error,
             ),
             child: Text(l10n.remove),
           ),
@@ -419,7 +419,7 @@ class _MemberTile extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+                backgroundColor: context.appColors.goldTint,
                 child: BrandGradientText(
                   text: member.customerName.isNotEmpty
                       ? member.customerName[0].toUpperCase()
@@ -447,7 +447,7 @@ class _MemberTile extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 8),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: context.appColors.gold.withValues(alpha: 0.12),
+                    color: context.appColors.goldHighlight,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: BrandGradientText(

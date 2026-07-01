@@ -255,7 +255,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen>
                               Text(
                                 _error!,
                                 style: AppTextStyles.body(context).copyWith(
-                                  color: const Color(0xFFE57373),
+                                  color: context.appColors.error,
                                 ),
                               ),
                             ],
@@ -508,7 +508,7 @@ class _CenterCreateScreenState extends State<CenterCreateScreen>
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: selected
-                            ? context.appColors.gold.withValues(alpha: 0.6)
+                            ? context.appColors.goldDisabled
                             : context.appColors.border,
                       ),
                     ),

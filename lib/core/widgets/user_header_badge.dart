@@ -25,7 +25,7 @@ class UserHeaderBadge extends StatelessWidget {
           customBorder: const CircleBorder(),
           child: CircleAvatar(
             radius: 18,
-            backgroundColor: colors.gold.withValues(alpha: 0.22),
+            backgroundColor: colors.goldAvatar,
             child: Text(
               initials,
               style: AppTextStyles.label(context).copyWith(

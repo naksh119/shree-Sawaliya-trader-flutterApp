@@ -76,7 +76,7 @@ class CustomerWizardDocumentsStep extends StatelessWidget {
             minimumSize: const Size(double.infinity, 48),
             side: BorderSide(
               color: apiError('file') != null
-                  ? Colors.red.shade300
+                  ? context.appColors.errorBorder
                   : context.appColors.border,
             ),
           ),
@@ -86,7 +86,7 @@ class CustomerWizardDocumentsStep extends StatelessWidget {
           Text(
             apiError('file')!,
             style: AppTextStyles.body(context).copyWith(
-              color: Colors.red.shade700,
+              color: context.appColors.errorText,
               fontSize: 12,
             ),
           ),

@@ -174,7 +174,7 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: isRead ? context.appColors.card : context.appColors.gold.withValues(alpha: 0.12),
+      color: isRead ? context.appColors.card : context.appColors.goldHighlight,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,

@@ -170,7 +170,7 @@ class _NavIconButton extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
             color: isSelected
-                ? context.appColors.gold.withValues(alpha: 0.18)
+                ? context.appColors.goldTint
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(14),
           ),

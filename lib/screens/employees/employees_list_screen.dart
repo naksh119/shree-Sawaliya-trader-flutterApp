@@ -16,6 +16,7 @@ import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/active_status_filter.dart';
+import 'package:sawaliyatrader/core/widgets/app_filter_chip.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
@@ -418,11 +419,12 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
                 children: [
                   for (var i = 0; i < _roles.length; i++) ...[
                     if (i > 0) const SizedBox(width: 8),
-                    _RoleChip(
+                    AppFilterChip(
                       label: _roles[i].code,
                       tooltip: _roles[i].name,
                       selected: _roleFilter == _roles[i].id,
                       onTap: () => _onRoleSelected(_roles[i].id),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                     ),
                   ],
                 ],
@@ -540,47 +542,5 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
     final branch = _selectedBranch;
     final branchPart = branch != null ? ' ${branch.name}' : '';
     return l10n.noEmployeesFound(status, rolePart, branchPart);
-  }
-}
-
-class _RoleChip extends StatelessWidget {
-  const _RoleChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.tooltip,
-  });
-
-  final String label;
-  final String? tooltip;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final chip = FilterChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-      labelStyle: AppTextStyles.subtitle(context).copyWith(
-        color: selected
-            ? context.appColors.gold
-            : context.appColors.textPrimary,
-        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-      ),
-      selectedColor: context.appColors.gold.withValues(alpha: 0.18),
-      backgroundColor: context.appColors.card,
-      side: BorderSide(
-        color: selected
-            ? context.appColors.gold.withValues(alpha: 0.5)
-            : context.appColors.border,
-      ),
-      showCheckmark: false,
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-    );
-
-    if (tooltip == null || tooltip!.isEmpty) return chip;
-
-    return Tooltip(message: tooltip!, child: chip);
   }
 }

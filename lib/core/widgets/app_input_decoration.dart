@@ -4,7 +4,20 @@ import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 /// Borderless [InputDecoration] for fields wrapped in [AppGradientBorder].
 abstract final class AppInputDecoration {
-  static const TextStyle _hiddenErrorStyle = TextStyle(height: 0, fontSize: 0);
+  static const TextStyle hiddenErrorStyle = TextStyle(height: 0, fontSize: 0);
+
+  static InputDecoration suppressInlineError(InputDecoration decoration) =>
+      decoration.copyWith(
+        errorText: null,
+        errorStyle: hiddenErrorStyle,
+        errorMaxLines: 1,
+      );
+
+  static TextStyle externalErrorStyle(BuildContext context) =>
+      AppTextStyles.body(context).copyWith(
+        color: context.appColors.errorText,
+        fontSize: 12,
+      );
 
   static InputDecoration borderless(
     BuildContext context, {
@@ -36,9 +49,9 @@ abstract final class AppInputDecoration {
       errorText: showInlineError ? errorText : null,
       errorStyle: showInlineError
           ? AppTextStyles.subtitle(context).copyWith(
-              color: Colors.red.shade700,
+              color: context.appColors.errorText,
             )
-          : _hiddenErrorStyle,
+          : hiddenErrorStyle,
       errorMaxLines: showInlineError ? 3 : 1,
       suffixIcon: suffixIcon,
       prefixIcon: prefixIcon,

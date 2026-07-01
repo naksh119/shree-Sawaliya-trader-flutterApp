@@ -305,7 +305,7 @@ class _BranchPatchScreenState extends State<BranchPatchScreen> {
                       Text(
                         _error!,
                         style: AppTextStyles.body(context)
-                            .copyWith(color: Colors.red.shade700),
+                            .copyWith(color: context.appColors.errorText),
                       ),
                     ],
                   ],

@@ -627,7 +627,7 @@ class _CustomerWizardScreenState extends State<CustomerWizardScreen>
                                 _generalError!,
                                 style: AppTextStyles.body(
                                   context,
-                                ).copyWith(color: const Color(0xFFE57373)),
+                                ).copyWith(color: context.appColors.error),
                               ),
                             ],
                           ],

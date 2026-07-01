@@ -14,6 +14,7 @@ import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_filter_chip.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
@@ -186,14 +187,14 @@ class _CentersListScreenState extends State<CentersListScreen>
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _FilterChip(
+                  AppFilterChip(
                     label: context.l10n.all,
                     selected: _statusFilter == null,
                     onTap: () => _onStatusSelected(null),
                   ),
                   for (final status in CenterStatus.filterOptions) ...[
                     const SizedBox(width: 8),
-                    _FilterChip(
+                    AppFilterChip(
                       label: status.localizedLabel(context),
                       selected: _statusFilter == status,
                       onTap: () => _onStatusSelected(status),
@@ -286,41 +287,6 @@ class _CentersListScreenState extends State<CentersListScreen>
           );
         },
       ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final activeColor = context.appColors.gold;
-
-    return FilterChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-      labelStyle: AppTextStyles.subtitle(context).copyWith(
-        color: selected ? activeColor : context.appColors.textPrimary,
-        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-      ),
-      selectedColor: activeColor.withValues(alpha: 0.18),
-      backgroundColor: context.appColors.card,
-      side: BorderSide(
-        color: selected
-            ? activeColor.withValues(alpha: 0.5)
-            : context.appColors.border,
-      ),
-      showCheckmark: false,
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_font.dart';
 import 'package:sawaliyatrader/core/theme/app_theme_colors.dart';
 
@@ -70,7 +69,7 @@ abstract final class AppThemes {
           fontSize: 16,
         ),
         errorStyle: AppFont.style(
-          color: Colors.red.shade700,
+          color: colors.errorText,
           fontSize: 12,
         ),
       ),
@@ -93,7 +92,7 @@ abstract final class AppThemes {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: colors.gold,
-        foregroundColor: AppColors.navy,
+        foregroundColor: colors.navy,
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
@@ -101,7 +100,7 @@ abstract final class AppThemes {
             return colors.textSecondary.withValues(alpha: 0.5);
           }
           if (states.contains(WidgetState.selected)) {
-            return AppColors.navy;
+            return colors.navy;
           }
           return colors.textSecondary;
         }),

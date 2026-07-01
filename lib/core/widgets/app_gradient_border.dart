@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/theme/theme_context.dart';
 
 /// Shared metrics for branded input fields (text, date, dropdown, search).
 abstract final class AppInputMetrics {
@@ -26,6 +26,7 @@ class AppGradientBorder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     final borderWidth = AppInputMetrics.borderWidth;
     final outerRadius = BorderRadius.circular(borderRadius);
     final innerRadius = BorderRadius.circular(
@@ -37,7 +38,7 @@ class AppGradientBorder extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: outerRadius,
           border: Border.all(
-            color: isFocused ? Colors.red.shade400 : Colors.red.shade300,
+            color: isFocused ? colors.errorText : colors.errorBorder,
             width: borderWidth,
           ),
           color: backgroundColor,
@@ -53,7 +54,7 @@ class AppGradientBorder extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: outerRadius,
-        gradient: AppColors.brandGradient,
+        gradient: colors.brandGradient,
       ),
       padding: EdgeInsets.all(borderWidth),
       child: ClipRRect(

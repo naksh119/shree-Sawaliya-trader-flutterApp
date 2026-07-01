@@ -519,10 +519,10 @@ class _PermissionChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: context.appColors.gold.withValues(alpha: 0.18),
+        color: context.appColors.goldTint,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: context.appColors.gold.withValues(alpha: 0.35),
+          color: context.appColors.goldBorder,
         ),
       ),
       child: Text(
@@ -602,7 +602,7 @@ class _EmployeeAvatar extends StatelessWidget {
           customBorder: const CircleBorder(),
           child: CircleAvatar(
             radius: 32,
-            backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+            backgroundColor: context.appColors.goldTint,
             backgroundImage: NetworkImage(photo),
           ),
         ),
@@ -612,14 +612,14 @@ class _EmployeeAvatar extends StatelessWidget {
     if (photo != null && photo.isNotEmpty) {
       return CircleAvatar(
         radius: 32,
-        backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+        backgroundColor: context.appColors.goldTint,
         backgroundImage: NetworkImage(photo),
       );
     }
 
     return CircleAvatar(
       radius: 32,
-      backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+            backgroundColor: context.appColors.goldTint,
       child: BrandGradientText(
         text: employee.initials,
         style: AppTextStyles.heading(context).copyWith(fontSize: 22),

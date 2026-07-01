@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
@@ -38,7 +37,7 @@ abstract final class EntityActionPlaceholder {
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: context.appColors.gold,
-              foregroundColor: AppColors.navy,
+              foregroundColor: context.appColors.navy,
             ),
             child: Text(l10n.delete),
           ),
@@ -81,10 +80,10 @@ class _BrandIconButton extends StatelessWidget {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: context.appColors.gold.withValues(alpha: 0.16),
+              color: context.appColors.goldSurface,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: context.appColors.gold.withValues(alpha: 0.42),
+                color: context.appColors.goldBorderStrong,
               ),
             ),
             alignment: Alignment.center,
@@ -230,7 +229,7 @@ class EntityEditDeleteBar extends StatelessWidget {
                       () => EntityActionPlaceholder.onDelete(context, entityName),
                   style: FilledButton.styleFrom(
                     backgroundColor: context.appColors.gold,
-                    foregroundColor: AppColors.navy,
+                    foregroundColor: context.appColors.navy,
                   ),
                   icon: BrandGradientIcon(Icons.delete_outline, size: 18),
                   label: Text(l10n.delete),

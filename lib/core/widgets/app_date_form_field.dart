@@ -119,7 +119,7 @@ class AppDateFormField extends StatelessWidget {
           Text(
             effectiveError,
             style: AppTextStyles.body(context).copyWith(
-              color: Colors.red.shade700,
+              color: context.appColors.errorText,
               fontSize: 12,
             ),
           ),

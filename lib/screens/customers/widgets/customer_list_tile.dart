@@ -39,7 +39,7 @@ class CustomerListTile extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: context.appColors.gold.withValues(alpha: 0.18),
+                backgroundColor: context.appColors.goldTint,
                 child: BrandGradientText(
                   text: customer.fullName.isNotEmpty
                       ? customer.fullName[0].toUpperCase()

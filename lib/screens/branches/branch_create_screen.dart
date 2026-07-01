@@ -226,7 +226,7 @@ class _BranchCreateScreenState extends State<BranchCreateScreen>
                       const SizedBox(height: 16),
                       Text(
                         _error!,
-                        style: AppTextStyles.body(context).copyWith(color: Colors.red.shade700),
+                        style: AppTextStyles.body(context).copyWith(color: context.appColors.errorText),
                       ),
                     ],
                     const SizedBox(height: 24),

@@ -4,7 +4,6 @@ import 'package:sawaliyatrader/core/auth/models/login_response.dart';
 import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_dto.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
@@ -40,7 +39,7 @@ Future<bool> confirmAndDeleteEmployee({
           onPressed: () => Navigator.of(dialogContext).pop(true),
           style: FilledButton.styleFrom(
             backgroundColor: dialogContext.appColors.gold,
-            foregroundColor: AppColors.navy,
+            foregroundColor: dialogContext.appColors.navy,
           ),
           child: Text(l10n.delete),
         ),

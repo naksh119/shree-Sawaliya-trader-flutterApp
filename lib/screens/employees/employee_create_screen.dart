@@ -920,7 +920,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                               Text(
                                 _generalError!,
                                 style: AppTextStyles.body(context).copyWith(
-                                  color: Colors.red.shade700,
+                                  color: context.appColors.errorText,
                                 ),
                               ),
                             ],
@@ -1009,7 +1009,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                       ? Text(
                           l10n.noRolesAvailable,
                           style: AppTextStyles.body(context).copyWith(
-                            color: Colors.red.shade700,
+                            color: context.appColors.errorText,
                           ),
                         )
                       : AppDropdownFormField<int>(
@@ -1045,7 +1045,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                       ? Text(
                           l10n.noBranchesForAssignment,
                           style: AppTextStyles.body(context).copyWith(
-                            color: Colors.red.shade700,
+                            color: context.appColors.errorText,
                           ),
                         )
                       : AppDropdownFormField<int>(

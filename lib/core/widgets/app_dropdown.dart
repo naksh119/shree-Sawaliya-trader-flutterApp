@@ -9,6 +9,7 @@ import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/app_gradient_border.dart';
+import 'package:sawaliyatrader/core/widgets/app_input_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 
 export 'app_dropdown_decoration.dart';
@@ -392,30 +393,44 @@ class _AppDropdownFormFieldBodyState<T> extends State<_AppDropdownFormFieldBody<
       }
     }
 
-    return AppDropdownDecoration.fieldBorder(
-      context,
-      hasError: widget.field.hasError,
-      child: InputDecorator(
-        decoration: widget.decoration.copyWith(errorText: widget.field.errorText),
-        isEmpty: currentValue == null,
-        child: InkWell(
-          key: _anchorKey,
-          onTap: widget.enabled ? _openMenu : null,
-          child: Row(
-            children: [
-              Expanded(
-                child: DefaultTextStyle(
-                  style: widget.style ?? DefaultTextStyle.of(context).style,
-                  child: selectedItem == null
-                      ? const SizedBox.shrink()
-                      : selectedItem.child,
-                ),
+    final errorText = widget.field.errorText;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppDropdownDecoration.fieldBorder(
+          context,
+          hasError: widget.field.hasError,
+          child: InputDecorator(
+            decoration: AppInputDecoration.suppressInlineError(widget.decoration),
+            isEmpty: currentValue == null,
+            child: InkWell(
+              key: _anchorKey,
+              onTap: widget.enabled ? _openMenu : null,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DefaultTextStyle(
+                      style: widget.style ?? DefaultTextStyle.of(context).style,
+                      child: selectedItem == null
+                          ? const SizedBox.shrink()
+                          : selectedItem.child,
+                    ),
+                  ),
+                  AppDropdownMetrics.expandIcon(context),
+                ],
               ),
-              AppDropdownMetrics.expandIcon(context),
-            ],
+            ),
           ),
         ),
-      ),
+        if (errorText != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            errorText,
+            style: AppInputDecoration.externalErrorStyle(context),
+          ),
+        ],
+      ],
     );
   }
 }

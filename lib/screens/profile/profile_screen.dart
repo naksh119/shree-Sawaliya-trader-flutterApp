@@ -10,6 +10,7 @@ import 'package:sawaliyatrader/core/permissions/employee_role.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
+import 'package:sawaliyatrader/core/widgets/app_confirm_dialog.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
 import 'package:sawaliyatrader/core/widgets/themed_app_bar.dart';
@@ -35,31 +36,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _onLogout() async {
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          l10n.logOutQuestion,
-          style: AppTextStyles.heading(context).copyWith(fontSize: 22),
-        ),
-        content: Text(
-          l10n.logOutConfirmMessage,
-          style: AppTextStyles.body(context),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel, style: AppTextStyles.link(context)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              l10n.logout,
-              style: AppTextStyles.link(context).copyWith(color: Colors.red.shade700),
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: l10n.logOutQuestion,
+      message: l10n.logOutConfirmMessage,
+      confirmLabel: l10n.logout,
+      destructive: true,
     );
 
     if (confirmed != true || !mounted) return;
@@ -227,7 +209,7 @@ class _ProfileHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: context.appColors.gold.withValues(alpha: 0.25),
+            backgroundColor: context.appColors.goldMuted,
             child: BrandGradientIcon(Icons.person, size: 32),
           ),
           const SizedBox(width: 16),
@@ -309,9 +291,9 @@ class _PermissionChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: context.appColors.gold.withValues(alpha: 0.18),
+        color: context.appColors.goldTint,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: context.appColors.gold.withValues(alpha: 0.35)),
+        border: Border.all(color: context.appColors.goldBorder),
       ),
       child: Text(permission, style: AppTextStyles.subtitle(context).copyWith(fontSize: 14)),
     );

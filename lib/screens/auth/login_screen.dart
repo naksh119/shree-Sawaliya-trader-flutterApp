@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/auth_service.dart';
+import 'package:sawaliyatrader/core/customers/customer_validators.dart';
 import 'package:sawaliyatrader/core/constants/app_assets.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
@@ -30,13 +31,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   bool _isSubmitting = false;
+  bool _autoValidate = false;
 
   String? _validateEmail(String? value) {
     final l10n = context.l10n;
     if (value == null || value.trim().isEmpty) {
       return l10n.pleaseEnterEmail;
     }
-    if (!RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(value.trim())) {
+    if (!CustomerValidators.emailLooksValid(value, required: true)) {
       return l10n.enterValidEmail;
     }
     return null;
@@ -66,13 +68,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _onLogin() async {
+    if (!_autoValidate) {
+      setState(() => _autoValidate = true);
+    }
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
 
     try {
       await _authService.login(
-        email: _emailController.text,
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
@@ -130,6 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       final form = Form(
                         key: _formKey,
+                        autovalidateMode: _autoValidate
+                            ? AutovalidateMode.onUserInteraction
+                            : AutovalidateMode.disabled,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

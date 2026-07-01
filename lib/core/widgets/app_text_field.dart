@@ -108,7 +108,13 @@ class _AppTextFieldState extends State<AppTextField> {
         suffixIcon: widget.suffixIcon,
         showInlineError: false,
       ),
-      onChanged: (_) => setState(() {}),
+      onChanged: (_) {
+        if (_fieldKey.currentState?.hasError ?? false) {
+          _fieldKey.currentState?.validate();
+        } else {
+          setState(() {});
+        }
+      },
     );
 
     return Column(
@@ -126,10 +132,7 @@ class _AppTextFieldState extends State<AppTextField> {
           const SizedBox(height: 8),
           Text(
             errorText,
-            style: AppTextStyles.body(context).copyWith(
-              color: Colors.red.shade700,
-              fontSize: 12,
-            ),
+            style: AppInputDecoration.externalErrorStyle(context),
           ),
         ],
       ],
