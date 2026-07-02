@@ -85,9 +85,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'You will need to sign in again to access your account.';
 
   @override
-  String get signedInAs => 'Signed in as';
-
-  @override
   String get signedIn => 'Signed in';
 
   @override
@@ -242,9 +239,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get error => 'Error';
 
   @override
-  String get filterByStatus => 'Filter by status';
-
-  @override
   String get sessionUnavailable => 'Session unavailable. Please sign in again.';
 
   @override
@@ -357,12 +351,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allBranches => 'All branches';
-
-  @override
-  String get statusSuffixActive => ' active';
-
-  @override
-  String get statusSuffixInactive => ' inactive';
 
   @override
   String get noOverviewMetrics =>
@@ -508,15 +496,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loan => 'Loan';
 
   @override
-  String get amount => 'Amount';
-
-  @override
   String amountWithValue(String value) {
     return 'Amount: $value';
   }
-
-  @override
-  String get outstanding => 'Outstanding';
 
   @override
   String outstandingWithValue(String value) {
@@ -818,9 +800,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectDate => 'Select date';
 
   @override
-  String get remarksOptional => 'Remarks (optional)';
-
-  @override
   String get centerRemarksHint => 'Any notes for this center';
 
   @override
@@ -1077,12 +1056,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get deleteEmployeeQuestion => 'Delete employee?';
-
-  @override
-  String get saveChangesPatch => 'Save changes';
-
-  @override
   String get roleAndBranch => 'Role & branch';
 
   @override
@@ -1129,19 +1102,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get relationRequired => 'Relation is required';
 
   @override
-  String get organizationNameRequired => 'Organization name is required';
-
-  @override
-  String get serviceFromRequired => 'Service from date is required';
-
-  @override
-  String get serviceToRequired => 'Service to date is required';
-
-  @override
   String get serviceToAfterFrom => 'Service to must be after service from';
-
-  @override
-  String get enterValidAmount => 'Enter a valid amount';
 
   @override
   String get profileId => 'Profile ID';
@@ -1197,9 +1158,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get next => 'Next';
 
   @override
-  String get submit => 'Submit';
-
-  @override
   String get finish => 'Finish';
 
   @override
@@ -1242,10 +1200,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Upload the branch payment QR image (optional).';
 
   @override
-  String get branchPutIntro =>
-      'Full update uses PUT (all fields) via Save changes on the edit screen.';
-
-  @override
   String get activeBranch => 'Active branch';
 
   @override
@@ -1261,10 +1215,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get branchNotFound => 'Branch not found.';
-
-  @override
-  String get branchNotFoundDeleted =>
-      'Branch not found. It may have been deleted — refresh the list.';
 
   @override
   String get record => 'Record';
@@ -1292,20 +1242,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String branchDeleted(String name) {
     return 'Branch $name deleted.';
   }
-
-  @override
-  String get quickUpdatePatch => 'Quick update (PATCH)';
-
-  @override
-  String patchBranchDescription(Object id) {
-    return 'PATCH /branches/api/\'$id\'/ — partial update; only changed fields are sent.';
-  }
-
-  @override
-  String get markInactive => 'Mark inactive';
-
-  @override
-  String get markActive => 'Mark active';
 
   @override
   String get physical => 'Physical';
@@ -1422,15 +1358,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emiStatusCancelled => 'Cancelled';
 
   @override
-  String get nationalityIndian => 'Indian';
-
-  @override
-  String get productGold => 'Gold';
-
-  @override
-  String get productSilver => 'Silver';
-
-  @override
   String get employeeCodeHint => 'e.g. JAIPUR-EMP001';
 
   @override
@@ -1465,12 +1392,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startDateRequired => 'Start date is required';
-
-  @override
-  String get designationRequired => 'Designation is required';
-
-  @override
-  String get annualCtcRequired => 'Annual CTC is required';
 
   @override
   String get invalidNumber => 'Enter a valid number';

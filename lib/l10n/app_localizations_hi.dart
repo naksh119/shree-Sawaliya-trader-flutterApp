@@ -85,9 +85,6 @@ class AppLocalizationsHi extends AppLocalizations {
       'अपने खाते तक पहुँच के लिए आपको फिर से साइन इन करना होगा।';
 
   @override
-  String get signedInAs => 'इस रूप में साइन इन';
-
-  @override
   String get signedIn => 'साइन इन';
 
   @override
@@ -241,9 +238,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get error => 'त्रुटि';
 
   @override
-  String get filterByStatus => 'स्थिति के अनुसार फ़िल्टर';
-
-  @override
   String get sessionUnavailable =>
       'सत्र उपलब्ध नहीं। कृपया फिर से साइन इन करें।';
 
@@ -357,12 +351,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get allBranches => 'सभी शाखाएँ';
-
-  @override
-  String get statusSuffixActive => ' सक्रिय';
-
-  @override
-  String get statusSuffixInactive => ' निष्क्रिय';
 
   @override
   String get noOverviewMetrics =>
@@ -507,15 +495,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get loan => 'ऋण';
 
   @override
-  String get amount => 'राशि';
-
-  @override
   String amountWithValue(String value) {
     return 'राशि: $value';
   }
-
-  @override
-  String get outstanding => 'बकाया';
 
   @override
   String outstandingWithValue(String value) {
@@ -817,9 +799,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get selectDate => 'तिथि चुनें';
 
   @override
-  String get remarksOptional => 'टिप्पणी (वैकल्पिक)';
-
-  @override
   String get centerRemarksHint => 'इस केंद्र के लिए कोई नोट';
 
   @override
@@ -1076,12 +1055,6 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get deleteEmployeeQuestion => 'कर्मचारी हटाएँ?';
-
-  @override
-  String get saveChangesPatch => 'परिवर्तन सहेजें';
-
-  @override
   String get roleAndBranch => 'भूमिका और शाखा';
 
   @override
@@ -1127,19 +1100,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get relationRequired => 'संबंध आवश्यक है';
 
   @override
-  String get organizationNameRequired => 'संगठन का नाम आवश्यक है';
-
-  @override
-  String get serviceFromRequired => 'सेवा प्रारंभ तिथि आवश्यक है';
-
-  @override
-  String get serviceToRequired => 'सेवा समाप्ति तिथि आवश्यक है';
-
-  @override
   String get serviceToAfterFrom => 'सेवा समाप्ति, प्रारंभ के बाद होनी चाहिए';
-
-  @override
-  String get enterValidAmount => 'मान्य राशि दर्ज करें';
 
   @override
   String get profileId => 'प्रोफ़ाइल ID';
@@ -1196,9 +1157,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get next => 'अगला';
 
   @override
-  String get submit => 'जमा करें';
-
-  @override
   String get finish => 'समाप्त';
 
   @override
@@ -1240,10 +1198,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get branchQrUploadHint => 'शाखा भुगतान QR छवि अपलोड करें (वैकल्पिक)।';
 
   @override
-  String get branchPutIntro =>
-      'पूर्ण अपडेट PUT (सभी फ़ील्ड) के माध्यम से Save changes पर।';
-
-  @override
   String get activeBranch => 'सक्रिय शाखा';
 
   @override
@@ -1259,10 +1213,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get branchNotFound => 'शाखा नहीं मिली।';
-
-  @override
-  String get branchNotFoundDeleted =>
-      'शाखा नहीं मिली। हो सकता है हटा दी गई हो — सूची रीफ़्रेश करें।';
 
   @override
   String get record => 'रिकॉर्ड';
@@ -1290,20 +1240,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String branchDeleted(String name) {
     return 'शाखा $name हटाई गई।';
   }
-
-  @override
-  String get quickUpdatePatch => 'त्वरित अपडेट (PATCH)';
-
-  @override
-  String patchBranchDescription(Object id) {
-    return 'PATCH /branches/api/\'$id\'/ — आंशिक अपडेट; केवल बदले फ़ील्ड भेजे जाते हैं।';
-  }
-
-  @override
-  String get markInactive => 'निष्क्रिय करें';
-
-  @override
-  String get markActive => 'सक्रिय करें';
 
   @override
   String get physical => 'शारीरिक';
@@ -1420,15 +1356,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get emiStatusCancelled => 'रद्द';
 
   @override
-  String get nationalityIndian => 'Indian';
-
-  @override
-  String get productGold => 'सोना';
-
-  @override
-  String get productSilver => 'चाँदी';
-
-  @override
   String get employeeCodeHint => 'उदा. JAIPUR-EMP001';
 
   @override
@@ -1463,12 +1390,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get startDateRequired => 'प्रारंभ तिथि आवश्यक है';
-
-  @override
-  String get designationRequired => 'पद आवश्यक है';
-
-  @override
-  String get annualCtcRequired => 'वार्षिक CTC आवश्यक है';
 
   @override
   String get invalidNumber => 'मान्य संख्या दर्ज करें';

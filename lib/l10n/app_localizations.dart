@@ -248,12 +248,6 @@ abstract class AppLocalizations {
   /// **'You will need to sign in again to access your account.'**
   String get logOutConfirmMessage;
 
-  /// No description provided for @signedInAs.
-  ///
-  /// In en, this message translates to:
-  /// **'Signed in as'**
-  String get signedInAs;
-
   /// No description provided for @signedIn.
   ///
   /// In en, this message translates to:
@@ -548,12 +542,6 @@ abstract class AppLocalizations {
   /// **'Error'**
   String get error;
 
-  /// No description provided for @filterByStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter by status'**
-  String get filterByStatus;
-
   /// No description provided for @sessionUnavailable.
   ///
   /// In en, this message translates to:
@@ -751,18 +739,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All branches'**
   String get allBranches;
-
-  /// No description provided for @statusSuffixActive.
-  ///
-  /// In en, this message translates to:
-  /// **' active'**
-  String get statusSuffixActive;
-
-  /// No description provided for @statusSuffixInactive.
-  ///
-  /// In en, this message translates to:
-  /// **' inactive'**
-  String get statusSuffixInactive;
 
   /// No description provided for @noOverviewMetrics.
   ///
@@ -1046,23 +1022,11 @@ abstract class AppLocalizations {
   /// **'Loan'**
   String get loan;
 
-  /// No description provided for @amount.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount'**
-  String get amount;
-
   /// No description provided for @amountWithValue.
   ///
   /// In en, this message translates to:
   /// **'Amount: {value}'**
   String amountWithValue(String value);
-
-  /// No description provided for @outstanding.
-  ///
-  /// In en, this message translates to:
-  /// **'Outstanding'**
-  String get outstanding;
 
   /// No description provided for @outstandingWithValue.
   ///
@@ -1628,12 +1592,6 @@ abstract class AppLocalizations {
   /// **'Select date'**
   String get selectDate;
 
-  /// No description provided for @remarksOptional.
-  ///
-  /// In en, this message translates to:
-  /// **'Remarks (optional)'**
-  String get remarksOptional;
-
   /// No description provided for @centerRemarksHint.
   ///
   /// In en, this message translates to:
@@ -2102,18 +2060,6 @@ abstract class AppLocalizations {
   /// **'Employee {name} deleted.'**
   String employeeDeleted(String name);
 
-  /// No description provided for @deleteEmployeeQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete employee?'**
-  String get deleteEmployeeQuestion;
-
-  /// No description provided for @saveChangesPatch.
-  ///
-  /// In en, this message translates to:
-  /// **'Save changes'**
-  String get saveChangesPatch;
-
   /// No description provided for @roleAndBranch.
   ///
   /// In en, this message translates to:
@@ -2204,35 +2150,11 @@ abstract class AppLocalizations {
   /// **'Relation is required'**
   String get relationRequired;
 
-  /// No description provided for @organizationNameRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Organization name is required'**
-  String get organizationNameRequired;
-
-  /// No description provided for @serviceFromRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Service from date is required'**
-  String get serviceFromRequired;
-
-  /// No description provided for @serviceToRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Service to date is required'**
-  String get serviceToRequired;
-
   /// No description provided for @serviceToAfterFrom.
   ///
   /// In en, this message translates to:
   /// **'Service to must be after service from'**
   String get serviceToAfterFrom;
-
-  /// No description provided for @enterValidAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a valid amount'**
-  String get enterValidAmount;
 
   /// No description provided for @profileId.
   ///
@@ -2336,12 +2258,6 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get next;
 
-  /// No description provided for @submit.
-  ///
-  /// In en, this message translates to:
-  /// **'Submit'**
-  String get submit;
-
   /// No description provided for @finish.
   ///
   /// In en, this message translates to:
@@ -2420,12 +2336,6 @@ abstract class AppLocalizations {
   /// **'Upload the branch payment QR image (optional).'**
   String get branchQrUploadHint;
 
-  /// No description provided for @branchPutIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Full update uses PUT (all fields) via Save changes on the edit screen.'**
-  String get branchPutIntro;
-
   /// No description provided for @activeBranch.
   ///
   /// In en, this message translates to:
@@ -2455,12 +2365,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Branch not found.'**
   String get branchNotFound;
-
-  /// No description provided for @branchNotFoundDeleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Branch not found. It may have been deleted — refresh the list.'**
-  String get branchNotFoundDeleted;
 
   /// No description provided for @record.
   ///
@@ -2509,30 +2413,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Branch {name} deleted.'**
   String branchDeleted(String name);
-
-  /// No description provided for @quickUpdatePatch.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick update (PATCH)'**
-  String get quickUpdatePatch;
-
-  /// No description provided for @patchBranchDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'PATCH /branches/api/\'{id}\'/ — partial update; only changed fields are sent.'**
-  String patchBranchDescription(Object id);
-
-  /// No description provided for @markInactive.
-  ///
-  /// In en, this message translates to:
-  /// **'Mark inactive'**
-  String get markInactive;
-
-  /// No description provided for @markActive.
-  ///
-  /// In en, this message translates to:
-  /// **'Mark active'**
-  String get markActive;
 
   /// No description provided for @physical.
   ///
@@ -2750,24 +2630,6 @@ abstract class AppLocalizations {
   /// **'Cancelled'**
   String get emiStatusCancelled;
 
-  /// No description provided for @nationalityIndian.
-  ///
-  /// In en, this message translates to:
-  /// **'Indian'**
-  String get nationalityIndian;
-
-  /// No description provided for @productGold.
-  ///
-  /// In en, this message translates to:
-  /// **'Gold'**
-  String get productGold;
-
-  /// No description provided for @productSilver.
-  ///
-  /// In en, this message translates to:
-  /// **'Silver'**
-  String get productSilver;
-
   /// No description provided for @employeeCodeHint.
   ///
   /// In en, this message translates to:
@@ -2839,18 +2701,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start date is required'**
   String get startDateRequired;
-
-  /// No description provided for @designationRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Designation is required'**
-  String get designationRequired;
-
-  /// No description provided for @annualCtcRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Annual CTC is required'**
-  String get annualCtcRequired;
 
   /// No description provided for @invalidNumber.
   ///

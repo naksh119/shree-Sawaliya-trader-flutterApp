@@ -25,7 +25,6 @@
   "logout": "Log out",
   "logOutQuestion": "Log out?",
   "logOutConfirmMessage": "You will need to sign in again to access your account.",
-  "signedInAs": "Signed in as",
   "signedIn": "Signed in",
   "role": "Role",
   "overview": "Overview",
@@ -34,7 +33,13 @@
   "accessDenied": "Access Denied",
   "accessDeniedMessage": "You do not have permission to open this screen.",
   "accessDeniedRequested": "Requested: {route}",
-  "@accessDeniedRequested": {"placeholders": {"route": {"type": "String"}}},
+  "@accessDeniedRequested": {
+    "placeholders": {
+      "route": {
+        "type": "String"
+      }
+    }
+  },
   "accessDeniedHint": "Your role only includes access to assigned modules. Contact an administrator if you believe this is a mistake.",
   "backToDashboard": "Back to Dashboard",
   "switchToLightMode": "Switch to light mode",
@@ -76,7 +81,6 @@
   "required": "Required",
   "success": "Success",
   "error": "Error",
-  "filterByStatus": "Filter by status",
   "sessionUnavailable": "Session unavailable. Please sign in again.",
   "noSessionFound": "No session found. Please sign in again.",
   "account": "Account",
@@ -88,11 +92,23 @@
   "linkedEmployee": "Linked employee",
   "noneSuperuserAccount": "None (superuser account)",
   "permissionsCount": "Permissions ({count})",
-  "@permissionsCount": {"placeholders": {"count": {"type": "int"}}},
+  "@permissionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noGranularPermissions": "No granular permissions assigned.",
   "administrator": "Administrator",
   "userNumber": "User #{id}",
-  "@userNumber": {"placeholders": {"id": {"type": "int"}}},
+  "@userNumber": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
   "markAllRead": "Mark all read",
   "notificationsNoAccess": "Your role does not have notification access. Contact your administrator.",
   "notificationsInboxPending": "Notification inbox will appear here once the backend API is connected.",
@@ -108,16 +124,47 @@
   "noCentersFound": "No centers found.",
   "centerNotFound": "Center not found.",
   "branchesCount": "{count} branches",
-  "@branchesCount": {"placeholders": {"count": {"type": "int"}}},
+  "@branchesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noBranchesFound": "No{status} branches found.",
-  "@noBranchesFound": {"placeholders": {"status": {"type": "String"}}},
+  "@noBranchesFound": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
   "noBranchesFoundForSearch": "No{status} branches found for \"{query}\".",
-  "@noBranchesFoundForSearch": {"placeholders": {"status": {"type": "String"}, "query": {"type": "String"}}},
+  "@noBranchesFoundForSearch": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "noEmployeesFound": "No{status}{role}{branch} employees found.",
-  "@noEmployeesFound": {"placeholders": {"status": {"type": "String"}, "role": {"type": "String"}, "branch": {"type": "String"}}},
+  "@noEmployeesFound": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      },
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
   "allBranches": "All branches",
-  "statusSuffixActive": " active",
-  "statusSuffixInactive": " inactive",
   "noOverviewMetrics": "No overview metrics available for your role.",
   "pendingEmi": "Pending EMI",
   "collected": "Collected",
@@ -165,12 +212,22 @@
   "otherLoans": "Other Loans",
   "noOtherLoans": "No other loans recorded.",
   "loan": "Loan",
-  "amount": "Amount",
   "amountWithValue": "Amount: {value}",
-  "@amountWithValue": {"placeholders": {"value": {"type": "String"}}},
-  "outstanding": "Outstanding",
+  "@amountWithValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "outstandingWithValue": "Outstanding: {value}",
-  "@outstandingWithValue": {"placeholders": {"value": {"type": "String"}}},
+  "@outstandingWithValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "guarantors": "Guarantors",
   "noGuarantors": "No guarantors added.",
   "documents": "Documents",
@@ -181,14 +238,38 @@
   "approve": "Approve",
   "saving": "Saving…",
   "statusUpdatedTo": "Status updated to {status}",
-  "@statusUpdatedTo": {"placeholders": {"status": {"type": "String"}}},
+  "@statusUpdatedTo": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
   "deleteEntityQuestion": "Delete {name}?",
-  "@deleteEntityQuestion": {"placeholders": {"name": {"type": "String"}}},
+  "@deleteEntityQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deleteCannotUndo": "This action cannot be undone. The delete API will be connected soon.",
   "editEntityComingSoon": "Edit {name} — API coming soon",
-  "@editEntityComingSoon": {"placeholders": {"name": {"type": "String"}}},
+  "@editEntityComingSoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deleteEntityComingSoon": "Delete {name} — API coming soon",
-  "@deleteEntityComingSoon": {"placeholders": {"name": {"type": "String"}}},
+  "@deleteEntityComingSoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "customerStatusSourced": "Sourced",
   "customerStatusApplied": "Applied",
   "customerStatusUnderReview": "Under Review",
@@ -240,7 +321,13 @@
   "paymentQrCode": "Payment QR code",
   "createBranch": "Create branch",
   "branchCreated": "Branch {name} created.",
-  "@branchCreated": {"placeholders": {"name": {"type": "String"}}},
+  "@branchCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "centerCreateIntro": "Group approved customers with gold or silver product and loan terms.",
   "centerDetails": "Center details",
   "centerName": "Center name",
@@ -250,7 +337,13 @@
   "productTypeSilver": "Silver",
   "weight": "Weight",
   "weightGrams": "{product} weight (grams)",
-  "@weightGrams": {"placeholders": {"product": {"type": "String"}}},
+  "@weightGrams": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  },
   "weightHint": "e.g. 25.500",
   "purity": "Purity",
   "purityGoldHint": "e.g. 22K",
@@ -270,29 +363,52 @@
   "invalidEmi": "Invalid EMI",
   "startDate": "Start date",
   "selectDate": "Select date",
-  "remarksOptional": "Remarks (optional)",
   "centerRemarksHint": "Any notes for this center",
   "selectApprovedCustomers": "Select approved customers to include in this center.",
   "selectedCount": "{count} selected",
-  "@selectedCount": {"placeholders": {"count": {"type": "int"}}},
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noApprovedCustomers": "No approved customers found.",
   "selectApprovedCustomerError": "Select at least one approved customer.",
   "centerCreated": "Center {name} created.",
-  "@centerCreated": {"placeholders": {"name": {"type": "String"}}},
+  "@centerCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "wizardStepCenterLoan": "Center & loan",
   "wizardStepMembers": "Members",
   "loanAndProduct": "Loan & product",
   "product": "Product",
   "emiSchedule": "EMI schedule",
   "membersCount": "Members ({count})",
-  "@membersCount": {"placeholders": {"count": {"type": "int"}}},
+  "@membersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "generateEmiSchedule": "Generate EMI schedule",
   "addMember": "Add member",
   "removeMemberQuestion": "Remove member?",
   "memberAdded": "Member added.",
   "memberRemoved": "Member removed.",
   "emiScheduleGenerated": "EMI schedule generated for {name}.",
-  "@emiScheduleGenerated": {"placeholders": {"name": {"type": "String"}}},
+  "@emiScheduleGenerated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "employeeStepPersonal": "Employee & Personal",
   "employeeStepAssessment": "Assessment",
   "employeeStepIdentity": "Identity & Login",
@@ -348,17 +464,39 @@
   "addRecord": "Add record",
   "savedRecords": "Saved records",
   "ctcWithValue": "CTC: {value}",
-  "@ctcWithValue": {"placeholders": {"value": {"type": "String"}}},
+  "@ctcWithValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "employeeSaved": "Employee {name} saved.",
-  "@employeeSaved": {"placeholders": {"name": {"type": "String"}}},
+  "@employeeSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "employeeRegistered": "registered",
   "employeeUpdated": "Employee {name} updated.",
-  "@employeeUpdated": {"placeholders": {"name": {"type": "String"}}},
+  "@employeeUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "employeeNotFound": "Employee not found.",
   "employeeDeleted": "Employee {name} deleted.",
-  "@employeeDeleted": {"placeholders": {"name": {"type": "String"}}},
-  "deleteEmployeeQuestion": "Delete employee?",
-  "saveChangesPatch": "Save changes",
+  "@employeeDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "roleAndBranch": "Role & branch",
   "employmentDatesAssessment": "Employment dates & assessment",
   "passwordOptionalPatch": "Leave blank to keep current password",
@@ -374,11 +512,7 @@
   "permanentAddressRequired": "Permanent address is required",
   "contactNameRequired": "Contact name is required",
   "relationRequired": "Relation is required",
-  "organizationNameRequired": "Organization name is required",
-  "serviceFromRequired": "Service from date is required",
-  "serviceToRequired": "Service to date is required",
   "serviceToAfterFrom": "Service to must be after service from",
-  "enterValidAmount": "Enter a valid amount",
   "profileId": "Profile ID",
   "status": "Status",
   "deleted": "Deleted",
@@ -387,7 +521,13 @@
   "contact": "Contact",
   "uploadPhotoOptional": "Upload a photo (optional).",
   "currentImageCaption": "Current {label}",
-  "@currentImageCaption": {"placeholders": {"label": {"type": "String"}}},
+  "@currentImageCaption": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "imageOnFile": "Image on file",
   "photoSelected": "Photo selected",
   "tapPreviewFullSize": "Tap preview to view full size",
@@ -397,12 +537,23 @@
   "imagePreview": "Image preview",
   "close": "Close",
   "next": "Next",
-  "submit": "Submit",
   "finish": "Finish",
   "create": "Create",
   "loading": "Loading...",
   "stepProgress": "Step {current} of {total}: {label}",
-  "@stepProgress": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}, "label": {"type": "String"}}},
+  "@stepProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "branchNameHint": "e.g. Head Office",
   "branchCodeHint": "e.g. HO or JAIPUR",
   "branchCodeHintShort": "e.g. JAI",
@@ -412,14 +563,18 @@
   "cityRequired": "City is required",
   "addressHint": "Street address or landmark",
   "branchQrUploadHint": "Upload the branch payment QR image (optional).",
-  "branchPutIntro": "Full update uses PUT (all fields) via Save changes on the edit screen.",
   "activeBranch": "Active branch",
   "branchVisibleUsable": "Branch is visible and usable",
   "branchIsInactive": "Branch is inactive",
   "branchUpdated": "Branch {name} updated.",
-  "@branchUpdated": {"placeholders": {"name": {"type": "String"}}},
+  "@branchUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "branchNotFound": "Branch not found.",
-  "branchNotFoundDeleted": "Branch not found. It may have been deleted — refresh the list.",
   "record": "Record",
   "updated": "Updated",
   "noPaymentQrUploaded": "No payment QR code uploaded yet.",
@@ -428,17 +583,17 @@
   "qrUploaded": "QR uploaded",
   "branchDeleteConfirmMessage": "This will permanently remove the branch. This action cannot be undone.",
   "branchDeleted": "Branch {name} deleted.",
-  "@branchDeleted": {"placeholders": {"name": {"type": "String"}}},
-  "quickUpdatePatch": "Quick update (PATCH)",
-  "patchBranchDescription": "PATCH /branches/api/'{id}'/ — partial update; only changed fields are sent.",
-  "markInactive": "Mark inactive",
-  "markActive": "Mark active",
-  "employeeNotFound": "Employee not found.",
+  "@branchDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "physical": "Physical",
   "roleCode": "Role code",
   "roleId": "Role ID",
   "roleDescription": "Role description",
-  "branchCode": "Branch code",
   "branchCity": "Branch city",
   "branchLocation": "Branch location",
   "permissionsSection": "Permissions",
@@ -449,7 +604,13 @@
   "lastName": "Last name",
   "employeePatchIntro": "Update employee details. Only changed fields are sent to the server.",
   "employeeCodeReadOnly": "Employee code: {code} (read-only)",
-  "@employeeCodeReadOnly": {"placeholders": {"code": {"type": "String"}}},
+  "@employeeCodeReadOnly": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "employeeDeleteConfirmMessage": "This will permanently remove the employee. This action cannot be undone.",
   "previousEmployment": "Previous employment",
   "organizationName": "Organization name",
@@ -458,10 +619,15 @@
   "serviceTo": "Service to",
   "annualCtc": "Annual CTC",
   "removeCenterMemberQuestion": "Remove {name} from this center?",
-  "@removeCenterMemberQuestion": {"placeholders": {"name": {"type": "String"}}},
+  "@removeCenterMemberQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "emiGenerated": "Generated",
   "emiNotGenerated": "Not generated",
-  "weight": "Weight",
   "noMembersLinked": "No members linked yet.",
   "leader": "Leader",
   "noEligibleCustomers": "No eligible customers found.",
@@ -474,9 +640,6 @@
   "emiStatusPaid": "Paid",
   "emiStatusOverdue": "Overdue",
   "emiStatusCancelled": "Cancelled",
-  "nationalityIndian": "Indian",
-  "productGold": "Gold",
-  "productSilver": "Silver",
   "employeeCodeHint": "e.g. JAIPUR-EMP001",
   "annualCtcHint": "e.g. 180000.00",
   "genderMale": "Male",
@@ -489,11 +652,15 @@
   "locationRequired": "Location is required",
   "paymentQrRequired": "Payment QR code is required",
   "startDateRequired": "Start date is required",
-  "designationRequired": "Designation is required",
-  "annualCtcRequired": "Annual CTC is required",
   "invalidNumber": "Enter a valid number",
   "fieldRequired": "{field} is required",
-  "@fieldRequired": {"placeholders": {"field": {"type": "String"}}},
+  "@fieldRequired": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
   "fullNameMaxLength": "Full name must be 200 characters or fewer",
   "mobileRequired": "Mobile number is required",
   "emailRequired": "Email is required",
@@ -504,9 +671,21 @@
   "pincodeRequired": "Pincode is required",
   "pincodeSixDigits": "Pincode must be exactly 6 digits",
   "fieldValidNumber": "{field} must be a valid number",
-  "@fieldValidNumber": {"placeholders": {"field": {"type": "String"}}},
+  "@fieldValidNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
   "fieldCannotBeNegative": "{field} cannot be negative",
-  "@fieldCannotBeNegative": {"placeholders": {"field": {"type": "String"}}},
+  "@fieldCannotBeNegative": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
   "genderRequired": "Gender is required",
   "selectValidGender": "Select a valid gender",
   "maritalStatusRequired": "Marital status is required",
@@ -517,5 +696,11 @@
   "nameRequired": "Name is required",
   "nameMaxLength": "Name must be 200 characters or fewer",
   "fieldLettersOnly": "{field} must contain only letters",
-  "@fieldLettersOnly": {"placeholders": {"field": {"type": "String"}}}
+  "@fieldLettersOnly": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  }
 }
