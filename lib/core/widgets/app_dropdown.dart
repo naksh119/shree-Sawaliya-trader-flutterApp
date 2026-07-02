@@ -622,6 +622,14 @@ class AppFilterIconButton<T> extends StatefulWidget {
     super.key,
     this.tooltip,
     this.isActive,
+    this.size = AppDropdownMetrics.filterIconButtonSize,
+    this.borderRadius = 12,
+    this.menuWidth,
+    this.menuMinWidth,
+    this.menuMaxWidth,
+    this.menuItemStyle,
+    this.menuItemHeight,
+    this.menuItemPadding,
   });
 
   final T value;
@@ -630,6 +638,14 @@ class AppFilterIconButton<T> extends StatefulWidget {
   final IconData icon;
   final String? tooltip;
   final bool? isActive;
+  final double size;
+  final double borderRadius;
+  final double? menuWidth;
+  final double? menuMinWidth;
+  final double? menuMaxWidth;
+  final TextStyle? menuItemStyle;
+  final double? menuItemHeight;
+  final EdgeInsetsGeometry? menuItemPadding;
 
   @override
   State<AppFilterIconButton<T>> createState() => _AppFilterIconButtonState<T>();
@@ -644,7 +660,12 @@ class _AppFilterIconButtonState<T> extends State<AppFilterIconButton<T>> {
       .toList();
 
   double _menuWidthFor(BuildContext context, RenderBox button) {
-    final style = AppDropdownMetrics.filterTextStyle(context);
+    if (widget.menuWidth != null) return widget.menuWidth!;
+
+    final style =
+        widget.menuItemStyle ?? AppDropdownMetrics.filterTextStyle(context);
+    final itemPadding =
+        widget.menuItemPadding ?? AppDropdownMetrics.menuItemPadding;
     final painter = TextPainter(
       textDirection: Directionality.of(context),
       textScaler: MediaQuery.textScalerOf(context),
@@ -658,10 +679,15 @@ class _AppFilterIconButtonState<T> extends State<AppFilterIconButton<T>> {
       maxTextWidth = math.max(maxTextWidth, painter.width);
     }
 
-    final contentWidth = maxTextWidth + AppDropdownMetrics.menuExtraWidth;
+    final horizontalPadding = itemPadding.horizontal;
+    const widthBuffer = 16.0;
+    final contentWidth = maxTextWidth + horizontalPadding + widthBuffer;
+    final maxWidth = widget.menuMaxWidth ??
+        MediaQuery.sizeOf(context).width * 0.72;
+
     return contentWidth.clamp(
-      button.size.width,
-      MediaQuery.sizeOf(context).width * 0.72,
+      widget.menuMinWidth ?? button.size.width,
+      maxWidth,
     );
   }
 
@@ -669,13 +695,21 @@ class _AppFilterIconButtonState<T> extends State<AppFilterIconButton<T>> {
     final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || widget.items.isEmpty) return;
 
+    final itemHeight =
+        widget.menuItemHeight ?? AppDropdownMetrics.menuItemHeight;
+    final itemPadding =
+        widget.menuItemPadding ?? AppDropdownMetrics.menuItemPadding;
+
     final selected = await showAppDropdownMenu<T>(
       context: context,
       button: box,
       items: widget.items,
       menuWidth: _menuWidthFor(context, box),
+      menuItemHeight: itemHeight,
+      menuItemPadding: itemPadding,
       menuMaxHeight: AppDropdownMetrics.scrollableMenuMaxHeight(
         widget.items.length,
+        itemHeight: itemHeight,
       ),
     );
     if (selected != null) {
@@ -689,19 +723,25 @@ class _AppFilterIconButtonState<T> extends State<AppFilterIconButton<T>> {
         (widget.items.isNotEmpty && widget.items.first.value != widget.value);
     final iconColor = active ? 1.0 : 0.7;
 
+    final innerRadius = (widget.borderRadius - AppInputMetrics.borderWidth)
+        .clamp(0, widget.borderRadius)
+        .toDouble();
+
     final button = AppDropdownDecoration.fieldBorder(
       context,
-      borderRadius: AppInputMetrics.borderRadius,
+      borderRadius: widget.borderRadius,
       child: InkWell(
         key: _anchorKey,
         onTap: _openMenu,
-        borderRadius: BorderRadius.circular(AppInputMetrics.borderRadius),
+        borderRadius: BorderRadius.circular(innerRadius),
         child: SizedBox(
-          width: AppDropdownMetrics.filterIconButtonSize,
-          height: AppDropdownMetrics.filterIconButtonSize,
-          child: BrandGradientIcon(
-            widget.icon,
-            opacity: iconColor,
+          width: widget.size,
+          height: widget.size,
+          child: Center(
+            child: BrandGradientIcon(
+              widget.icon,
+              opacity: iconColor,
+            ),
           ),
         ),
       ),

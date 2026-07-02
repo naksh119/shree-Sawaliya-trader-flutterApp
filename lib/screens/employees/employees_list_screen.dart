@@ -308,10 +308,13 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
   }
 
   List<DropdownMenuItem<int>> _branchFilterItems(BuildContext context) {
+    final textStyle = AppTextStyles.body(context);
+
     Widget label(String text) => Text(
           text,
-          style: AppTextStyles.body(context),
-          overflow: TextOverflow.ellipsis,
+          style: textStyle,
+          softWrap: false,
+          maxLines: 1,
         );
 
     return [
@@ -375,21 +378,35 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: AppSearchField(
-                hintText: context.l10n.searchEmployeesHint,
-                onSearch: _onSearch,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: AppSearchField(
+                      hintText: context.l10n.searchEmployeesHint,
+                      onSearch: _onSearch,
+                    ),
+                  ),
+                  if (_canFilterByBranch(session)) ...[
+                    const SizedBox(width: 8),
+                    AppFilterIconButton<int>(
+                      value: _branchFilterId,
+                      items: _branchFilterItems(context),
+                      onSelected: _onBranchSelected,
+                      icon: Icons.store_outlined,
+                      tooltip: context.l10n.branchLabel,
+                      menuItemStyle: AppTextStyles.body(context),
+                      menuItemHeight: 44,
+                      menuItemPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      menuMaxWidth: MediaQuery.sizeOf(context).width - 32,
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (_canFilterByBranch(session))
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: AppDropdownFormField<int>(
-                  value: _branchFilterId,
-                  decoration: AppDropdownDecoration.formField(context),
-                  items: _branchFilterItems(context),
-                  onChanged: _onBranchSelected,
-                ),
-              ),
             SizedBox(
               height: 44,
               child: ListView(
