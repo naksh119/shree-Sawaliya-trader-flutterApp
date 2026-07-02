@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Sawaliya Trader",
+  "appTitle": "SSM Nexus",
   "splashTitle": "SHREE SAWALIYA MULTITRADE",
   "home": "Home",
   "hello": "hello",
@@ -51,7 +51,7 @@
   "invalidCustomerId": "Invalid customer id.",
   "invalidCenterId": "Invalid center id.",
   "welcomeBack": "Welcome Back",
-  "signInSubtitle": "Sign in to Shree Sawaliya Multitrade",
+  "signInSubtitle": "Sign in to SSM Nexus",
   "emailAddress": "Email Address",
   "enterYourEmail": "Enter your email",
   "password": "Password",
@@ -481,11 +481,8 @@
   "annualCtcHint": "e.g. 180000.00",
   "genderMale": "Male",
   "genderFemale": "Female",
-  "genderOther": "Other",
   "maritalSingle": "Single",
   "maritalMarried": "Married",
-  "maritalDivorced": "Divorced",
-  "maritalWidowed": "Widowed",
   "employeePhotoRequired": "Employee photo is required",
   "dateOfConfirmationRequired": "Date of confirmation is required",
   "payableFromDateRequired": "Payable from date is required",
@@ -518,5 +515,7 @@
   "ageWholeNumber": "Age must be a whole number",
   "ageRange": "Age must be between 0 and 150",
   "nameRequired": "Name is required",
-  "nameMaxLength": "Name must be 200 characters or fewer"
+  "nameMaxLength": "Name must be 200 characters or fewer",
+  "fieldLettersOnly": "{field} must contain only letters",
+  "@fieldLettersOnly": {"placeholders": {"field": {"type": "String"}}}
 }

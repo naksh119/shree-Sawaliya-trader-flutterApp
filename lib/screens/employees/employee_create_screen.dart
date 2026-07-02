@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sawaliyatrader/core/api/api_exception.dart';
 import 'package:sawaliyatrader/core/auth/models/login_response.dart';
@@ -15,13 +16,14 @@ import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/models/picked_image.dart';
 import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
-import 'package:sawaliyatrader/core/theme/app_colors.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/widgets/app_date_form_field.dart';
 import 'package:sawaliyatrader/core/widgets/app_date_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown_decoration.dart';
 import 'package:sawaliyatrader/core/widgets/app_next_button.dart';
+import 'package:sawaliyatrader/core/widgets/app_previous_button.dart';
+import 'package:sawaliyatrader/core/widgets/app_wizard_outline_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_person_dropdowns.dart';
 import 'package:sawaliyatrader/core/widgets/app_photo_picker.dart';
 import 'package:sawaliyatrader/core/widgets/app_success_message.dart';
@@ -316,7 +318,7 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
       case 'primary_mobile_number':
         return CustomerValidators.mobileLooksValid(trimmed, required: true);
       case 'secondary_mobile_number':
-        return CustomerValidators.mobileLooksValid(trimmed, required: true);
+        return CustomerValidators.digitsOnlyLooksValid(trimmed);
       case 'emergency_contact_number':
         return CustomerValidators.mobileLooksValid(trimmed, required: true);
       case 'father_name':
@@ -407,15 +409,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
       _setFieldError('nationality', nationalityError);
       valid = false;
     }
-    final languagesError = CustomerValidators.requiredText(
-      l10n,
-      _languagesController.text,
-      l10n.languagesKnown,
-    );
-    if (languagesError != null) {
-      _setFieldError('languages_known', languagesError);
-      valid = false;
-    }
     final membersText = _membersInFamilyController.text.trim();
     if (membersText.isEmpty) {
       _setFieldError('members_in_family', l10n.required);
@@ -432,10 +425,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
     final l10n = context.l10n;
     var valid = true;
 
-    final appraisalError = CustomerValidators.requiredText(
+    final appraisalError = CustomerValidators.optionalLettersOnly(
       l10n,
       _performanceAppraisalController.text,
-      l10n.performanceAppraisal,
+      label: l10n.performanceAppraisal,
     );
     if (appraisalError != null) {
       _setFieldError('performance_appraisal', appraisalError);
@@ -648,37 +641,35 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
   }
 
   bool _validateEmploymentHistoryForm() {
+    if (!_employmentHistoryFormHasData()) return true;
+
     final l10n = context.l10n;
     var valid = true;
 
-    if (_historyOrganizationController.text.trim().isEmpty) {
-      _setFieldError('organization_name', l10n.organizationNameRequired);
+    final organizationError = CustomerValidators.optionalLettersOnly(
+      l10n,
+      _historyOrganizationController.text,
+      label: l10n.organizationName,
+    );
+    if (organizationError != null) {
+      _setFieldError('organization_name', organizationError);
       valid = false;
     }
-    if (_historyDesignationController.text.trim().isEmpty) {
-      _setFieldError('designation', l10n.designationRequired);
+
+    final designationError = CustomerValidators.optionalLettersOnly(
+      l10n,
+      _historyDesignationController.text,
+      label: l10n.designation,
+    );
+    if (designationError != null) {
+      _setFieldError('designation', designationError);
       valid = false;
     }
-    if (_historyServiceFrom == null) {
-      _setFieldError('service_from', l10n.serviceFromRequired);
-      valid = false;
-    }
-    if (_historyServiceTo == null) {
-      _setFieldError('service_to', l10n.serviceToRequired);
-      valid = false;
-    }
+
     if (_historyServiceFrom != null &&
         _historyServiceTo != null &&
         _historyServiceTo!.isBefore(_historyServiceFrom!)) {
       _setFieldError('service_to', l10n.serviceToAfterFrom);
-      valid = false;
-    }
-    final ctc = _historyAnnualCtcController.text.trim();
-    if (ctc.isEmpty) {
-      _setFieldError('annual_ctc', l10n.annualCtcRequired);
-      valid = false;
-    } else if (double.tryParse(ctc) == null) {
-      _setFieldError('annual_ctc', l10n.enterValidAmount);
       valid = false;
     }
 
@@ -835,12 +826,14 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
     if (_isSaving) return;
 
     if (_savedHistories.isEmpty) {
-      if (!_autoValidate) setState(() => _autoValidate = true);
-      if (!_formKey.currentState!.validate()) return;
-      if (!_validateEmploymentHistoryForm()) return;
-      await _saveEmploymentHistoryEntry(clearAfterSave: false);
-      if (!mounted || _generalError != null || _fieldErrors.isNotEmpty) {
-        return;
+      if (_employmentHistoryFormHasData()) {
+        if (!_autoValidate) setState(() => _autoValidate = true);
+        if (!_formKey.currentState!.validate()) return;
+        if (!_validateEmploymentHistoryForm()) return;
+        await _saveEmploymentHistoryEntry(clearAfterSave: false);
+        if (!mounted || _generalError != null || _fieldErrors.isNotEmpty) {
+          return;
+        }
       }
     } else if (_employmentHistoryFormHasData()) {
       if (!_validateEmploymentHistoryForm()) return;
@@ -937,34 +930,20 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                         children: [
                           if (_step > 0 &&
                               !(_step == 4 && _employeeId != null)) ...[
-                            OutlinedButton(
+                            AppPreviousButton(
                               onPressed: _isSaving ? null : _onBack,
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.teal500,
-                                side: const BorderSide(
-                                  color: AppColors.teal500,
-                                ),
-                                minimumSize: const Size(110, 40),
-                              ),
-                              child: Text(l10n.previous),
                             ),
                             const SizedBox(width: 12),
                           ],
                           if (_step == 4) ...[
-                            OutlinedButton(
+                            AppWizardOutlineButton(
+                              label: l10n.addRecord,
+                              width: 120,
                               onPressed: _isSaving
                                   ? null
                                   : () => _saveEmploymentHistoryEntry(
                                         clearAfterSave: true,
                                       ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.teal500,
-                                side: const BorderSide(
-                                  color: AppColors.teal500,
-                                ),
-                                minimumSize: const Size(120, 40),
-                              ),
-                              child: Text(l10n.addRecord),
                             ),
                             const SizedBox(width: 12),
                           ],
@@ -1234,8 +1213,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
               label: l10n.languagesKnown,
               textInputAction: TextInputAction.next,
               externalError: _apiError('languages_known'),
-              validator: (v) =>
-                  CustomerValidators.requiredText(l10n, v, l10n.languagesKnown),
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -1373,8 +1350,11 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
           label: l10n.performanceAppraisal,
           textInputAction: TextInputAction.next,
           externalError: _apiError('performance_appraisal'),
-          validator: (v) =>
-              CustomerValidators.requiredText(l10n, v, l10n.performanceAppraisal),
+          validator: (v) => CustomerValidators.optionalLettersOnly(
+            l10n,
+            v,
+            label: l10n.performanceAppraisal,
+          ),
         ),
         const SizedBox(height: 16),
         AppTextField(
@@ -1430,7 +1410,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
               externalError: _apiError('secondary_mobile_number'),
-              validator: (v) => CustomerValidators.mobile(l10n, v, required: true),
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (v) => CustomerValidators.optionalDigitsOnly(l10n, v),
             ),
           ],
         ),
@@ -1747,10 +1728,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
               label: context.l10n.organizationName,
               textInputAction: TextInputAction.next,
               externalError: _apiError('organization_name'),
-              validator: (v) => CustomerValidators.requiredText(
+              validator: (v) => CustomerValidators.optionalLettersOnly(
                 context.l10n,
                 v,
-                context.l10n.organizationName,
+                label: context.l10n.organizationName,
               ),
             ),
             const SizedBox(height: 16),
@@ -1759,10 +1740,10 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
               label: context.l10n.designation,
               textInputAction: TextInputAction.next,
               externalError: _apiError('designation'),
-              validator: (v) => CustomerValidators.requiredText(
+              validator: (v) => CustomerValidators.optionalLettersOnly(
                 context.l10n,
                 v,
-                context.l10n.designation,
+                label: context.l10n.designation,
               ),
             ),
             const SizedBox(height: 16),
@@ -1774,9 +1755,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                     label: context.l10n.serviceFrom,
                     value: _historyServiceFrom,
                     errorText: _apiError('service_from'),
-                    validator: (value) => value == null
-                        ? context.l10n.serviceFromRequired
-                        : null,
                     compact: true,
                     onTap: () => _pickDate(
                       initial: _historyServiceFrom,
@@ -1799,8 +1777,6 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
                     label: context.l10n.serviceTo,
                     value: _historyServiceTo,
                     errorText: _apiError('service_to'),
-                    validator: (value) =>
-                        value == null ? context.l10n.serviceToRequired : null,
                     compact: true,
                     onTap: () => _pickDate(
                       initial: _historyServiceTo ?? _historyServiceFrom,
@@ -1824,17 +1800,8 @@ class _EmployeeCreateScreenState extends State<EmployeeCreateScreen>
               controller: _historyAnnualCtcController,
               label: context.l10n.annualCtc,
               hint: context.l10n.annualCtcHint,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.done,
               externalError: _apiError('annual_ctc'),
-              validator: (v) {
-                final trimmed = v?.trim() ?? '';
-                if (trimmed.isEmpty) return context.l10n.annualCtcRequired;
-                if (double.tryParse(trimmed) == null) {
-                  return context.l10n.enterValidAmount;
-                }
-                return null;
-              },
             ),
           ],
         ),

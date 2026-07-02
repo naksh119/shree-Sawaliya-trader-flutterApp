@@ -9,7 +9,7 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'सावलिया ट्रेडर';
+  String get appTitle => 'SSM Nexus';
 
   @override
   String get splashTitle => 'श्री सावलिया मल्टीट्रेड';
@@ -166,7 +166,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get welcomeBack => 'वापसी पर स्वागत है';
 
   @override
-  String get signInSubtitle => 'श्री सावलिया मल्टीट्रेड में साइन इन करें';
+  String get signInSubtitle => 'SSM Nexus में साइन इन करें';
 
   @override
   String get emailAddress => 'ईमेल पता';
@@ -1441,19 +1441,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get genderFemale => 'महिला';
 
   @override
-  String get genderOther => 'अन्य';
-
-  @override
   String get maritalSingle => 'अविवाहित';
 
   @override
   String get maritalMarried => 'विवाहित';
-
-  @override
-  String get maritalDivorced => 'तलाकशुदा';
-
-  @override
-  String get maritalWidowed => 'विधवा/विधुर';
 
   @override
   String get employeePhotoRequired => 'कर्मचारी फ़ोटो आवश्यक है';
@@ -1550,4 +1541,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get nameMaxLength => 'नाम 200 अक्षर या उससे कम होना चाहिए';
+
+  @override
+  String fieldLettersOnly(String field) {
+    return '$field में केवल अक्षर होने चाहिए';
+  }
 }

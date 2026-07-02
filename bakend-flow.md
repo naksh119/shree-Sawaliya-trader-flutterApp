@@ -1,8 +1,8 @@
-# Shri Sawaliya Multitrade — Flutter Mobile UI Specification
+# SSM Nexus — Flutter Mobile UI Specification
 
 ## 1. Product Overview
 
-Shri Sawaliya Multitrade is an internal operations platform for branch-based jewelry-backed lending:
+SSM Nexus is an internal operations platform for branch-based jewelry-backed lending:
 
 - Branches — physical locations with payment QR codes.
 - Employees — role-based staff with JWT login and granular permissions.
@@ -10,7 +10,7 @@ Shri Sawaliya Multitrade is an internal operations platform for branch-based jew
 - Centers — groups of approved customers with gold/silver product details and EMI schedules.
 - EMI Collection — field staff record cash/online/partial payments against due installments.
 
-The web app (ShriSawaliyaMultitrade-application) already maps most screens. Flutter should mirror the same flows, permissions, and API contracts.
+The existing web application already maps most screens. Flutter should mirror the same flows, permissions, and API contracts.
 
 ---
 
@@ -436,7 +436,7 @@ Recommended Packages:
 
 ## 13. Reference Repositories
 
-### ShriSawaliyaMultitrade
+### SSM Nexus Backend
 
 Source of truth for:
 
@@ -444,7 +444,7 @@ Source of truth for:
 - APIs
 - Business Logic
 
-### ShriSawaliyaMultitrade-application
+### SSM Nexus Web Application
 
 Reference for:
 

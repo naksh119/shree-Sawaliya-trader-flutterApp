@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
+import 'package:sawaliyatrader/core/widgets/app_confirm_dialog.dart';
+import 'package:sawaliyatrader/core/widgets/app_delete_button.dart';
+import 'package:sawaliyatrader/core/widgets/app_gradient_icon_button.dart';
 import 'package:sawaliyatrader/core/widgets/brand_gradient.dart';
-import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_message.dart';
 
@@ -17,32 +19,12 @@ abstract final class EntityActionPlaceholder {
 
   static Future<void> onDelete(BuildContext context, String entityName) async {
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          l10n.deleteEntityQuestion(entityName),
-          style: AppTextStyles.heading(context),
-        ),
-        content: Text(
-          l10n.deleteCannotUndo,
-          style: AppTextStyles.body(context),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel, style: AppTextStyles.link(context)),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.appColors.gold,
-              foregroundColor: context.appColors.navy,
-            ),
-            child: Text(l10n.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: l10n.deleteEntityQuestion(entityName),
+      message: l10n.deleteCannotUndo,
+      confirmLabel: l10n.delete,
+      destructive: true,
     );
 
     if (confirmed != true || !context.mounted) return;
@@ -54,51 +36,7 @@ abstract final class EntityActionPlaceholder {
   }
 }
 
-class _BrandIconButton extends StatelessWidget {
-  const _BrandIconButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-    this.size = 34,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onPressed;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: context.appColors.goldSurface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: context.appColors.goldBorderStrong,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: BrandGradientIcon(
-              icon,
-              size: size * 0.5,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Edit + Delete icons stacked vertically inside golden containers.
+/// Edit + Delete icons stacked vertically inside gradient-bordered containers.
 class EntityEditDeleteIconStack extends StatelessWidget {
   const EntityEditDeleteIconStack({
     required this.entityName,
@@ -129,7 +67,7 @@ class EntityEditDeleteIconStack extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (canEdit)
-          _BrandIconButton(
+          AppGradientIconButton(
             size: buttonSize,
             tooltip: l10n.edit,
             icon: Icons.edit_outlined,
@@ -138,7 +76,7 @@ class EntityEditDeleteIconStack extends StatelessWidget {
           ),
         if (canEdit && canDelete) SizedBox(height: gap),
         if (canDelete)
-          _BrandIconButton(
+          AppGradientIconButton(
             size: buttonSize,
             tooltip: l10n.delete,
             icon: Icons.delete_outline,
@@ -224,15 +162,10 @@ class EntityEditDeleteBar extends StatelessWidget {
             if (canEdit && canDelete) const SizedBox(width: 12),
             if (canDelete)
               Expanded(
-                child: FilledButton.icon(
+                child: AppDeleteButton(
+                  label: l10n.delete,
                   onPressed: onDelete ??
                       () => EntityActionPlaceholder.onDelete(context, entityName),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: context.appColors.gold,
-                    foregroundColor: context.appColors.navy,
-                  ),
-                  icon: BrandGradientIcon(Icons.delete_outline, size: 18),
-                  label: Text(l10n.delete),
                 ),
               ),
           ],

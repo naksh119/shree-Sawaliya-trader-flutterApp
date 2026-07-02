@@ -3,6 +3,7 @@ import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
 import 'package:sawaliyatrader/core/theme/theme_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_gradient_dialog_shell.dart';
+import 'package:sawaliyatrader/core/widgets/app_gradient_filled_button.dart';
 import 'package:sawaliyatrader/core/widgets/app_gradient_outline_button.dart';
 
 /// Shows a branded confirmation dialog with a gradient border.
@@ -82,11 +83,15 @@ class _AppConfirmDialog extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: AppGradientOutlineButton(
-                  label: confirmLabel,
-                  destructive: destructive,
-                  onPressed: () => Navigator.of(context).pop(true),
-                ),
+                child: destructive
+                    ? AppGradientFilledButton(
+                        label: confirmLabel,
+                        onPressed: () => Navigator.of(context).pop(true),
+                      )
+                    : AppGradientOutlineButton(
+                        label: confirmLabel,
+                        onPressed: () => Navigator.of(context).pop(true),
+                      ),
               ),
             ],
           ),

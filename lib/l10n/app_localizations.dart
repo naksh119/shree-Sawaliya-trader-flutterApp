@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Sawaliya Trader'**
+  /// **'SSM Nexus'**
   String get appTitle;
 
   /// No description provided for @splashTitle.
@@ -401,7 +401,7 @@ abstract class AppLocalizations {
   /// No description provided for @signInSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to Shree Sawaliya Multitrade'**
+  /// **'Sign in to SSM Nexus'**
   String get signInSubtitle;
 
   /// No description provided for @emailAddress.
@@ -2792,12 +2792,6 @@ abstract class AppLocalizations {
   /// **'Female'**
   String get genderFemale;
 
-  /// No description provided for @genderOther.
-  ///
-  /// In en, this message translates to:
-  /// **'Other'**
-  String get genderOther;
-
   /// No description provided for @maritalSingle.
   ///
   /// In en, this message translates to:
@@ -2809,18 +2803,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Married'**
   String get maritalMarried;
-
-  /// No description provided for @maritalDivorced.
-  ///
-  /// In en, this message translates to:
-  /// **'Divorced'**
-  String get maritalDivorced;
-
-  /// No description provided for @maritalWidowed.
-  ///
-  /// In en, this message translates to:
-  /// **'Widowed'**
-  String get maritalWidowed;
 
   /// No description provided for @employeePhotoRequired.
   ///
@@ -3001,6 +2983,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name must be 200 characters or fewer'**
   String get nameMaxLength;
+
+  /// No description provided for @fieldLettersOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must contain only letters'**
+  String fieldLettersOnly(String field);
 }
 
 class _AppLocalizationsDelegate

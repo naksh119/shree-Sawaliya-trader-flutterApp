@@ -5,7 +5,6 @@ import 'package:sawaliyatrader/core/customers/models/customer_status.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/routing/bottom_nav_config.dart';
-import 'package:sawaliyatrader/core/widgets/active_status_filter.dart';
 import 'package:sawaliyatrader/l10n/app_localizations.dart';
 
 extension CustomerStatusL10n on CustomerStatus {
@@ -61,14 +60,6 @@ String localizedChartSegmentLabel(AppLocalizations l10n, String label) =>
       _ => label,
     };
 
-extension ActiveStatusFilterL10n on ActiveStatusFilter {
-  String localizedSuffix(AppLocalizations l10n) => switch (this) {
-        ActiveStatusFilter.all => '',
-        ActiveStatusFilter.active => l10n.statusSuffixActive,
-        ActiveStatusFilter.inactive => l10n.statusSuffixInactive,
-      };
-}
-
 extension BottomNavItemL10n on BottomNavItem {
   String localizedTooltip(AppLocalizations l10n) => switch (route) {
         AppRoutes.dashboard => l10n.home,
@@ -114,7 +105,6 @@ String localizedGenderLabel(AppLocalizations l10n, String? value) {
   return switch (value.toUpperCase()) {
     'MALE' => l10n.genderMale,
     'FEMALE' => l10n.genderFemale,
-    'OTHER' => l10n.genderOther,
     _ => value,
   };
 }
@@ -123,8 +113,6 @@ String localizedMaritalStatusLabel(AppLocalizations l10n, String? value) {
   return switch (value.toUpperCase()) {
     'SINGLE' => l10n.maritalSingle,
     'MARRIED' => l10n.maritalMarried,
-    'DIVORCED' => l10n.maritalDivorced,
-    'WIDOWED' => l10n.maritalWidowed,
     _ => value,
   };
 }

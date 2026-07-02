@@ -10,6 +10,8 @@ class CustomerValidators {
   static final _panPattern = RegExp(r'^[A-Za-z]{5}\d{4}[A-Za-z]$');
   static final _pincodePattern = RegExp(r'^\d{6}$');
   static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+  static final _lettersOnlyPattern = RegExp(r'^[\p{L}\s]+$', unicode: true);
+  static final _digitsOnlyPattern = RegExp(r'^\d+$');
   static const genderOptions = kGenderOptions;
   static const maritalOptions = kMaritalStatusOptions;
 
@@ -167,6 +169,28 @@ class CustomerValidators {
     return null;
   }
 
+  static String? optionalLettersOnly(
+    AppLocalizations l10n,
+    String? value, {
+    required String label,
+  }) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return null;
+    if (!_lettersOnlyPattern.hasMatch(trimmed)) {
+      return l10n.fieldLettersOnly(label);
+    }
+    return null;
+  }
+
+  static String? optionalDigitsOnly(AppLocalizations l10n, String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return null;
+    if (!_digitsOnlyPattern.hasMatch(trimmed)) {
+      return l10n.invalidNumber;
+    }
+    return null;
+  }
+
   static String? name(
     AppLocalizations l10n,
     String? value, {
@@ -180,6 +204,12 @@ class CustomerValidators {
       return l10n.nameMaxLength;
     }
     return null;
+  }
+
+  static bool digitsOnlyLooksValid(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return true;
+    return _digitsOnlyPattern.hasMatch(trimmed);
   }
 
   static bool mobileLooksValid(String value, {bool required = false}) {
@@ -231,8 +261,9 @@ class CustomerValidators {
         return trimmed.isNotEmpty;
       case 'age':
         return ageLooksValid(trimmed, required: true);
-      case 'address_line1':
       case 'address_line2':
+        return true;
+      case 'address_line1':
       case 'city':
       case 'state':
       case 'occupation':

@@ -1,4 +1,4 @@
-# Used APIs — Sawaliya Trader App
+# Used APIs — SSM Nexus App
 
 This document lists every REST API endpoint **actively used** by the Flutter app.  
 Paths are relative to the base URL configured in `.env` (`API_BASE_URL`).

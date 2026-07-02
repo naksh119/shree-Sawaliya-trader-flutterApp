@@ -1,11 +1,11 @@
 {
-    "name": "sawaliyatrader",
-    "short_name": "sawaliyatrader",
+    "name": "SSM Nexus",
+    "short_name": "SSM Nexus",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FDFBF6",
     "theme_color": "#D4A62A",
-    "description": "A new Flutter project.",
+    "description": "SSM Nexus — loan operations platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

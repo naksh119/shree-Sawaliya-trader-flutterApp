@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/widgets/app_primary_button.dart';
+import 'package:sawaliyatrader/core/widgets/app_wizard_nav_button_metrics.dart';
 
 /// Compact primary action for wizard steps and multi-step flows.
 class AppNextButton extends StatelessWidget {
@@ -12,8 +13,8 @@ class AppNextButton extends StatelessWidget {
     this.label,
   });
 
-  static const double width = 110;
-  static const double height = 40;
+  static const double width = AppWizardNavButtonMetrics.width;
+  static const double height = AppWizardNavButtonMetrics.height;
 
   final VoidCallback? onPressed;
   final bool isLoading;
@@ -30,6 +31,7 @@ class AppNextButton extends StatelessWidget {
       width: width,
       height: height,
       fontSize: 16,
+      borderRadius: AppWizardNavButtonMetrics.borderRadius,
     );
   }
 }

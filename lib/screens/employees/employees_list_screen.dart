@@ -7,7 +7,6 @@ import 'package:sawaliyatrader/core/employees/employee_service.dart';
 import 'package:sawaliyatrader/core/employees/models/branch_option.dart';
 import 'package:sawaliyatrader/core/employees/models/employee_dto.dart';
 import 'package:sawaliyatrader/core/employees/models/role_option.dart';
-import 'package:sawaliyatrader/core/locale/l10n_extensions.dart';
 import 'package:sawaliyatrader/core/locale/locale_context.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
 import 'package:sawaliyatrader/core/permissions/employee_role.dart';
@@ -15,7 +14,6 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-import 'package:sawaliyatrader/core/widgets/active_status_filter.dart';
 import 'package:sawaliyatrader/core/widgets/app_filter_chip.dart';
 import 'package:sawaliyatrader/core/widgets/app_dropdown.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
@@ -47,7 +45,6 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
   List<BranchOption> _branches = [];
   int? _roleFilter;
   int _branchFilterId = _kAllBranchesFilterId;
-  ActiveStatusFilter _statusFilter = ActiveStatusFilter.all;
   String _searchQuery = '';
   int _page = 1;
   int _total = 0;
@@ -149,7 +146,7 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
     final branchFilter = _branchFilterFor(session);
     debugPrint(
       '[Employees] _loadEmployees reset=$reset page=${reset ? 1 : _page} '
-      'search=$_searchQuery role=$_roleFilter status=$_statusFilter '
+      'search=$_searchQuery role=$_roleFilter '
       'branchFilter=$branchFilter isLoading=$_isLoading',
     );
 
@@ -170,7 +167,6 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
         page: reset ? 1 : _page,
         pageSize: _usesClientSideFiltering ? 200 : 20,
         search: _searchQuery.isEmpty ? null : _searchQuery,
-        isActive: _statusFilter.isActiveParam,
         role: _roleFilter,
         roleCode: selectedRole?.code,
         branch: _branchFilterFor(session),
@@ -305,12 +301,6 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
         .toList();
   }
 
-  void _onStatusSelected(ActiveStatusFilter? status) {
-    if (status == null) return;
-    setState(() => _statusFilter = status);
-    _loadEmployees(reset: true);
-  }
-
   void _onBranchSelected(int? branchId) {
     if (branchId == null) return;
     setState(() => _branchFilterId = branchId);
@@ -385,20 +375,9 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: AppSearchField(
-                      hintText: context.l10n.searchEmployeesHint,
-                      onSearch: _onSearch,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ActiveStatusFilterButton(
-                    value: _statusFilter,
-                    onSelected: _onStatusSelected,
-                  ),
-                ],
+              child: AppSearchField(
+                hintText: context.l10n.searchEmployeesHint,
+                onSearch: _onSearch,
               ),
             ),
             if (_canFilterByBranch(session))
@@ -536,11 +515,10 @@ class _EmployeesListScreenState extends State<EmployeesListScreen>
 
   String _emptyMessage(BuildContext context) {
     final l10n = context.l10n;
-    final status = _statusFilter.localizedSuffix(l10n);
     final role = _selectedRole;
     final rolePart = role != null ? ' ${role.name}' : '';
     final branch = _selectedBranch;
     final branchPart = branch != null ? ' ${branch.name}' : '';
-    return l10n.noEmployeesFound(status, rolePart, branchPart);
+    return l10n.noEmployeesFound('', rolePart, branchPart);
   }
 }

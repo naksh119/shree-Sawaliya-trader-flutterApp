@@ -12,7 +12,6 @@ import 'package:sawaliyatrader/core/permissions/permission_service.dart';
 import 'package:sawaliyatrader/core/permissions/session_scope.dart';
 import 'package:sawaliyatrader/core/routing/app_routes.dart';
 import 'package:sawaliyatrader/core/theme/app_text_styles.dart';
-import 'package:sawaliyatrader/core/widgets/active_status_filter.dart';
 import 'package:sawaliyatrader/core/widgets/app_search_field.dart';
 import 'package:sawaliyatrader/core/widgets/create_fab_button.dart';
 import 'package:sawaliyatrader/core/widgets/entity_edit_delete_actions.dart';
@@ -38,7 +37,6 @@ class _BranchesListScreenState extends State<BranchesListScreen>
   LoginResponse? get _session => session;
 
   final List<BranchDto> _items = [];
-  ActiveStatusFilter _statusFilter = ActiveStatusFilter.all;
   String _searchQuery = '';
   int _page = 1;
   int _total = 0;
@@ -103,7 +101,6 @@ class _BranchesListScreenState extends State<BranchesListScreen>
         page: reset ? 1 : _page,
         pageSize: 50,
         search: _searchQuery.isEmpty ? null : _searchQuery,
-        isActive: _statusFilter.isActiveParam,
       );
       final response = await fetchBranches;
 
@@ -138,12 +135,6 @@ class _BranchesListScreenState extends State<BranchesListScreen>
 
   void _onSearch(String query) {
     setState(() => _searchQuery = query);
-    _loadBranches(reset: true);
-  }
-
-  void _onStatusSelected(ActiveStatusFilter? status) {
-    if (status == null || status == _statusFilter) return;
-    setState(() => _statusFilter = status);
     _loadBranches(reset: true);
   }
 
@@ -225,20 +216,9 @@ class _BranchesListScreenState extends State<BranchesListScreen>
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: AppSearchField(
-                      hintText: context.l10n.searchBranchesHint,
-                      onSearch: _onSearch,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ActiveStatusFilterButton(
-                    value: _statusFilter,
-                    onSelected: _onStatusSelected,
-                  ),
-                ],
+              child: AppSearchField(
+                hintText: context.l10n.searchBranchesHint,
+                onSearch: _onSearch,
               ),
             ),
             if (!_isLoading && _error == null && _items.isNotEmpty)
@@ -342,20 +322,11 @@ class _BranchesListScreenState extends State<BranchesListScreen>
   }
 
   String _emptyMessage(BuildContext context) {
-    final status = _statusFilter.localizedSuffix(context);
     if (_searchQuery.isNotEmpty) {
-      return context.l10n.noBranchesFoundForSearch(status, _searchQuery);
+      return context.l10n.noBranchesFoundForSearch('', _searchQuery);
     }
-    return context.l10n.noBranchesFound(status);
+    return context.l10n.noBranchesFound('');
   }
-}
-
-extension _ActiveStatusFilterL10n on ActiveStatusFilter {
-  String localizedSuffix(BuildContext context) => switch (this) {
-        ActiveStatusFilter.all => '',
-        ActiveStatusFilter.active => context.l10n.statusSuffixActive,
-        ActiveStatusFilter.inactive => context.l10n.statusSuffixInactive,
-      };
 }
 
 class _BranchListTile extends StatelessWidget {

@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:sawaliyatrader/core/loading/app_loading.dart';
-import 'package:sawaliyatrader/core/theme/app_font.dart';
 import 'package:sawaliyatrader/core/theme/app_colors.dart';
+import 'package:sawaliyatrader/core/theme/app_font.dart';
 
-class AppPrimaryButton extends StatelessWidget {
-  const AppPrimaryButton({
+/// Filled action button with the brand teal → navy gradient background.
+class AppGradientFilledButton extends StatelessWidget {
+  const AppGradientFilledButton({
     required this.label,
     required this.onPressed,
     super.key,
+    this.icon,
     this.isLoading = false,
     this.textColor = Colors.white,
     this.width = double.infinity,
-    this.height = 52,
-    this.fontSize = 18,
+    this.height = 48,
+    this.fontSize = 16,
     this.borderRadius = 12,
+    this.fontWeight = FontWeight.w600,
   });
 
   final String label;
   final VoidCallback? onPressed;
+  final IconData? icon;
   final bool isLoading;
   final Color textColor;
   final double width;
   final double height;
   final double fontSize;
   final double borderRadius;
+  final FontWeight fontWeight;
 
   BorderRadius get _shape => BorderRadius.all(Radius.circular(borderRadius));
 
@@ -33,6 +38,13 @@ class AppPrimaryButton extends StatelessWidget {
     final effectiveGradient = isDisabled
         ? _fadeGradient(AppColors.brandGradient, 0.6)
         : AppColors.brandGradient;
+
+    final labelStyle = AppFont.style(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      letterSpacing: 0.3,
+      color: textColor,
+    );
 
     return SizedBox(
       width: width,
@@ -52,15 +64,16 @@ class AppPrimaryButton extends StatelessWidget {
               child: Center(
                 child: isLoading
                     ? const AppLoader(size: AppLoaderSize.small)
-                    : Text(
-                        label,
-                        style: AppFont.style(
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: textColor,
-                        ),
-                      ),
+                    : icon == null
+                        ? Text(label, style: labelStyle)
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(icon, size: 18, color: textColor),
+                              const SizedBox(width: 8),
+                              Text(label, style: labelStyle),
+                            ],
+                          ),
               ),
             ),
           ),

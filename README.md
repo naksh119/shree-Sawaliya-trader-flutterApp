@@ -1,6 +1,6 @@
-# sawaliyatrader
+# SSM Nexus
 
-A new Flutter project.
+Loan operations platform built with Flutter.
 
 ## Getting Started
 

@@ -1,6 +1,6 @@
 {
   "@@locale": "hi",
-  "appTitle": "सावलिया ट्रेडर",
+  "appTitle": "SSM Nexus",
   "splashTitle": "श्री सावलिया मल्टीट्रेड",
   "home": "होम",
   "hello": "नमस्ते",
@@ -50,7 +50,7 @@
   "invalidCustomerId": "अमान्य ग्राहक ID।",
   "invalidCenterId": "अमान्य केंद्र ID।",
   "welcomeBack": "वापसी पर स्वागत है",
-  "signInSubtitle": "श्री सावलिया मल्टीट्रेड में साइन इन करें",
+  "signInSubtitle": "SSM Nexus में साइन इन करें",
   "emailAddress": "ईमेल पता",
   "enterYourEmail": "अपना ईमेल दर्ज करें",
   "password": "पासवर्ड",
@@ -452,11 +452,8 @@
   "annualCtcHint": "उदा. 180000.00",
   "genderMale": "पुरुष",
   "genderFemale": "महिला",
-  "genderOther": "अन्य",
   "maritalSingle": "अविवाहित",
   "maritalMarried": "विवाहित",
-  "maritalDivorced": "तलाकशुदा",
-  "maritalWidowed": "विधवा/विधुर",
   "employeePhotoRequired": "कर्मचारी फ़ोटो आवश्यक है",
   "dateOfConfirmationRequired": "पुष्टि तिथि आवश्यक है",
   "payableFromDateRequired": "भुगतान प्रारंभ तिथि आवश्यक है",
@@ -486,5 +483,6 @@
   "ageWholeNumber": "आयु पूर्ण संख्या होनी चाहिए",
   "ageRange": "आयु 0 से 150 के बीच होनी चाहिए",
   "nameRequired": "नाम आवश्यक है",
-  "nameMaxLength": "नाम 200 अक्षर या उससे कम होना चाहिए"
+  "nameMaxLength": "नाम 200 अक्षर या उससे कम होना चाहिए",
+  "fieldLettersOnly": "{field} में केवल अक्षर होने चाहिए"
 }

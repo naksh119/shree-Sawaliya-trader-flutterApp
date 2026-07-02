@@ -203,7 +203,6 @@ class CustomerWizardCustomerStep extends StatelessWidget {
           label: l10n.addressLine2,
           textInputAction: TextInputAction.next,
           externalError: apiError('address_line2'),
-          validator: (v) => CustomerValidators.requiredText(l10n, v, l10n.addressLine2),
         ),
         const SizedBox(height: 16),
         AppTextField(

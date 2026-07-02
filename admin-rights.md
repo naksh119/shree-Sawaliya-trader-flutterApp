@@ -1,4 +1,4 @@
-# Admin Rights — Shri Sawaliya Multitrade
+# Admin Rights — SSM Nexus
 
 Simple guide to what an **Admin** can do in the app.
 
